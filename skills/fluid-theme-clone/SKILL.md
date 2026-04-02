@@ -433,5 +433,5 @@ your-theme/
 
 ## Related Skills
 
-- [fluid-full-import](../fluid-full-import/SKILL.md) — For importing products, categories, and store data (run before theme clone)
+- [fluid-product-admin-import](../fluid-product-admin-import/SKILL.md) — For importing products, categories, and admin settings (run before theme clone)
 - [fluid-onboarding-prefill](../fluid-onboarding-prefill/SKILL.md) — For pre-filling KYC/onboarding forms

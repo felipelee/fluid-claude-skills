@@ -4,9 +4,13 @@
 # Local Claude Code config (skills are distributed from skills/ directory)
 .claude/
 
-# Import working directories
+# Import working directories and test artifacts
 site-import-*/
 id-mapping.json
+*-image-extraction.json
+
+# Source base theme (already copied into skills/fluid-theme-clone/base-theme/)
+base theme */
 
 # Editor
 *.swp

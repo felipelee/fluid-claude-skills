@@ -1,20 +1,19 @@
 ---
-name: fluid-full-import
+name: fluid-product-admin-import
 description: >-
-  Full Fluid Commerce import pipeline — Firecrawl crawling through all import
-  steps. Use when working on crawling, import orchestration, adding new import
-  steps, debugging step ordering, or working with any import entity (categories,
-  collections, brand, menus, pages, theme templates, languages, countries, DAM
-  media, onboarding, discounts, redirects, blog posts). Triggers on Firecrawl,
-  crawling, page classification, import pipeline, import steps, FluidClient API,
-  IdMapping, categories, collections, brand import, menus, pages, theme
-  templates, languages, countries, onboarding import, discounts, redirects,
-  blog posts.
+  Import products and admin settings into Fluid Commerce — the complete store
+  migration pipeline. Use when importing products, categories, collections,
+  brand, menus, pages, policies, checkout settings, tax, shipping, customers,
+  inventory, compliance rules, discounts, redirects, blog posts, or any store
+  data. Triggers on product import, store import, migrate store, import products,
+  admin settings, Firecrawl, import pipeline, FluidClient API, IdMapping,
+  categories, collections, brand import, menus, pages, agreements, onboarding,
+  discounts, redirects, blog posts, customers, inventory, shipping zones.
 metadata:
   version: 1.1.0
 ---
 
-# Fluid Full Import Pipeline
+# Fluid Product & Admin Settings Import
 
 Two phases: **Crawl** (Firecrawl discovers and scrapes pages) -> **Import** (push everything to Fluid Commerce APIs). Each import step persists `id-mapping.json` for crash recovery.
 
@@ -301,7 +300,7 @@ To upload a remote image, first download it to a buffer, then POST the buffer as
 - Skip URLs already in `idMapping.assets` (resumability)
 - Don't add artificial rate limit delays — Fluid handles rate limiting server-side (429 responses trigger retry)
 
-See the [fluid-product-import](../fluid-product-import/SKILL.md) skill for full details on deduplication, resumability, and error handling.
+See the **Deduplication and crash recovery** section below for details on resumability and error handling.
 
 ### 2. Categories
 
@@ -335,7 +334,7 @@ IdMapping key is the **collection title string** (not a source_id).
 
 ### 4. Products
 
-See the [fluid-product-import](../fluid-product-import/SKILL.md) skill for full product import details.
+See the **API Payload Shape** and **Key Implementation Rules** sections below for full product import details.
 
 ### 5. Brand
 

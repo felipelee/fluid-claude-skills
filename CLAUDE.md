@@ -46,7 +46,7 @@ metadata:
 Skills can reference each other. Use relative paths from the repo root:
 
 ```markdown
-See [fluid-product-import](skills/fluid-product-import/SKILL.md) for product payload structure.
+See [fluid-product-admin-import](skills/fluid-product-admin-import/SKILL.md) for product payload structure.
 ```
 
 ## When Editing Skills

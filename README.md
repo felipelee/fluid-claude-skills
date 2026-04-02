@@ -102,9 +102,7 @@ Running migrations for multiple clients? Each run is stateless. Different source
 
 Five skills that know the entire Fluid API:
 
-**`/fluid-full-import`** — Full store migration. 25 steps: products, variants, categories, collections, images, brand, menus, pages, policies, checkout settings, tax, shipping zones, customers, inventory, state compliance rules, domains, discounts, redirects, blog posts, webhooks, compliance scanning.
-
-**`/fluid-product-import`** — Products only. Variant mapping, DAM image uploads, category/collection linking, metafields, SEO.
+**`/fluid-product-admin-import`** — Products and admin settings. 25 steps: products, variants, categories, collections, images, brand, menus, pages, policies, checkout settings, tax, shipping zones, customers, inventory, state compliance rules, domains, discounts, redirects, blog posts, webhooks, compliance scanning.
 
 **`/fluid-theme-clone`** — Pixel-perfect site cloning. Scrapes any website, audits visuals via screenshots, uploads images to DAM, builds Liquid sections with exact CSS, assembles page templates, and pushes the theme to Fluid. Ships with a base theme scaffolding and 7 reference files.
 
@@ -163,7 +161,7 @@ Resumable. If something fails mid-import, re-run and it picks up where it left o
 
 ## Tips for getting the most out of it
 
-**Start with `/fluid-full-import` for new migrations.** It handles everything — you don't need to run the individual skills separately unless you're debugging a specific step.
+**Start with `/fluid-product-admin-import` for new migrations.** It handles products, categories, collections, images, brand, policies, menus, and all admin settings in one run.
 
 **Have a Shopify admin token?** The full import can pull extra data (customers, inventory levels, shipping zones, discount codes) that aren't available from the public API. Mention it when Claude asks for credentials.
 

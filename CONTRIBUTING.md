@@ -19,7 +19,7 @@ skills/
 
 ### 1. Name your skill
 
-- Use kebab-case: `fluid-product-import`, `fluid-theme-setup`
+- Use kebab-case: `fluid-product-admin-import`, `fluid-theme-clone`
 - Prefix with `fluid-` for platform-specific skills
 - Keep it short and descriptive
 
@@ -57,7 +57,7 @@ Good skills include:
 - Common pitfalls and error handling patterns
 - Code examples that can be used as templates
 
-Keep SKILL.md under 500 lines where possible. Move detailed reference material to `references/`. Exception: orchestration/API-reference skills (like `fluid-full-import`) that need all endpoints and step details in a single context can exceed this limit.
+Keep SKILL.md under 500 lines where possible. Move detailed reference material to `references/`. Exception: orchestration/API-reference skills (like `fluid-product-admin-import`) that need all endpoints and step details in a single context can exceed this limit.
 
 ### 5. Update the README
 
