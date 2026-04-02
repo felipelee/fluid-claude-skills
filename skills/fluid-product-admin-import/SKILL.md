@@ -332,6 +332,24 @@ Collections are derived from unique `collection_titles` across all products (not
 
 IdMapping key is the **collection title string** (not a source_id).
 
+**REQUIRED: Always create a "New Arrivals" collection.** Fluid's base themes reference a "New Arrivals" collection on the homepage. If it doesn't exist, that section shows up blank. After all products are created:
+
+1. Create the collection if it doesn't already exist:
+```json
+{ "collection": { "title": "New Arrivals", "slug": "new-arrivals", "active": true } }
+```
+
+2. Add up to 12 products to it. Pick the most recent products (by `created_at` or position), or if that's not available, just use the first 12 products imported:
+```
+POST /api/company/v1/collections/{collection_id}/add_product
+{ "product_id": 123 }
+```
+Repeat for each product (up to 12).
+
+3. Store the collection ID in `idMapping.collections["New Arrivals"]`.
+
+This ensures the homepage "New Arrivals" section is populated from day one.
+
 ### 4. Products
 
 See the **API Payload Shape** and **Key Implementation Rules** sections below for full product import details.
