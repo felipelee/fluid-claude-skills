@@ -1,20 +1,12 @@
-# Fluid Skills
+# Migrate any ecommerce store to Fluid Commerce. One prompt.
 
-Claude Code skills for [Fluid Commerce](https://fluid.app) — the ecommerce platform built for MLM and social selling companies.
-
-Migrate an entire ecommerce store into Fluid in minutes. Products, images, policies, branding, menus, customers, compliance — all automated.
-
-Created by [Fluid Commerce](https://fluid.app).
-
----
-
-## See It In Action
-
-### Full site import — 40 products, 248 images, 7 collections, 4 policies, brand, menus, social links
+Give Claude a URL. Get back a fully configured Fluid store — products, images, branding, policies, menus, customers, compliance. Everything.
 
 ```
 > Migrate yellowbirdfoods.com to my Fluid store
+```
 
+```
 [Preflight] Source site: OK yellowbirdfoods.com (Shopify detected)
 [Preflight] Fluid API:  OK p.fluid.app (Company ID: 980243068)
 [Preflight] Firecrawl:  OK
@@ -32,7 +24,19 @@ Created by [Fluid Commerce](https://fluid.app).
 Import complete.
 ```
 
-### Onboarding pre-fill — scrape a site, fill 15+ KYC fields automatically
+40 products. 248 images. 7 collections. 4 policies. Brand assets. Navigation. Social links. Done.
+
+---
+
+## What's in the box
+
+Three [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills that know the entire Fluid API:
+
+**`/fluid-full-import`** — Full store migration. 25 steps: products, variants, categories, collections, images, brand, menus, pages, policies, checkout settings, tax, shipping zones, customers, inventory, state compliance rules, domains, discounts, redirects, blog posts, webhooks, compliance scanning.
+
+**`/fluid-product-import`** — Products only. Variant mapping, DAM image uploads, category/collection linking, metafields, SEO.
+
+**`/fluid-onboarding-prefill`** — Scrapes a company's site and pre-fills 15+ fields on the Fluid payments onboarding form:
 
 ```
 > Pre-fill the onboarding form for kizik.com
@@ -43,111 +47,75 @@ FILLED:
   Business Type: LLC (us_llc)
   Address:       1172 W 700 N, Suite 200, Lindon, UT 84042, US
   Phone:         +1 (833) 675-0266
-  Website:       https://kizik.com
   MCC Code:      5661 (Shoe Stores)
   Description:   Hands-free slip-on shoes, patented technology
   Policies:      Terms of Service, Privacy Policy (links saved)
   Country:       US (USD)
 
 NEEDS USER INPUT:
-  Tax ID / EIN, bank accounts, owner personal details,
+  Tax ID / EIN, bank accounts, owner details,
   financial projections, T&C signature
 ```
 
 ---
 
-## Prerequisites
+## Works with every major platform
 
-Before using any Fluid skill, you need:
+| Platform | Extraction | Cost |
+|----------|-----------|------|
+| Shopify | Public JSON API | Free |
+| WooCommerce | REST API | Free |
+| Squarespace | JSON endpoints | Free |
+| BigCommerce | GraphQL | Free |
+| Everything else | Firecrawl + AI | Firecrawl credits |
 
-1. **Source site URL** — The ecommerce site to migrate (e.g. `https://yellowbirdfoods.com`)
-2. **Fluid URL** — Your store's base URL (e.g. `https://yourcompany.fluid.app`)
-3. **Developer API Token** — From your Fluid admin panel under **Settings > API Tokens**
-4. **Firecrawl API Key** — From [firecrawl.dev](https://firecrawl.dev) for brand extraction, page scraping, and non-Shopify sites
-
-Every skill validates all credentials before starting — you'll know within seconds if something is wrong.
-
----
-
-## Available Skills
-
-### Migration & Import
-
-| Skill | What it does |
-|-------|-------------|
-| [fluid-full-import](skills/fluid-full-import/) | **Full site migration** — 25-step pipeline: products, categories, collections, images, brand, menus, pages, agreements/policies, checkout settings, tax, shipping zones, customers, inventory, state compliance rules, domains, discounts, redirects, blog posts, webhooks, and compliance scanning |
-| [fluid-product-import](skills/fluid-product-import/) | **Product import only** — Product payloads, variant mapping, image upload to DAM, category/collection linking, metafields, and the ImportProduct schema |
-
-### Setup & Onboarding
-
-| Skill | What it does |
-|-------|-------------|
-| [fluid-onboarding-prefill](skills/fluid-onboarding-prefill/) | **KYC form pre-fill** — Scrapes a company's website for business name, address, phone, team members, policies, MCC code, and operating countries, then pushes it all into the Fluid onboarding API |
+Shopify, WooCommerce, Squarespace, and BigCommerce stores use free public APIs. No admin access needed for product extraction. Unknown platforms fall back to Firecrawl crawling with AI-powered data extraction.
 
 ---
 
-## What Gets Imported
-
-The full import pipeline covers 25 steps:
-
-| Area | What's included |
-|------|----------------|
-| **Core Commerce** | Products, variants, categories, collections, images (via DAM), inventory levels |
-| **Content & Branding** | Pages, blog posts, menus, brand colors/fonts/logo/favicon/OG image, theme templates |
-| **Legal & Compliance** | Terms of service, privacy policy, refund policy as checkout agreements. State/region compliance rules. Post-import compliance scanning. |
-| **Store Configuration** | Languages, countries/currencies, checkout settings, tax config, shipping zones/warehouses, domains |
-| **Customers & Data** | Customer profiles with addresses, discount codes, URL redirects, webhook subscriptions |
-
-### Platform detection
-
-Skills automatically detect the source platform and use the fastest extraction method:
-
-| Platform | Method | Cost |
-|----------|--------|------|
-| **Shopify** | Public JSON API (`/products.json`, `/collections.json`) | Free |
-| **WooCommerce** | REST API (`/wp-json/wc/v3/`) | Free |
-| **Squarespace** | JSON endpoints (`/{slug}?format=json`) | Free |
-| **BigCommerce** | GraphQL API | Free |
-| **Any other site** | Firecrawl crawl + AI extraction | Firecrawl credits |
-
----
-
-## Installation
-
-### Option 1: CLI Install (Recommended)
+## Install
 
 ```bash
 npx skills add fluidcommerce/fluid-claude-skills
 ```
 
-Install a specific skill only:
-
-```bash
-npx skills add fluidcommerce/fluid-claude-skills --filter fluid-full-import
-```
-
-### Option 2: Clone & Copy
+Or clone it:
 
 ```bash
 git clone https://github.com/fluidcommerce/fluid-claude-skills.git
-cp -r fluid-skills/skills/* your-project/.claude/skills/
+cp -r fluid-claude-skills/skills/* your-project/.claude/skills/
 ```
 
-### Option 3: Git Submodule
+---
 
-```bash
-git submodule add https://github.com/fluidcommerce/fluid-claude-skills.git .claude/fluid-skills
-```
+## What you need
 
-### Option 4: Fork & Customize
+1. **Source site URL** — the store you're migrating
+2. **Fluid URL** — your Fluid store (`yourcompany.fluid.app`)
+3. **Fluid API token** — from Settings > API Tokens in Fluid admin
+4. **Firecrawl API key** — from [firecrawl.dev](https://firecrawl.dev)
 
-Fork the repo and modify skills to match your team's specific Fluid setup.
+Every skill validates all four before doing any work. Bad token? You'll know in 2 seconds, not 20 minutes.
+
+---
+
+## The full import covers 25 steps
+
+| | |
+|---|---|
+| **Commerce** | Products, variants, categories, collections, images, inventory |
+| **Content** | Pages, blog posts, menus, brand, logo, favicon, theme templates |
+| **Legal** | Terms, privacy policy, refund policy as checkout agreements. State compliance rules. Post-import compliance scan. |
+| **Config** | Languages, currencies, checkout settings, tax, shipping zones, warehouses, domains |
+| **Data** | Customers, discounts, redirects, webhooks |
+
+Resumable. If something fails mid-import, re-run and it picks up where it left off.
 
 ---
 
 ## Usage
 
-### Slash commands
+Slash commands:
 
 ```
 /fluid-full-import
@@ -155,43 +123,16 @@ Fork the repo and modify skills to match your team's specific Fluid setup.
 /fluid-onboarding-prefill
 ```
 
-### Natural language
+Or just talk to Claude:
 
-Claude automatically activates the right skill based on your request:
+> "Migrate teddyfresh.com to Fluid"
 
-> "Migrate yellowbirdfoods.com to my Fluid store"
+> "Import products from yellowbirdfoods.com"
 
-> "Import just the products from teddyfresh.com into Fluid"
+> "Pre-fill onboarding for kizik.com"
 
-> "Pre-fill the onboarding form for kizik.com"
-
-> "Set up state compliance rules — we only operate in 38 states"
-
-> "Import our terms of service and privacy policy as checkout agreements"
-
-Each skill will ask for your credentials, validate them, and start working.
+> "We only operate in 38 states — set up compliance rules"
 
 ---
 
-## How It Works
-
-1. **You provide 4 things** — source site URL, Fluid URL, Fluid API token, Firecrawl key
-2. **Credentials are validated** — all checked in parallel before any work starts
-3. **Source platform is detected** — Shopify, WooCommerce, etc. get fast-path extraction
-4. **Data is extracted** — products, images, policies, brand assets, menus, metadata
-5. **Everything is pushed to Fluid** — 25 import steps run sequentially with progress logging
-6. **You get a summary** — what was imported, what needs manual attention
-
-The entire process is resumable. If something fails mid-import, re-run the skill and it picks up where it left off via `id-mapping.json`.
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding or modifying skills.
-
----
-
-## License
-
-MIT
+Built by [Fluid Commerce](https://fluid.app). MIT License. [Contributing guide](CONTRIBUTING.md).
