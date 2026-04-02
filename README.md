@@ -48,7 +48,7 @@ Then run `claude` in your terminal to authenticate with your Anthropic account. 
 npx skills add fluidcommerce/fluid-claude-skills
 ```
 
-This drops four skills into your project's `.claude/skills/` directory. Claude picks them up automatically.
+This drops five skills into your project's `.claude/skills/` directory. Claude picks them up automatically.
 
 Or clone manually:
 
@@ -100,13 +100,15 @@ Running migrations for multiple clients? Each run is stateless. Different source
 
 ## What's in the box
 
-Four skills that know the entire Fluid API:
+Five skills that know the entire Fluid API:
 
 **`/fluid-full-import`** — Full store migration. 25 steps: products, variants, categories, collections, images, brand, menus, pages, policies, checkout settings, tax, shipping zones, customers, inventory, state compliance rules, domains, discounts, redirects, blog posts, webhooks, compliance scanning.
 
 **`/fluid-product-import`** — Products only. Variant mapping, DAM image uploads, category/collection linking, metafields, SEO.
 
 **`/fluid-theme-clone`** — Pixel-perfect site cloning. Scrapes any website, audits visuals via screenshots, uploads images to DAM, builds Liquid sections with exact CSS, assembles page templates, and pushes the theme to Fluid. Ships with a base theme scaffolding and 7 reference files.
+
+**`/fluid-theme-refine`** — The polish pass. Takes fresh screenshots of your cloned theme and the source site, compares them section-by-section at every breakpoint, extracts exact CSS values, fixes every discrepancy, and uploads the corrected files. Loops until it's a 1:1 match.
 
 **`/fluid-onboarding-prefill`** — Scrapes a company's site and pre-fills 15+ fields on the Fluid payments onboarding form:
 
