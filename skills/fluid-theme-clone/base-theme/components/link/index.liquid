@@ -1,0 +1,53 @@
+
+{%- comment -%}
+    §8: Link block component — renders as plain <a> tag (NOT a button).
+    Props:
+    - href: string (URL)
+    - text: string (link label)
+    - underline: string (always, hover, never — default: hover)
+    - icon_position: string (none, before, after — default: none)
+    - color: string (CSS color value or var)
+    - font_weight: string (CSS font weight)
+    - attr: string (additional attributes)
+    - class: string (custom classes)
+{%- endcomment -%}
+
+{%- liquid
+  assign underline = underline | default: 'hover'
+  assign icon_position = icon_position | default: 'none'
+
+  case underline
+    when 'always'
+      assign underline_class = 'link-block--underline-always'
+    when 'hover'
+      assign underline_class = 'link-block--underline-hover'
+    when 'never'
+      assign underline_class = 'link-block--underline-never'
+    else
+      assign underline_class = 'link-block--underline-hover'
+  endcase
+-%}
+
+{%- capture link_style -%}
+  {% if color != blank %}color: {{ color }};{% endif %}
+  {% if font_weight != blank %}font-weight: {{ font_weight }};{% endif %}
+{%- endcapture -%}
+
+<a
+  href="{{ href | default: '#' }}"
+  class="link-block {{ underline_class }} {{ class }}"
+  {% if link_style != blank %}style="{{ link_style }}"{% endif %}
+  {{ attr }}
+>
+  {%- if icon_position == 'before' -%}
+    <span class="link-block__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </span>
+  {%- endif -%}
+  {{ text }}
+  {%- if icon_position == 'after' -%}
+    <span class="link-block__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </span>
+  {%- endif -%}
+</a>

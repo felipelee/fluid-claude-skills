@@ -1,0 +1,1199 @@
+
+
+{% assign not_purchasable = product.out_of_stock || product.available_for_country != true || product.active != true %}
+{% assign breadcrumb_block = section.blocks | where: 'type', 'breadcrumb' | first %}
+{% assign media_slider_block = section.blocks | where: 'type', 'media_slider' | first %}
+{% assign rating_block = section.blocks | where: 'type', 'rating' | first %}
+{% assign subscribe_block = section.blocks | where: 'type', 'subscribe' | first %}
+{% assign subscription_package_block = section.blocks | where: 'type', 'subscription_package' | first %}
+{% assign variant_block = section.blocks | where: 'type', 'variant' | first %}
+{% assign quantity_block = section.blocks | where: 'type', 'quantity' | first %}
+{% assign accordion_block = section.blocks | where: 'type', 'accordion' | first %}
+
+{%- style -%}
+  {% if breadcrumb_block and breadcrumb_block.settings.color != blank %}
+  .product-detail-page-section-{{ section.id }} .breadcrumb a {
+    color: {{ breadcrumb_block.settings.color }};
+  }
+  {% endif %}
+
+  {% if breadcrumb_block and breadcrumb_block.settings.active_color != blank %}
+  .product-detail-page-section-{{ section.id }} .breadcrumb .active {
+    color: {{ breadcrumb_block.settings.active_color }};
+  }
+  {% endif %}
+
+
+
+  {% if subscribe_block %}
+  .subscribe-option input[type="radio"]:checked {
+    background-color: {{ subscribe_block.settings.radio_button_checked_color | default: '#000000' }};
+    border-color: {{ subscribe_block.settings.radio_button_checked_color | default: '#000000' }} !important;
+    accent-color: {{ subscribe_block.settings.radio_button_checked_color | default: '#000000' }} !important;
+  }
+  {% endif %}
+
+  {% if subscribe_block and subscribe_block.settings.radio_label_color != blank %}
+  .subscribe-option label {
+    color: {{ subscribe_block.settings.radio_label_color }};
+  }
+  {% endif %}
+
+  /* Error message styling */
+  .error-message {
+    background-color: {{ section.settings.error_message_background_color | default: '#fee2e2' }};
+    color: {{ section.settings.error_message_text_color | default: '#dc2626' }};
+    padding: 12px;
+    border-radius: 6px;
+    margin: 8px 0;
+  }
+
+  /* Input field styling */
+  .custom-select, .quantity-input-field {
+    background-color: {{ section.settings.input_background_color | default: '#ffffff' }};
+    border-color: {{ section.settings.input_border_color | default: '#d1d5db' }};
+    color: {{ section.settings.input_text_color | default: '#374151' }};
+  }
+
+  .custom-select:focus, .quantity-input-field:focus {
+    border-color: {{ section.settings.input_focus_border_color | default: '#3b82f6' }};
+  }
+
+  {% if accordion_block %}
+  /* Accordion styling */
+  .accordion-header {
+    background-color: {{ accordion_block.settings.header_background_color | default: '#f9fafb' }};
+    color: {{ accordion_block.settings.header_text_color | default: '#1f2937' }};
+  }
+
+  .accordion-content {
+    background-color: {{ accordion_block.settings.content_background_color | default: '#ffffff' }};
+    color: {{ accordion_block.settings.content_text_color | default: '#4b5563' }};
+  }
+  {% endif %}
+
+  {%- assign p = section.settings.section_padding -%}
+  {%- if p -%}
+    .section-{{ section.id }} {
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    }
+  {%- endif -%}
+  .section-{{ section.id }} {
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+
+<main class="product-detail-page-section product-detail-page-section-{{ section.id }} section-{{ section.id }}" style="background-color: {{ section.settings.section_background_color | default: '#ffffff' }};">
+  {% if breadcrumb_block %}
+    <div class="breadcrumb {{ breadcrumb_block.settings.font_size | default: 'text-sm' }}" {{ breadcrumb_block.fluid_attributes }}>
+      <div class="container">
+        <ul class="flex flex-wrap align-center space-xs leading-none">
+          <li class="flex space-xs align-center">
+            <a href="{{ company.shop_page_url }}">{{ 'product.shop_all' | t }}</a>
+            <span class="seperator">
+              <svg width="6" height="8" viewBox="0 0 6 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.47099 7.79976L5.27565 3.9951L1.47099 0.19043L0.52832 1.1331L3.39032 3.9951L0.52832 6.8571L1.47099 7.79976Z" fill="black"/>
+              </svg>
+            </span>
+          </li>
+          {% comment %} <li  class="flex gap-2 align-center">
+            <a href="#">Category</a>
+            <span class="seperator">
+              <svg width="6" height="8" viewBox="0 0 6 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.47099 7.79976L5.27565 3.9951L1.47099 0.19043L0.52832 1.1331L3.39032 3.9951L0.52832 6.8571L1.47099 7.79976Z" fill="black"/>
+              </svg>
+            </span>
+          </li> {% endcomment %}
+          <li>
+            <a href="#" class="active font-semibold">{{ product.title }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  {% endif%}
+  <section class="product-details-section pt-2xl">
+    <div class="container">
+      <div class="grid grid-cols-1 sm-desktop-grid-cols-2 space-x-9xl space-y-4xl">
+        <div class="image-section sm-desktop-flex flex-wrap" {% if media_slider_block %}{{ media_slider_block.fluid_attributes }}{% endif %}>
+          {% if product.selected_or_first_available_variant.images.size > 0 %}
+            {% assign images_array = product.selected_or_first_available_variant.images | parse_json %}
+          {% else %}
+            {% assign images_array = product.images %}
+          {% endif %}
+          <div class="thumbnail-section hidden sm-desktop-block">
+            <div id="thumbnail-carousel" class="splide">
+              <div class="splide__track">
+                <ul class="splide__list splide-list">
+                  {% for image in images_array %}
+                    <li class="splide__slide">
+                      <img src="{{ image.src }}" class="image-cover" loading="lazy" width="" height=""/>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div><!-- thumbnail-section -->
+          <div class="main-carousel-section lg:pl-lg">
+            <div  class="splide" id="main-carousel">
+              <div class="splide__track">
+                <ul class="splide__list splide-list">
+                  {% for image in images_array %}
+                    <li class="splide__slide">
+                      <img src="{{ image.src }}" class="image-cover" loading="lazy" width="" height=""/>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+            </div>
+          </div><!-- main-carousel-section -->
+        </div><!-- .image-section -->
+
+        {% form 'product', product, class: 'product-details ', id: 'product-form' %}
+          {% assign heading_block = section.blocks | where: 'type', 'heading' | first %}
+          {% assign feature_heading_block = section.blocks | where: 'type', 'feature_heading' | first %}
+          {% assign description_block = section.blocks | where: 'type', 'description' | first %}
+          {% assign buttons_block = section.blocks | where: 'type', 'buttons' | first %}
+          {% assign product_title_tag = heading_block.settings.heading_tag | default: 'h3' %}
+          <{{ product_title_tag }} class="product-title  {{ heading_block.settings.font_weight | default: 'font-bold' }}" style="color: {{ heading_block.settings.color | default: '#000000' }};" {% if heading_block %}{{ heading_block.fluid_attributes }}{% endif %}>{{ product.title }}</{{ product_title_tag }}>
+          <div class="description-section flex flex-col space-y-2xl pt-sm pb-4xl">
+            <div class="rating-section flex flex-wrap align-center leading-none space-xs" {% if rating_block %}{{ rating_block.fluid_attributes }}{% endif %}>
+              <svg width="96" height="17" viewBox="0 0 96 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_506_132013)">
+                <path d="M7.25672 1.43519C7.53172 0.78202 8.46832 0.782021 8.74332 1.43519L10.3663 5.29031C10.4823 5.56567 10.7445 5.75381 11.0454 5.77764L15.2582 6.11131C15.9719 6.16784 16.2614 7.04783 15.7175 7.50805L12.5079 10.2243C12.2786 10.4183 12.1784 10.7228 12.2485 11.0128L13.2291 15.0741C13.3952 15.7622 12.6375 16.3062 12.0264 15.9374L8.41965 13.761C8.16202 13.6055 7.83802 13.6055 7.5804 13.761L3.9736 15.9374C3.3625 16.3062 2.60477 15.7622 2.77091 15.0741L3.75155 11.0128C3.82159 10.7228 3.72147 10.4183 3.49221 10.2243L0.28245 7.50805C-0.261375 7.04783 0.0280544 6.16784 0.741835 6.11131L4.9547 5.77764C5.25561 5.75381 5.51774 5.56567 5.63367 5.29031L7.25672 1.43519Z" fill="black"/>
+                <path d="M27.2567 1.43519C27.5317 0.78202 28.4683 0.782021 28.7433 1.43519L30.3663 5.29031C30.4823 5.56567 30.7445 5.75381 31.0454 5.77764L35.2582 6.11131C35.9719 6.16784 36.2614 7.04783 35.7175 7.50805L32.5079 10.2243C32.2786 10.4183 32.1784 10.7228 32.2485 11.0128L33.2291 15.0741C33.3952 15.7622 32.6375 16.3062 32.0264 15.9374L28.4196 13.761C28.162 13.6055 27.838 13.6055 27.5804 13.761L23.9736 15.9374C23.3625 16.3062 22.6048 15.7622 22.7709 15.0741L23.7515 11.0128C23.8216 10.7228 23.7215 10.4183 23.4922 10.2243L20.2825 7.50805C19.7386 7.04783 20.0281 6.16784 20.7418 6.11131L24.9547 5.77764C25.2556 5.75381 25.5177 5.56567 25.6337 5.29031L27.2567 1.43519Z" fill="black"/>
+                <path d="M47.2567 1.43519C47.5317 0.78202 48.4683 0.782021 48.7433 1.43519L50.3663 5.29031C50.4823 5.56567 50.7445 5.75381 51.0454 5.77764L55.2582 6.11131C55.9719 6.16784 56.2614 7.04783 55.7175 7.50805L52.5079 10.2243C52.2786 10.4183 52.1784 10.7228 52.2485 11.0128L53.2291 15.0741C53.3952 15.7622 52.6375 16.3062 52.0264 15.9374L48.4196 13.761C48.162 13.6055 47.838 13.6055 47.5804 13.761L43.9736 15.9374C43.3625 16.3062 42.6048 15.7622 42.7709 15.0741L43.7515 11.0128C43.8216 10.7228 43.7215 10.4183 43.4922 10.2243L40.2825 7.50805C39.7386 7.04783 40.0281 6.16784 40.7418 6.11131L44.9547 5.77764C45.2556 5.75381 45.5177 5.56567 45.6337 5.29031L47.2567 1.43519Z" fill="black"/>
+                <path d="M69.9056 5.48442L69.9055 5.48432L68.2825 1.6292C68.1793 1.38401 67.8208 1.38402 67.7175 1.6292L66.0945 5.48432C65.9051 5.93417 65.479 6.23769 64.9942 6.27608L60.7813 6.60975C60.5019 6.63188 60.4106 6.96145 60.6054 7.12637C60.6054 7.12637 60.6054 7.12637 60.6054 7.12637L63.8152 9.84259L63.8152 9.84263C64.1876 10.1578 64.3524 10.6548 64.2376 11.1302C64.2376 11.1302 64.2376 11.1302 64.2376 11.1302L63.2569 15.1915C63.199 15.4314 63.4698 15.6574 63.7153 15.5093L69.9056 5.48442ZM69.9056 5.48442C70.095 5.93417 70.5211 6.23769 71.0059 6.27608L75.2187 6.60975C75.4981 6.63188 75.5894 6.96145 75.3946 7.12638L72.1849 9.8426L72.1848 9.84263C71.8125 10.1578 71.6476 10.6548 71.7624 11.1302L72.7431 15.1915C72.801 15.4314 72.5302 15.6574 72.2848 15.5093C72.2847 15.5093 72.2847 15.5093 72.2847 15.5093L68.678 13.3329L69.9056 5.48442ZM67.3221 13.3329L63.7153 15.5093L68.678 13.3329C68.2615 13.0816 67.7386 13.0816 67.3221 13.3329C67.3221 13.3329 67.3221 13.3329 67.3221 13.3329Z" fill="black" stroke="black"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M95.9144 6.55648L95.9782 6.75648C96.0307 6.90743 95.9865 7.0752 95.8665 7.18048L91.9892 10.5005L93.138 15.4765C93.1769 15.6355 93.1172 15.8025 92.9864 15.9005L92.8109 16.0205C92.7427 16.0741 92.6582 16.1023 92.5716 16.1005C92.4985 16.102 92.4266 16.0826 92.3642 16.0445L88.0002 13.3805L83.6601 16.0445C83.5977 16.0826 83.5257 16.102 83.4527 16.1005C83.3661 16.1023 83.2815 16.0741 83.2133 16.0205L83.0139 15.9005C82.8831 15.8025 82.8234 15.6355 82.8623 15.4765L84.0111 10.5005L80.1418 7.18848C80.0156 7.08382 79.9678 6.9114 80.0221 6.75648L80.1099 6.55648C80.1565 6.39842 80.2968 6.28652 80.4609 6.27648L85.5589 5.86848L87.5135 1.15648C87.5761 0.999996 87.7283 0.898266 87.8965 0.90048H88.1039C88.2705 0.896934 88.4211 0.999718 88.4788 1.15648L90.4654 5.86848L95.5634 6.27648C95.7275 6.28652 95.8677 6.39842 95.9144 6.55648ZM91.2871 13.7485L90.3936 10.0045L93.3215 7.50048L89.4841 7.19648L88.0002 3.62848V11.7405L91.2871 13.7485Z" fill="black"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_506_132013">
+                <rect width="96" height="15.2002" fill="white" transform="translate(0 0.900391)"/>
+                </clipPath>
+                </defs>
+              </svg>
+              <span class="{{ rating_block.settings.font_size_mobile | default: 'text-sm' }} {{ rating_block.settings.font_size_desktop | default: 'lg:text-base' }} {{ rating_block.settings.font_weight | default: 'font-normal' }}" style="color: {{ rating_block.settings.text_color | default: '#6b7280' }};">({{ 'product.stars' | t: stars: rating_block.settings.stars | default: '3.5' }}) • {{ 'product.reviews' | t: reviews: rating_block.settings.reviews | default: '10' }}</span>
+            </div>
+            {% if introduction %}
+              <div class="flex flex-col gap-1">
+                {% if feature_heading_block and feature_heading_block.settings.text != blank %}
+                  <div class="product-feature-heading rte" {{ feature_heading_block.fluid_attributes }}>{{ feature_heading_block.settings.text }}</div>
+                {% endif %}
+
+                <div class="description {{ description_block.settings.font_size_mobile | default: 'text-base' }} {{ description_block.settings.font_size_desktop | default: 'lg:text-lg' }} {{ description_block.settings.font_weight | default: 'font-normal' }}" style="color: {{ description_block.settings.color | default: '#666666' }};" {% if description_block %}{{ description_block.fluid_attributes }}{% endif %}>
+                  {{ introduction }}
+                </div>
+              </div>
+            {% endif %}
+            {% if product.out_of_stock %}
+              <div class="error-messages-container">
+                <div class="error-message {{ section.settings.error_message_font_size | default: 'text-sm' }} {{ section.settings.error_message_font_weight | default: 'font-medium' }}">
+                  {{ section.settings.out_of_stock_message | default: 'This product is out of stock' }}
+                </div>
+              </div>
+            {% endif %}
+            {% if subscribe_block %}
+            <div class='subscribe' {{ subscribe_block.fluid_attributes }}>
+              {% if allow_subscription %}
+                <div class="subscribe-item flex flex-col space-lg">
+                  <div class='subscribe-option flex space-xs align-center'>
+                    {% if subscription_only %}
+                      <input
+                        type='radio'
+                        checkbox
+                        name='fluid-checkout-subscribe'
+                        value='subscription'
+                        id='subscribe-and-save'
+                        checked=''
+                      >
+                    {% else %}
+                      <input
+                        type='radio'
+                        checkbox
+                        name='fluid-checkout-subscribe'
+                        value='subscription'
+                        id='subscribe-and-save'
+                        {% if request.query_parameters.subscribe %}
+                          checked
+                        {% endif %}
+                      >
+                    {% endif %}
+                    <label for='subscribe-and-save' class="flex-1 pt-xs {{ subscribe_block.settings.radio_label_font_weight | default: 'font-medium' }}">
+                      <div class='flex justify-between w-full align-center'>
+                        <span>{{ 'product.subscribe' | t }}</span>
+                        <p class='purchase-price {{ section.settings.price_font_size_mobile | default: 'text-2xl' }} {{ section.settings.price_font_size_desktop | default: 'lg:text-3xl' }} {{ section.settings.price_font_weight | default: 'font-bold' }} subscription-price' style="color: {{ section.settings.price_color | default: '#000000' }};">{{ product.subscription_price }}</p>
+                      </div>
+                    </label>
+                  </div>
+                  <ul class="subscribe-features flex flex-col space-xs pl-xs">
+                    <li class="subscribe-offer-text flex align-center space-md">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12Z" fill="#DCFAE6"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.0964 7.39016L9.93641 14.3002L8.03641 12.2702C7.68641 11.9402 7.13641 11.9202 6.73641 12.2002C6.34641 12.4902 6.23641 13.0002 6.47641 13.4102L8.72641 17.0702C8.94641 17.4102 9.32641 17.6202 9.75641 17.6202C10.1664 17.6202 10.5564 17.4102 10.7764 17.0702C11.1364 16.6002 18.0064 8.41016 18.0064 8.41016C18.9064 7.49016 17.8164 6.68016 17.0964 7.38016V7.39016Z" fill="#079455"></path>
+                      </svg>
+                      <span>
+                        {{ 'subscribe_feature.subscribe_to_get' | t }}
+                        <span class="subscribe-discount-value"></span>
+                        {{ 'subscribe_feature.off' | t }}
+                      </span>
+                    </li>
+                    <li class="flex align-center space-md">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12Z" fill="#DCFAE6"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.0964 7.39016L9.93641 14.3002L8.03641 12.2702C7.68641 11.9402 7.13641 11.9202 6.73641 12.2002C6.34641 12.4902 6.23641 13.0002 6.47641 13.4102L8.72641 17.0702C8.94641 17.4102 9.32641 17.6202 9.75641 17.6202C10.1664 17.6202 10.5564 17.4102 10.7764 17.0702C11.1364 16.6002 18.0064 8.41016 18.0064 8.41016C18.9064 7.49016 17.8164 6.68016 17.0964 7.38016V7.39016Z" fill="#079455"></path>
+                      </svg>
+                      <span>{{'subscribe_feature.update_subscription' | t }}</span>
+                    </li>
+                  </ul>
+
+                  {% if subscription_package_block and product.subscription_plans.size > 1 %}
+                    <div class="subscription-plans" {% if subscription_package_block %}{{ subscription_package_block.fluid_attributes }}{% endif %} {% unless request.query_parameters.subscribe %}style="display: none;"{% endunless %}>
+                      <div class='flex flex-col space-sm custom-select-dropdown product-variant-item'>
+                        <p class="{{ subscription_package_block.settings.label_font_size_mobile | default: 'text-base' }} {{ subscription_package_block.settings.label_font_size_desktop | default: 'lg:text-lg' }} {{ subscription_package_block.settings.label_font_weight | default: 'font-medium' }}" style="color: {{ subscription_package_block.settings.label_color | default: '#374151' }};">{{ subscription_package_block.settings.label | default: 'Subscription Plan' }}</p>
+
+                        <select class='subscription-plans-dropdown option-value custom-select'>
+                          {% for subscription_plan in product.subscription_plans%}
+                            <option
+                              {% if subscription_plan.selected %}selected{% endif %}
+                              value='{{ subscription_plan.id }}'
+                              data-subscription-price="{{ subscription_plan.display_subscription_price }}"
+                              data-price-adjustment-type="{{ subscription_plan.price_adjustment_type }}"
+                              data-saved-on-subscription="{{ subscription_plan.saved_on_subscription }}"
+                              data-saved-percentage-on-subscription = "{{ subscription_plan.saved_percentage_on_subscription}}"
+                              data-price-adjustment-type="{{ subscription_plan.price_adjustment_type }}"
+                            >
+                              {{ subscription_plan.name }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
+              {% unless subscription_only %}
+                <div class="one-time-purchase-section subscribe-item">
+                  <div class='subscribe-option flex space-sm align-center'>
+                    <input
+                      type='radio'
+                      checkbox
+                      name='fluid-checkout-subscribe'
+                      value='regular'
+                      id='one-time-purchase'
+                      {% unless request.query_parameters.subscribe %}
+                        checked
+                      {% endunless %}
+                    >
+                    <label for='one-time-purchase' class="flex-1 cursor-pointer pt-xs {{ subscribe_block.settings.radio_label_font_weight | default: 'font-medium' }}">
+                      <div class='flex justify-between w-full align-center'>
+                        <span>{{ 'product.one_time_purchase' | t }}</span>
+                        <p class='purchase-price {{ section.settings.price_font_size_mobile | default: 'text-lg' }} {{ section.settings.price_font_size_desktop | default: 'lg:text-lg' }} {{ section.settings.price_font_weight | default: 'font-medium' }}' style="color: {{ section.settings.price_color | default: '#000000' }};">{{ product.price }}</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              {% endunless %}
+            </div>
+            {% endif %}
+
+            {% if variant_block %}
+              <div {% if variant_block %}{{ variant_block.fluid_attributes }}{% endif %}>
+                {% for option in product.options_with_values %}
+                  <div class="product-drodpown-section flex flex-col space-sm">
+                    <p class="{{ variant_block.settings.label_font_size_mobile | default: 'text-base' }} {{ variant_block.settings.label_font_size_desktop | default: 'lg:text-lg' }} {{ variant_block.settings.label_font_weight | default: 'font-medium' }}" style="color: {{ variant_block.settings.label_color | default: '#374151' }};">{{ option.name }}</p>
+                    <select name="fluid-checkout-option-{{ option.option_id }}" id="" class="custom-select variation-dropdown">
+                      {% for value in option.values %}
+                        <option value="{{ value.id }}" {% if value.selected %}selected{% endif %}>{{ value.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {% unless not_purchasable %}
+              {% if quantity_block %}
+                <div class="product-quantity-section flex flex-col space-sm" {% if quantity_block %}{{ quantity_block.fluid_attributes }}{% endif %}>
+                  <p class="{{ quantity_block.settings.label_font_size_mobile | default: 'text-base' }} {{ quantity_block.settings.label_font_size_desktop | default: 'lg:text-lg' }} {{ quantity_block.settings.label_font_weight | default: 'font-medium' }}" style="color: {{ quantity_block.settings.label_color | default: '#374151' }};">{{ quantity_block.settings.label | default: ('product.quantity' | t) }}</p>
+                  <div class="input-section">
+                    <input type="number" value="1" {% if product.buyable_quantity %}max="{{ product.buyable_quantity }}"{% endif %} class="quantity-input-field" name="quantity"  id="fluid-checkout-quantity" min="0">
+                  </div>
+                </div>
+              {% endif %}
+
+              {%- assign cr = buttons_block.settings.button_border_radius -%}
+              {%- assign _cr_style = '' -%}
+              {%- if cr -%}
+                {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                {%- capture _cr_style -%}border-radius: {% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %};{%- endcapture -%}
+              {%- endif -%}
+              <div class="btn-section flex flex-col space-y-lg" {% if buttons_block %}{{ buttons_block.fluid_attributes }}{% endif %}>
+                <button
+                  class="btn w-full {{ buttons_block.settings.button_style | default: 'btn-bg-primary' }} {{ buttons_block.settings.button_font_weight | default: 'font-semibold' }}"
+                  {% if _cr_style != '' %}style="{{ _cr_style }}"{% endif %}
+                  type="button"
+                  data-fluid-add-to-cart="{{ selected_variant_id }}"
+                  data-fluid-quantity="1"
+                  {% if request.query_parameters.subscribe or product.subscription_only %}
+                    data-fluid-subscription-plan-id="{{ product.selected_subscription_plan_id }}"
+                  {% endif %}
+                  >
+                  {{ 'product.add_to_cart' | t }}
+                </button>
+                <p class="{{ buttons_block.settings.free_shipping_font_size | default: 'text-sm' }} {{ buttons_block.settings.free_shipping_font_weight | default: 'font-normal' }} text-center" style="color: {{ buttons_block.settings.free_shipping_text_color | default: '#6b7280' }};">{{ buttons_block.settings.free_shipping_text | default: ('product.free_shipping' | t: amount: '$50') }}</p>
+              </div>
+            {% endunless %}
+          </div>
+
+          {% if accordion_block %}
+            <div class="product-info-section" {% if accordion_block %}{{ accordion_block.fluid_attributes }}{% endif %}>
+              <ul>
+                <li class="accordion-item">
+                  <div class="accordion-header active cursor-pointer flex flex-wrap align-center py-lg">
+                    <div class="heading">
+                      <h5 class="{{ accordion_block.settings.header_font_size | default: 'text-lg' }} {{ accordion_block.settings.header_font_weight | default: 'font-semibold' }}">{{ 'product.details' | t }}</h5>
+                    </div>
+                    <div class="icon flex align-center justify-center">
+                      <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M11.6018 9.36784C11.8215 9.14817 12.1776 9.14817 12.3973 9.36784L18.1321 15.1027C18.3518 15.3224 18.3518 15.6785 18.1321 15.8982L17.867 16.1634C17.6473 16.383 17.2911 16.383 17.0715 16.1634L11.9995 11.0914L6.92759 16.1634C6.70791 16.383 6.35181 16.383 6.13214 16.1634L5.86694 15.8982C5.64726 15.6785 5.64726 15.3224 5.86694 15.1027L11.6018 9.36784Z" fill="black"/>
+                      </svg>
+                    </div><!-- .icon -->
+                  </div>
+                  <div class="accordion-content pb-xl lg:pb-2xl {{ accordion_block.settings.content_font_size | default: 'text-base' }} {{ accordion_block.settings.content_font_weight | default: 'font-normal' }}">
+                    {{ product.description }}
+                  </div>
+                </li>
+                <li class="accordion-item">
+                  <div class="accordion-header cursor-pointer flex flex-wrap align-center py-lg">
+                    <div class="heading">
+                      <h5 class="{{ accordion_block.settings.header_font_size | default: 'text-lg' }} {{ accordion_block.settings.header_font_weight | default: 'font-semibold' }}">{{ 'product.shipping' | t }}</h5>
+                    </div>
+                    <div class="icon flex align-center justify-center">
+                      <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M11.6018 9.36784C11.8215 9.14817 12.1776 9.14817 12.3973 9.36784L18.1321 15.1027C18.3518 15.3224 18.3518 15.6785 18.1321 15.8982L17.867 16.1634C17.6473 16.383 17.2911 16.383 17.0715 16.1634L11.9995 11.0914L6.92759 16.1634C6.70791 16.383 6.35181 16.383 6.13214 16.1634L5.86694 15.8982C5.64726 15.6785 5.64726 15.3224 5.86694 15.1027L11.6018 9.36784Z" fill="black"/>
+                      </svg>
+                    </div><!-- .icon -->
+                  </div>
+                  <div class="accordion-content pb-xl lg:pb-2xl hidden {{ accordion_block.settings.content_font_size | default: 'text-base' }} {{ accordion_block.settings.content_font_weight | default: 'font-normal' }}">
+                    <p>{{ 'product.shipping_content' | t }}</p>
+                  </div>
+                </li>
+                <li class="accordion-item">
+                  <div class="accordion-header cursor-pointer flex flex-wrap align-center py-lg">
+                    <div class="heading">
+                      <h5 class="{{ accordion_block.settings.header_font_size | default: 'text-lg' }} {{ accordion_block.settings.header_font_weight | default: 'font-semibold' }}">{{ 'product.return' | t }}</h5>
+                    </div>
+                    <div class="icon flex align-center justify-center">
+                      <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M11.6018 9.36784C11.8215 9.14817 12.1776 9.14817 12.3973 9.36784L18.1321 15.1027C18.3518 15.3224 18.3518 15.6785 18.1321 15.8982L17.867 16.1634C17.6473 16.383 17.2911 16.383 17.0715 16.1634L11.9995 11.0914L6.92759 16.1634C6.70791 16.383 6.35181 16.383 6.13214 16.1634L5.86694 15.8982C5.64726 15.6785 5.64726 15.3224 5.86694 15.1027L11.6018 9.36784Z" fill="black"/>
+                      </svg>
+                    </div><!-- .icon -->
+                  </div>
+                  <div class="accordion-content pb-xl lg:pb-2xl hidden {{ accordion_block.settings.content_font_size | default: 'text-base' }} {{ accordion_block.settings.content_font_weight | default: 'font-normal' }}">
+                    <p>{{ 'product.return_content' | t }}</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          {% endif %}
+        {% endform  %}<!-- .product-details -->
+
+      </div>
+    </div>
+  </section>
+</main>
+
+
+
+<script src="{{ 'product.js' | asset_url }}"></script>
+
+
+
+{% schema %}
+{
+  "name": "main_product",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "color_background",
+      "id": "section_background_color",
+      "label": "Section Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "header",
+      "content": "Price Typography"
+    },
+    {
+      "type": "select",
+      "id": "price_font_size_mobile",
+      "label": "Price Font Size (Mobile)",
+      "options": [
+        { "value": "text-xs", "label": "XS" },
+        { "value": "text-sm", "label": "SM" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "LG" },
+        { "value": "text-xl", "label": "XL" },
+        { "value": "text-2xl", "label": "2XL" },
+        { "value": "text-3xl", "label": "3XL" },
+        { "value": "text-5xl", "label": "5XL" }
+      ],
+      "default": "text-lg"
+    },
+    {
+      "type": "select",
+      "id": "price_font_size_desktop",
+      "label": "Price Font Size (Desktop)",
+      "options": [
+        { "value": "lg:text-xs", "label": "XS" },
+        { "value": "lg:text-sm", "label": "SM" },
+        { "value": "lg:text-base", "label": "Base" },
+        { "value": "lg:text-lg", "label": "LG" },
+        { "value": "lg:text-xl", "label": "XL" },
+        { "value": "lg:text-2xl", "label": "2XL" },
+        { "value": "lg:text-3xl", "label": "3XL" },
+        { "value": "lg:text-5xl", "label": "5XL" }
+      ],
+      "default": "lg:text-lg"
+    },
+    {
+      "type": "color_background",
+      "id": "price_color",
+      "label": "Price Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "price_font_weight",
+      "label": "Price Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" },
+        { "value": "font-extrabold", "label": "Extra Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "header",
+      "content": "Error Message Settings"
+    },
+    {
+      "type": "color_background",
+      "id": "error_message_background_color",
+      "label": "Error Message Background Color",
+      "default": "#fee2e2"
+    },
+    {
+      "type": "color_background",
+      "id": "error_message_text_color",
+      "label": "Error Message Text Color",
+      "default": "#dc2626"
+    },
+    {
+      "type": "select",
+      "id": "error_message_font_size",
+      "label": "Error Message Font Size",
+      "options": [
+        { "value": "text-xs", "label": "XS" },
+        { "value": "text-sm", "label": "SM" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "LG" },
+        { "value": "text-xl", "label": "XL" },
+        { "value": "text-2xl", "label": "2XL" },
+        { "value": "text-3xl", "label": "3XL" }
+      ],
+      "default": "text-sm"
+    },
+    {
+      "type": "select",
+      "id": "error_message_font_weight",
+      "label": "Error Message Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "text",
+      "id": "out_of_stock_message",
+      "label": "Out of Stock Message",
+      "default": "This product is out of stock"
+    },
+    {
+      "type": "header",
+      "content": "Input Field Settings"
+    },
+    {
+      "type": "color_background",
+      "id": "input_background_color",
+      "label": "Input Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color_background",
+      "id": "input_border_color",
+      "label": "Input Border Color",
+      "default": "#d1d5db"
+    },
+    {
+      "type": "color_background",
+      "id": "input_text_color",
+      "label": "Input Text Color",
+      "default": "#374151"
+    },
+    {
+      "type": "color_background",
+      "id": "input_focus_border_color",
+      "label": "Input Focus Border Color",
+      "default": "#3b82f6"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "breadcrumb",
+      "name": "Breadcrumb",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "font_size",
+          "label": "Font Size",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" }
+          ],
+          "default": "text-sm"
+        },
+        {
+          "type": "color_background",
+          "id": "color",
+          "label": "Text Color",
+          "default": ""
+        },
+        {
+          "type": "color_background",
+          "id": "active_color",
+          "label": "Active Color",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "type": "media_slider",
+      "name": "Product Media Slider",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "rating",
+      "name": "Rating",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "stars",
+          "label": "Stars",
+          "default": "3.5"
+        },
+        {
+          "type": "text",
+          "id": "reviews",
+          "label": "Reviews Count",
+          "default": "10"
+        },
+        {
+          "type": "color_background",
+          "id": "text_color",
+          "label": "Text Color",
+          "default": "#6b7280"
+        },
+        {
+          "type": "select",
+          "id": "font_size_mobile",
+          "label": "Font Size (Mobile)",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-sm"
+        },
+        {
+          "type": "select",
+          "id": "font_size_desktop",
+          "label": "Font Size (Desktop)",
+          "options": [
+            { "value": "lg:text-xs", "label": "XS" },
+            { "value": "lg:text-sm", "label": "SM" },
+            { "value": "lg:text-base", "label": "Base" },
+            { "value": "lg:text-lg", "label": "LG" },
+            { "value": "lg:text-xl", "label": "XL" },
+            { "value": "lg:text-2xl", "label": "2XL" },
+            { "value": "lg:text-3xl", "label": "3XL" }
+          ],
+          "default": "lg:text-base"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-normal"
+        }
+      ]
+    },
+    {
+      "type": "subscribe",
+      "name": "Subscribe Options",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "color_background",
+          "id": "radio_button_checked_color",
+          "label": "Radio Checked Color",
+          "default": "#000000"
+        },
+        {
+          "type": "color_background",
+          "id": "radio_label_color",
+          "label": "Radio Label Color",
+          "default": "#374151"
+        },
+        {
+          "type": "select",
+          "id": "radio_label_font_weight",
+          "label": "Radio Label Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-medium"
+        }
+      ]
+    },
+    {
+      "type": "subscription_package",
+      "name": "Subscription Package",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Subscription Plan"
+        },
+        {
+          "type": "color_background",
+          "id": "label_color",
+          "label": "Label Color",
+          "default": "#374151"
+        },
+        {
+          "type": "select",
+          "id": "label_font_size_mobile",
+          "label": "Label Font Size (Mobile)",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "label_font_size_desktop",
+          "label": "Label Font Size (Desktop)",
+          "options": [
+            { "value": "lg:text-xs", "label": "XS" },
+            { "value": "lg:text-sm", "label": "SM" },
+            { "value": "lg:text-base", "label": "Base" },
+            { "value": "lg:text-lg", "label": "LG" },
+            { "value": "lg:text-xl", "label": "XL" },
+            { "value": "lg:text-2xl", "label": "2XL" },
+            { "value": "lg:text-3xl", "label": "3XL" }
+          ],
+          "default": "lg:text-lg"
+        },
+        {
+          "type": "select",
+          "id": "label_font_weight",
+          "label": "Label Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-medium"
+        }
+      ]
+    },
+    {
+      "type": "variant",
+      "name": "Variant Selector",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "color_background",
+          "id": "label_color",
+          "label": "Label Color",
+          "default": "#374151"
+        },
+        {
+          "type": "select",
+          "id": "label_font_size_mobile",
+          "label": "Label Font Size (Mobile)",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "label_font_size_desktop",
+          "label": "Label Font Size (Desktop)",
+          "options": [
+            { "value": "lg:text-xs", "label": "XS" },
+            { "value": "lg:text-sm", "label": "SM" },
+            { "value": "lg:text-base", "label": "Base" },
+            { "value": "lg:text-lg", "label": "LG" },
+            { "value": "lg:text-xl", "label": "XL" },
+            { "value": "lg:text-2xl", "label": "2XL" },
+            { "value": "lg:text-3xl", "label": "3XL" }
+          ],
+          "default": "lg:text-lg"
+        },
+        {
+          "type": "select",
+          "id": "label_font_weight",
+          "label": "Label Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-medium"
+        }
+      ]
+    },
+    {
+      "type": "quantity",
+      "name": "Quantity",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": ""
+        },
+        {
+          "type": "color_background",
+          "id": "label_color",
+          "label": "Label Color",
+          "default": "#374151"
+        },
+        {
+          "type": "select",
+          "id": "label_font_size_mobile",
+          "label": "Label Font Size (Mobile)",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "label_font_size_desktop",
+          "label": "Label Font Size (Desktop)",
+          "options": [
+            { "value": "lg:text-xs", "label": "XS" },
+            { "value": "lg:text-sm", "label": "SM" },
+            { "value": "lg:text-base", "label": "Base" },
+            { "value": "lg:text-lg", "label": "LG" },
+            { "value": "lg:text-xl", "label": "XL" },
+            { "value": "lg:text-2xl", "label": "2XL" },
+            { "value": "lg:text-3xl", "label": "3XL" }
+          ],
+          "default": "lg:text-lg"
+        },
+        {
+          "type": "select",
+          "id": "label_font_weight",
+          "label": "Label Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-medium"
+        }
+      ]
+    },
+    {
+      "type": "accordion",
+      "name": "Product Accordion",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "color_background",
+          "id": "header_background_color",
+          "label": "Header Background",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color_background",
+          "id": "header_text_color",
+          "label": "Header Text Color",
+          "default": "#1f2937"
+        },
+        {
+          "type": "select",
+          "id": "header_font_size",
+          "label": "Header Font Size",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-lg"
+        },
+        {
+          "type": "select",
+          "id": "header_font_weight",
+          "label": "Header Font Weight",
+          "options": [
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-semibold"
+        },
+        {
+          "type": "color_background",
+          "id": "content_background_color",
+          "label": "Content Background",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color_background",
+          "id": "content_text_color",
+          "label": "Content Text Color",
+          "default": "#4b5563"
+        },
+        {
+          "type": "select",
+          "id": "content_font_size",
+          "label": "Content Font Size",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "content_font_weight",
+          "label": "Content Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" }
+          ],
+          "default": "font-normal"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Product title",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "Heading tag",
+          "options": [
+            { "value": "h1", "label": "h1" },
+            { "value": "h2", "label": "h2" },
+            { "value": "h3", "label": "h3" },
+            { "value": "h4", "label": "h4" },
+            { "value": "h5", "label": "h5" },
+            { "value": "h6", "label": "h6" }
+          ],
+          "default": "h1"
+        },
+        
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" },
+            { "value": "font-extrabold", "label": "Extra Bold" }
+          ],
+          "default": "font-bold"
+        },
+        {
+          "type": "color_background",
+          "id": "color",
+          "label": "Color",
+          "default": "#000000"
+        }
+      ]
+    },
+    {
+      "type": "feature_heading",
+      "name": "Feature heading",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Product Feature:</p>"
+        }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Product description",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "font_size_mobile",
+          "label": "Font Size (Mobile)",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" },
+            { "value": "text-5xl", "label": "5XL" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "font_size_desktop",
+          "label": "Font Size (Desktop)",
+          "options": [
+            { "value": "lg:text-xs", "label": "XS" },
+            { "value": "lg:text-sm", "label": "SM" },
+            { "value": "lg:text-base", "label": "Base" },
+            { "value": "lg:text-lg", "label": "LG" },
+            { "value": "lg:text-xl", "label": "XL" },
+            { "value": "lg:text-2xl", "label": "2XL" },
+            { "value": "lg:text-3xl", "label": "3XL" },
+            { "value": "lg:text-5xl", "label": "5XL" }
+          ],
+          "default": "lg:text-lg"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-normal"
+        },
+        {
+          "type": "color_background",
+          "id": "color",
+          "label": "Color",
+          "default": "#666666"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "Add to cart button",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button Style",
+          "options": [
+            { "value": "btn-bg-white", "label": "White" },
+            { "value": "btn-bg-primary", "label": "Primary" },
+            { "value": "btn-border-white", "label": "White Border" },
+            { "value": "btn-border-black", "label": "Black Border" },
+            { "value": "btn-border-primary", "label": "Primary Border" }
+          ],
+          "default": "btn-bg-primary"
+        },
+        {
+          "type": "corner_radius",
+          "id": "button_border_radius",
+          "label": "Button Border Radius"
+        },
+        {
+          "type": "select",
+          "id": "button_font_weight",
+          "label": "Button Font Weight",
+          "options": [
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-semibold"
+        },
+        {
+          "type": "text",
+          "id": "free_shipping_text",
+          "label": "Free Shipping Text",
+          "default": "Free shipping on orders over $50"
+        },
+        {
+          "type": "color_background",
+          "id": "free_shipping_text_color",
+          "label": "Free Shipping Text Color",
+          "default": "#6b7280"
+        },
+        {
+          "type": "select",
+          "id": "free_shipping_font_size",
+          "label": "Free Shipping Font Size",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "LG" },
+            { "value": "text-xl", "label": "XL" },
+            { "value": "text-2xl", "label": "2XL" },
+            { "value": "text-3xl", "label": "3XL" }
+          ],
+          "default": "text-sm"
+        },
+        {
+          "type": "select",
+          "id": "free_shipping_font_weight",
+          "label": "Free Shipping Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" }
+          ],
+          "default": "font-normal"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product",
+      "blocks": [
+        { "type": "breadcrumb" },
+        { "type": "media_slider" },
+        { "type": "rating", "settings": { "stars": "3.5", "reviews": "10" } },
+        { "type": "subscribe" },
+        { "type": "subscription_package" },
+        { "type": "variant" },
+        { "type": "quantity" },
+        { "type": "accordion" },
+        { "type": "heading", "settings": { "heading_tag": "h1" } },
+        { "type": "feature_heading", "settings": { "text": "<p>Product Feature:</p>" } },
+        { "type": "description" },
+        { "type": "buttons" }
+      ]
+    }
+  ]
+}
+{% endschema %}

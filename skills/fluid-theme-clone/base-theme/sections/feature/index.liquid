@@ -1,0 +1,739 @@
+{% comment %} Handle background_image - can be string URL or object with url/fluid_media_id {% endcomment %}
+{% assign bg_url = '' %}
+{% assign bg_fluid_media_id = '' %}
+
+{% if section.settings.background_image %}
+  {% if section.settings.background_image.url %}
+    {% comment %} It's an object with url property {% endcomment %}
+    {% assign bg_url = section.settings.background_image.url %}
+    
+    {% comment %} Check if it also has fluid_media_id from media picker {% endcomment %}
+    {% if section.settings.background_image.fluid_media_id %}
+      {% assign bg_fluid_media_id = section.settings.background_image.fluid_media_id %}
+      {% assign bg_embed_type = section.settings.background_image.embed_type %}
+    {% endif %}
+  {% else %}
+    {% comment %} It's a string URL {% endcomment %}
+    {% assign bg_url = section.settings.background_image %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Determine whether to use fluid widget - if fluid_media_id exists, use widget {% endcomment %}
+{% assign use_fluid_widget = false %}
+
+{% if bg_fluid_media_id != blank %}
+  {% assign use_fluid_widget = true %}
+{% endif %}
+
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+
+<!-- Feature section-->
+<div class="feature-wrapper section-{{ section.id }}" data-bg="{% unless use_fluid_widget %}{{ bg_url }}{% endunless %}" style="background-color: {{ section.settings.background_color | default: '#ffffff' }};">
+  {% if use_fluid_widget %}
+    <fluid-media-widget class="fluid-media-widget-background" media-id="{{ bg_fluid_media_id }}" responsive="true" embed-type="{{ bg_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+  {% endif %}
+  {% assign current_feature_item = null %}
+  {% assign current_heading = null %}
+  {% assign current_description = null %}
+  {% assign current_feature_image = null %}
+  {% assign current_button_1 = null %}
+  {% assign current_button_2 = null %}
+  {% assign current_link = null %}
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'feature_item' %}
+        {% if current_feature_item %}
+          {% assign feature_class = 'feature-section-' | append: forloop.index0 %}
+          <section class="feature-section {{ feature_class }}" {{ current_feature_item.fluid_attributes }}>
+            <div class="container ">
+              <div class="grid {{ section.settings.content_gap_mobile | default: 'space-4xl' }} {{ section.settings.content_gap_desktop | default: 'lg:space-5xl' }} feature-grid">
+                <div class="feature-content flex justify-center h-full flex-col {{ section.settings.content_spacing_mobile | default: 'space-lg' }} {{ section.settings.content_spacing_desktop | default: 'lg:space-2xl' }} flex-1">
+                  {% if current_heading %}
+                    <div class="rte" {{ current_heading.fluid_attributes }}>{{ current_heading.settings.text | default: "<p>Medium length hero heading goes here</p>" }}</div>
+                  {% endif %}
+                  {% if current_description %}
+                    <div class="rte" {{ current_description.fluid_attributes }}>{{ current_description.settings.text | default: "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>" }}</div>
+                  {% endif %}
+                  {% if current_button_1 or current_button_2 %}
+                    <div class="flex justify-start align-center {{ section.settings.button_gap | default: 'space-lg' }}">
+                      {% if current_button_1 %}
+                        {%- assign cr = current_button_1.settings.border_radius -%}
+                        {%- assign _btn1_attr = current_button_1.fluid_attributes -%}
+                        {%- assign _btn1_size = current_button_1.settings.size | default: 'btn-md' -%}
+                        {%- assign _btn1_fw = current_button_1.settings.font_weight | default: '600' -%}
+                        {%- assign _btn1_w = current_button_1.settings.width -%}
+                        {%- assign _btn1_h = current_button_1.settings.height -%}
+                        {%- capture _btn1_extra_style -%}font-weight: {{ _btn1_fw }};{% if _btn1_w != blank %} width: {{ _btn1_w }}px;{% endif %}{% if _btn1_h != blank %} height: {{ _btn1_h }}px;{% endif %}{%- endcapture -%}
+                        {%- if cr -%}
+                          {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                          {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
+                          {%- assign _btn1_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
+                        {%- else -%}
+                          {%- assign _btn1_attr = 'style="' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
+                        {%- endif -%}
+                        {% render 'button', href: current_button_1.settings.url | default: '#', text: current_button_1.settings.text | default: 'Button', variant: current_button_1.settings.button_style | default: 'btn-bg-primary', class: _btn1_size, attr: _btn1_attr %}
+                      {% endif %}
+                      {% if current_button_2 %}
+                        {%- assign cr = current_button_2.settings.border_radius -%}
+                        {%- assign _btn2_attr = current_button_2.fluid_attributes -%}
+                        {%- assign _btn2_size = current_button_2.settings.size | default: 'btn-md' -%}
+                        {%- assign _btn2_fw = current_button_2.settings.font_weight | default: '600' -%}
+                        {%- assign _btn2_w = current_button_2.settings.width -%}
+                        {%- assign _btn2_h = current_button_2.settings.height -%}
+                        {%- capture _btn2_extra_style -%}font-weight: {{ _btn2_fw }};{% if _btn2_w != blank %} width: {{ _btn2_w }}px;{% endif %}{% if _btn2_h != blank %} height: {{ _btn2_h }}px;{% endif %}{%- endcapture -%}
+                        {%- if cr -%}
+                          {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                          {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
+                          {%- assign _btn2_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
+                        {%- else -%}
+                          {%- assign _btn2_attr = 'style="' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
+                        {%- endif -%}
+                        {% render 'button', href: current_button_2.settings.url | default: '#', text: current_button_2.settings.text | default: 'Button', variant: current_button_2.settings.button_style | default: 'btn-border-primary', class: _btn2_size, attr: _btn2_attr %}
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                  {% if current_link %}
+                    {% if current_link.settings.text != blank %}
+                      {% render 'link',
+                        href: current_link.settings.url | default: '#',
+                        text: current_link.settings.text,
+                        underline: current_link.settings.underline_style,
+                        icon_position: current_link.settings.icon_position,
+                        color: current_link.settings.color,
+                        font_weight: current_link.settings.font_weight,
+                        attr: current_link.fluid_attributes
+                      %}
+                    {% endif %}
+                  {% endif %}
+                </div>
+                <div class="feature-image-wrapper">
+                  <div class="feature-image feature-image-right">
+                    {% if current_feature_image %}
+                      {% assign img_input = current_feature_image.settings.image %}
+                      {% assign img_fluid_media_id = '' %}
+                      {% if current_feature_image.settings.image.fluid_media_id %}
+                        {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                        {% assign img_embed_type = img_input.embed_type %}
+                      {% endif %}
+                      {% assign use_fluid_image_widget = false %}
+                      {% if img_fluid_media_id != blank %}
+                        {% assign use_fluid_image_widget = true %}
+                      {% endif %}
+                      {%- assign _fit_class = 'image-cover' -%}
+                      {%- case current_feature_image.settings.media_fit -%}
+                        {%- when 'contain' -%}{%- assign _fit_class = 'image-contain' -%}
+                        {%- when 'fit-width' -%}{%- assign _fit_class = 'image-cover' -%}
+                        {%- when 'fit-height' -%}{%- assign _fit_class = 'image-contain' -%}
+                      {%- endcase -%}
+                      {%- capture _media_style -%}
+                        {% if current_feature_image.settings.max_width != blank %}max-width: {{ current_feature_image.settings.max_width }}px;{% endif %}
+                        {% if current_feature_image.settings.max_height != blank %}max-height: {{ current_feature_image.settings.max_height }}px;{% endif %}
+                      {%- endcapture -%}
+                      {% if use_fluid_image_widget %}
+                        <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true" {{ current_feature_image.fluid_attributes }}></fluid-media-widget>
+                      {% else %}
+                        <div class="media-container" style="{{ _media_style }}">
+                        {% if current_feature_image.settings.image != blank %}
+                          <img src="{{ current_feature_image.settings.image | image_url }}" alt="{{ current_feature_image.settings.image_alt | default: 'feature' }}" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
+                        {% else %}
+                          <img src="{{ 'feature-placeholder.png' | asset_url }}" alt="feature" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
+                        {% endif %}
+                        </div>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        {% endif %}
+        {% assign current_feature_item = block %}
+        {% assign current_heading = null %}
+        {% assign current_description = null %}
+        {% assign current_feature_image = null %}
+        {% assign current_button_1 = null %}
+        {% assign current_button_2 = null %}
+        {% assign current_link = null %}
+      {% when 'heading' %}
+        {% if current_feature_item %}
+          {% assign current_heading = block %}
+        {% endif %}
+      {% when 'description' %}
+        {% if current_feature_item %}
+          {% assign current_description = block %}
+        {% endif %}
+      {% when 'feature_image' %}
+        {% if current_feature_item %}
+          {% assign current_feature_image = block %}
+        {% endif %}
+      {% when 'button' %}
+        {% if current_feature_item %}
+          {% if current_button_1 == null %}
+            {% assign current_button_1 = block %}
+          {% elsif current_button_2 == null %}
+            {% assign current_button_2 = block %}
+          {% endif %}
+        {% endif %}
+      {% when 'link' %}
+        {% if current_feature_item %}
+          {% assign current_link = block %}
+        {% endif %}
+    {% endcase %}
+  {% endfor %}
+  {% if current_feature_item %}
+    {% assign feature_class = 'feature-section-' | append: section.blocks.size %}
+    <section class="feature-section {{ feature_class }}" {{ current_feature_item.fluid_attributes }}>
+      <div class="container ">
+        <div class="grid {{ section.settings.content_gap_mobile | default: 'space-4xl' }} {{ section.settings.content_gap_desktop | default: 'lg:space-5xl' }} feature-grid">
+          <div class="feature-content flex justify-center h-full flex-col {{ section.settings.content_spacing_mobile | default: 'space-lg' }} {{ section.settings.content_spacing_desktop | default: 'lg:space-2xl' }} flex-1">
+            {% if current_heading %}
+              <div class="rte" {{ current_heading.fluid_attributes }}>{{ current_heading.settings.text | default: "<p>Medium length hero heading goes here</p>" }}</div>
+            {% endif %}
+            {% if current_description %}
+              <div class="rte" {{ current_description.fluid_attributes }}>{{ current_description.settings.text | default: "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>" }}</div>
+            {% endif %}
+            {% if current_button_1 or current_button_2 %}
+              <div class="flex justify-start align-center {{ section.settings.button_gap | default: 'space-lg' }}">
+                {% if current_button_1 %}
+                  {%- assign cr = current_button_1.settings.border_radius -%}
+                  {%- assign _btn1_attr = current_button_1.fluid_attributes -%}
+                  {%- assign _btn1_size = current_button_1.settings.size | default: 'btn-md' -%}
+                  {%- assign _btn1_fw = current_button_1.settings.font_weight | default: '600' -%}
+                  {%- assign _btn1_w = current_button_1.settings.width -%}
+                  {%- assign _btn1_h = current_button_1.settings.height -%}
+                  {%- capture _btn1_extra_style -%}font-weight: {{ _btn1_fw }};{% if _btn1_w != blank %} width: {{ _btn1_w }}px;{% endif %}{% if _btn1_h != blank %} height: {{ _btn1_h }}px;{% endif %}{%- endcapture -%}
+                  {%- if cr -%}
+                    {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                    {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
+                    {%- assign _btn1_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
+                  {%- else -%}
+                    {%- assign _btn1_attr = 'style="' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
+                  {%- endif -%}
+                  {% render 'button', href: current_button_1.settings.url | default: '#', text: current_button_1.settings.text | default: 'Button', variant: current_button_1.settings.button_style | default: 'btn-bg-primary', class: _btn1_size, attr: _btn1_attr %}
+                {% endif %}
+                {% if current_button_2 %}
+                  {%- assign cr = current_button_2.settings.border_radius -%}
+                  {%- assign _btn2_attr = current_button_2.fluid_attributes -%}
+                  {%- assign _btn2_size = current_button_2.settings.size | default: 'btn-md' -%}
+                  {%- assign _btn2_fw = current_button_2.settings.font_weight | default: '600' -%}
+                  {%- assign _btn2_w = current_button_2.settings.width -%}
+                  {%- assign _btn2_h = current_button_2.settings.height -%}
+                  {%- capture _btn2_extra_style -%}font-weight: {{ _btn2_fw }};{% if _btn2_w != blank %} width: {{ _btn2_w }}px;{% endif %}{% if _btn2_h != blank %} height: {{ _btn2_h }}px;{% endif %}{%- endcapture -%}
+                  {%- if cr -%}
+                    {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                    {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
+                    {%- assign _btn2_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
+                  {%- else -%}
+                    {%- assign _btn2_attr = 'style="' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
+                  {%- endif -%}
+                  {% render 'button', href: current_button_2.settings.url | default: '#', text: current_button_2.settings.text | default: 'Button', variant: current_button_2.settings.button_style | default: 'btn-border-primary', class: _btn2_size, attr: _btn2_attr %}
+                {% endif %}
+              </div>
+            {% endif %}
+            {% if current_link %}
+              {% if current_link.settings.text != blank %}
+                {% render 'link',
+                  href: current_link.settings.url | default: '#',
+                  text: current_link.settings.text,
+                  underline: current_link.settings.underline_style,
+                  icon_position: current_link.settings.icon_position,
+                  color: current_link.settings.color,
+                  font_weight: current_link.settings.font_weight,
+                  attr: current_link.fluid_attributes
+                %}
+              {% endif %}
+            {% endif %}
+          </div>
+          <div class="feature-image-wrapper">
+            <div class="feature-image feature-image-right">
+              {% if current_feature_image %}
+                {% assign img_input = current_feature_image.settings.image %}
+                {% assign img_fluid_media_id = '' %}
+                {% if current_feature_image.settings.image.fluid_media_id %}
+                  {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                  {% assign img_embed_type = img_input.embed_type %}
+                {% endif %}
+                {% assign use_fluid_image_widget = false %}
+                {% if img_fluid_media_id != blank %}
+                  {% assign use_fluid_image_widget = true %}
+                {% endif %}
+                {%- assign _fit_class = 'image-cover' -%}
+                {%- case current_feature_image.settings.media_fit -%}
+                  {%- when 'contain' -%}{%- assign _fit_class = 'image-contain' -%}
+                  {%- when 'fit-width' -%}{%- assign _fit_class = 'image-cover' -%}
+                  {%- when 'fit-height' -%}{%- assign _fit_class = 'image-contain' -%}
+                {%- endcase -%}
+                {%- capture _media_style -%}
+                  {% if current_feature_image.settings.max_width != blank %}max-width: {{ current_feature_image.settings.max_width }}px;{% endif %}
+                  {% if current_feature_image.settings.max_height != blank %}max-height: {{ current_feature_image.settings.max_height }}px;{% endif %}
+                {%- endcapture -%}
+                {% if use_fluid_image_widget %}
+                  <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true" {{ current_feature_image.fluid_attributes }}></fluid-media-widget>
+                {% else %}
+                  <div class="media-container" style="{{ _media_style }}">
+                  {% if current_feature_image.settings.image != blank %}
+                    <img src="{{ current_feature_image.settings.image | image_url }}" alt="{{ current_feature_image.settings.image_alt | default: 'feature' }}" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
+                  {% else %}
+                    <img src="{{ 'feature-placeholder.png' | asset_url }}" alt="feature" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
+                  {% endif %}
+                  </div>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  </div>
+
+{% schema %}
+{
+  "name": "Feature Section",
+  "tag": "section",
+  "class": "feature-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Recommended size: 1920x1080px or larger"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "header",
+      "content": "Content Spacing"
+    },
+    {
+      "type": "select",
+      "id": "content_gap_mobile",
+      "label": "Content Gap (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-4xl"
+    },
+    {
+      "type": "select",
+      "id": "content_gap_desktop",
+      "label": "Content Gap (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-5xl"
+    },
+    {
+      "type": "select",
+      "id": "content_spacing_mobile",
+      "label": "Content Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-lg"
+    },
+    {
+      "type": "select",
+      "id": "content_spacing_desktop",
+      "label": "Content Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-2xl"
+    },
+    {
+      "type": "select",
+      "id": "button_gap",
+      "label": "Button Gap",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-lg"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature_item",
+      "name": "Feature Item",
+      "settings": []
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Heading Text",
+          "default": "<p>Medium length hero heading goes here</p>"
+        }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Description",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Description Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>"
+        }
+      ]
+    },
+    {
+      "type": "feature_image",
+      "name": "Feature Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Feature Image",
+          "info": "Recommended size: 600x400px or larger"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Image Alt Text",
+          "default": "feature"
+        },
+        {
+          "type": "select",
+          "id": "media_fit",
+          "label": "Image Fit",
+          "options": [
+            { "value": "cover", "label": "Cover (Fill Container)" },
+            { "value": "contain", "label": "Contain (Fit Inside)" },
+            { "value": "fit-width", "label": "Fit to Width" },
+            { "value": "fit-height", "label": "Fit to Height" }
+          ],
+          "default": "cover"
+        },
+        {
+          "type": "range",
+          "id": "max_width",
+          "min": 0,
+          "max": 2000,
+          "step": 1,
+          "label": "Max Width (px)",
+          "info": "Leave empty for no limit"
+        },
+        {
+          "type": "range",
+          "id": "max_height",
+          "min": 0,
+          "max": 2000,
+          "step": 1,
+          "label": "Max Height (px)",
+          "info": "Leave empty for no limit"
+        },
+        {
+          "type": "corner_radius",
+          "id": "media_border_radius",
+          "label": "Image Border Radius",
+          "info": "Override theme default media radius"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Button Text",
+          "default": "Button"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Button URL",
+          "default": "#"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button Style",
+          "options": [
+            { "value": "btn-bg-white", "label": "White" },
+            { "value": "btn-bg-primary", "label": "Primary" },
+            { "value": "btn-border-white", "label": "White Border" },
+            { "value": "btn-border-black", "label": "Black Border" },
+            { "value": "btn-border-primary", "label": "Primary Border" }
+          ],
+          "default": "btn-bg-primary"
+        },
+        {
+          "type": "select",
+          "id": "size",
+          "label": "Button Size",
+          "options": [
+            { "value": "btn-xs", "label": "Extra Small" },
+            { "value": "btn-sm", "label": "Small" },
+            { "value": "btn-md", "label": "Medium" },
+            { "value": "btn-lg", "label": "Large" },
+            { "value": "btn-xl", "label": "Extra Large" }
+          ],
+          "default": "btn-md"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal" },
+            { "value": "500", "label": "Medium" },
+            { "value": "600", "label": "Semi Bold" },
+            { "value": "700", "label": "Bold" }
+          ],
+          "default": "600"
+        },
+        {
+          "type": "range",
+          "id": "width",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "label": "Button Width (px)",
+          "info": "Leave empty for auto width"
+        },
+        {
+          "type": "range",
+          "id": "height",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "label": "Button Height (px)",
+          "info": "Leave empty for auto height"
+        },
+        {
+          "type": "corner_radius",
+          "id": "border_radius",
+          "label": "Border Radius"
+        }
+      ]
+    },
+    {
+      "type": "link",
+      "name": "Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Link Text",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link URL"
+        },
+        {
+          "type": "select",
+          "id": "underline_style",
+          "label": "Underline Style",
+          "options": [
+            { "value": "always", "label": "Always" },
+            { "value": "hover", "label": "On Hover Only" },
+            { "value": "never", "label": "Never" }
+          ],
+          "default": "hover"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Icon Position",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "before", "label": "Before Text" },
+            { "value": "after", "label": "After Text" }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "color",
+          "id": "color",
+          "label": "Link Color"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal" },
+            { "value": "500", "label": "Medium" },
+            { "value": "600", "label": "Semi Bold" },
+            { "value": "700", "label": "Bold" }
+          ],
+          "default": "400"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Feature Section",
+      "blocks": [
+        {
+          "type": "feature_item"
+        },
+        {
+          "type": "heading",
+          "settings": {
+            "text": "<p>Medium length hero heading goes here</p>"
+          }
+        },
+        {
+          "type": "description",
+          "settings": {
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>"
+          }
+        },
+        {
+          "type": "button",
+          "settings": {
+            "text": "Button 1",
+            "url": "#",
+            "button_style": "btn-bg-primary"
+          }
+        },
+        {
+          "type": "button",
+          "settings": {
+            "text": "Button 2",
+            "url": "#",
+            "button_style": "btn-border-primary"
+          }
+        },
+        {
+          "type": "feature_image",
+          "settings": {
+            "image": "https://cdn.filestackcontent.com/ZwL4w01GQTK1F8vPLXzA",
+            "image_alt": "feature"
+          }
+        },
+        {
+          "type": "feature_item"
+        },
+        {
+          "type": "heading",
+          "settings": {
+            "text": "<p>Medium length hero heading goes here</p>"
+          }
+        },
+        {
+          "type": "description",
+          "settings": {
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>"
+          }
+        },
+        {
+          "type": "button",
+          "settings": {
+            "text": "Button 1",
+            "url": "#",
+            "button_style": "btn-bg-primary"
+          }
+        },
+        {
+          "type": "button",
+          "settings": {
+            "text": "Button 2",
+            "url": "#",
+            "button_style": "btn-border-primary"
+          }
+        },
+        {
+          "type": "feature_image",
+          "settings": {
+            "image": "https://cdn.filestackcontent.com/ZwL4w01GQTK1F8vPLXzA",
+            "image_alt": "feature"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

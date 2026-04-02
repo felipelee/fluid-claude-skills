@@ -1,0 +1,36 @@
+<nav {% if block %}{{ block.fluid_attributes }}{% endif %}>
+  <ul class="primary-menu" id="primary-nav-menu">
+    <li>
+      <a href="{{ company.shop_page_url }}">{{ 'navbar.shop' | t }}</a>
+    </li>
+    <li>
+      <a href="{{ company.join_page_url }}">{{ 'navbar.enrollments' | t }}</a>
+    </li>
+    {% if block.settings.menu.menu_items.size > 0 %}
+      {% macro nested_menu items, class_name %}
+          {% for item in items %}
+            {% if item.sub_menu_items.size > 0 %}
+                <li class='menu-has-children'>
+                  <a>
+                    {{ item.title }}
+                    <span class="arrow-down">
+                      <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.39819 7.16341C7.17851 7.38308 6.82241 7.38308 6.60274 7.16341L0.867876 1.42853C0.648208 1.20886 0.648208 0.852756 0.867876 0.633081L1.13305 0.367881C1.35271 0.148206 1.70887 0.148206 1.92854 0.367881L7.00046 5.43983L12.0724 0.367881C12.2921 0.148206 12.6482 0.148206 12.8679 0.367881L13.1331 0.633081C13.3527 0.852756 13.3527 1.20886 13.1331 1.42853L7.39819 7.16341Z" fill="currentColor"></path>
+                      </svg>
+                    </span>
+                  </a>
+                  <ul class="sub-menu">
+                    {% macro_call nested_menu item.sub_menu_items, 'sub-menu' %}
+                  </ul>
+                </li>
+            {% else %}
+              <li>
+                <a href='{{ item.url }}'>{{ item.title }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+      {% endmacro %}
+      {% macro_call nested_menu block.settings.menu.menu_items, 'menu' %}
+    {% endif %}
+  </ul>
+</nav>

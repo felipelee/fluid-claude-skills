@@ -1,0 +1,504 @@
+{%- style -%}
+  {%- if section.settings.reset_footer_bg_color != true and section.settings.footer_bg_color != blank -%}
+  footer.site-footer{
+      background-color: {{ section.settings.footer_bg_color }};
+    }
+  {%- endif -%}
+
+  {%- if section.settings.reset_footer_text_color != true and section.settings.footer_text_color != blank -%}
+    footer.site-footer{
+      color: {{ section.settings.footer_text_color }};
+    }
+    footer.site-footer svg path{
+      fill: {{ section.settings.footer_text_color }};
+    }
+    footer.site-footer a {
+      color: {{ section.settings.footer_text_color }};
+    }
+  {%- endif -%}
+
+  footer.site-footer {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    font-size: {{ section.settings.footer_text_size }}px;
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+
+{%- endstyle -%}
+{% unless request.page_type == 'medium' or request.page_type == 'library' %}   
+  <!-- site footer -->
+  <footer class="site-footer section-{{ section.id }}">
+    <div class="container">
+      {%- assign footer_logo_block = section.blocks | where: 'type', 'footer_logo' | first -%}
+      {%- assign footer_menu_block = section.blocks | where: 'type', 'footer_menu' | first -%}
+      {%- assign footer_social_block = section.blocks | where: 'type', 'footer_social' | first -%}
+      {%- assign footer_copyright_block = section.blocks | where: 'type', 'footer_copyright' | first -%}
+      {%- assign footer_links_blocks = section.blocks | where: 'type', 'footer_link' -%}
+      
+      <div
+        class="flex flex-between align-center flex-wrap footer-wrap md-tab-flex-row flex-col gap-12 md-tab-gap-6"
+      >
+        {%- if footer_logo_block -%}
+          <a href="{{ footer_logo_block.settings.logo_url | default: '#' }}" class="site-logo" {{ footer_logo_block.fluid_attributes }}>
+            {%- if footer_logo_block.settings.logo -%}
+              {%- assign img_input = footer_logo_block.settings.logo -%}
+              {%- assign img_fluid_media_id = '' -%}
+              {%- if img_input.fluid_media_id -%}
+                {%- assign img_fluid_media_id = img_input.fluid_media_id -%}
+                {%- assign img_embed_type = img_input.embed_type -%}
+              {%- endif -%}
+              {%- assign use_fluid_image_widget = false -%}
+              {%- if img_fluid_media_id != '' -%}
+                {%- assign use_fluid_image_widget = true -%}
+              {%- endif -%}
+              {%- if use_fluid_image_widget -%}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {%- else -%}
+                <img src="{{ footer_logo_block.settings.logo | image_url }}" alt="{{ footer_logo_block.settings.logo_alt | default: 'logo' }}" />
+              {%- endif -%}
+            {%- elsif company.logo_url != blank -%}
+              <img src="{{ company.logo_url }}" alt="{{ footer_logo_block.settings.logo_alt | default: 'logo' }}" />
+            {%- else -%}
+              <img src="{{ 'footer-logo.png' | asset_url }}" alt="{{ footer_logo_block.settings.logo_alt | default: 'logo' }}" />
+            {%- endif -%}
+          </a>
+        {%- else -%}
+          <a href="#" class="site-logo">
+            <img src="{% if company.logo_url != blank %}{{ company.logo_url }}{% else %}{{ 'footer-logo.png' | asset_url }}{% endif %}" alt="logo" />
+          </a>
+        {%- endif -%}
+        
+        {%- if footer_menu_block -%}
+          <nav class="footer-nav flex-1" {{ footer_menu_block.fluid_attributes }}>
+            <ul class="flex justify-center align-center gap-4 flex-wrap md-tab-flex-row flex-col gap-4">
+              {%- if footer_menu_block.settings.menu and footer_menu_block.settings.menu.menu_items.size > 0 -%}
+                {%- for item in footer_menu_block.settings.menu.menu_items -%}
+                  <li>
+                    <a class="{{ footer_menu_block.settings.font_weight | default: section.settings.footer_menu_font_weight }}" href="{{ item.url }}">{{ item.title }}</a>
+                  </li>
+                {%- endfor -%}
+              {%- else -%}
+                {%- comment -%} Placeholder menu items {%- endcomment -%}
+                <li><a class="{{ footer_menu_block.settings.font_weight | default: section.settings.footer_menu_font_weight }}" href="#">Menu Item 1</a></li>
+                <li><a class="{{ footer_menu_block.settings.font_weight | default: section.settings.footer_menu_font_weight }}" href="#">Menu Item 2</a></li>
+                <li><a class="{{ footer_menu_block.settings.font_weight | default: section.settings.footer_menu_font_weight }}" href="#">Menu Item 3</a></li>
+              {%- endif -%}
+            </ul>
+          </nav>
+        {%- elsif section.settings.menu and section.settings.menu.menu_items.size > 0 -%}
+          <nav class="footer-nav flex-1">
+            <ul class="flex justify-center align-center gap-4 flex-wrap md-tab-flex-row flex-col gap-4">
+              {%- for item in section.settings.menu.menu_items -%}
+                <li>
+                  <a class="{{ section.settings.footer_menu_font_weight }}" href="{{ item.url }}">{{ item.title }}</a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </nav>
+        {%- endif -%}
+        
+        {%- if footer_social_block -%}
+          <div class="social-icons flex justify-end align-center gap-3" {{ footer_social_block.fluid_attributes }}>
+            {%- if footer_social_block.settings.show_facebook -%}
+              <a href="{{ footer_social_block.settings.facebook_url | default: '#' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+                  <path d="M22 13.2032C22 7.6466 17.5229 3.14209 12 3.14209C6.47715 3.14209 2 7.6466 2 13.2032C2 18.2249 5.65684 22.3873 10.4375 23.1421V16.1115H7.89844V13.2032H10.4375V10.9866C10.4375 8.46505 11.9305 7.07221 14.2146 7.07221C15.3088 7.07221 16.4531 7.26872 16.4531 7.26872V9.7447H15.1922C13.95 9.7447 13.5625 10.5203 13.5625 11.316V13.2032H16.3359L15.8926 16.1115H13.5625V23.1421C18.3432 22.3873 22 18.2251 22 13.2032Z" fill="currentColor" />
+                </svg>
+              </a>
+            {%- endif -%}
+            {%- if footer_social_block.settings.show_instagram -%}
+              <a href="{{ footer_social_block.settings.instagram_url | default: '#' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M16 4.14209H8C5.23858 4.14209 3 6.38067 3 9.14209V17.1421C3 19.9035 5.23858 22.1421 8 22.1421H16C18.7614 22.1421 21 19.9035 21 17.1421V9.14209C21 6.38067 18.7614 4.14209 16 4.14209ZM19.25 17.1421C19.2445 18.9347 17.7926 20.3866 16 20.3921H8C6.20735 20.3866 4.75549 18.9347 4.75 17.1421V9.14209C4.75549 7.34944 6.20735 5.89758 8 5.89209H16C17.7926 5.89758 19.2445 7.34944 19.25 9.14209V17.1421ZM16.75 9.39209C17.3023 9.39209 17.75 8.94437 17.75 8.39209C17.75 7.83981 17.3023 7.39209 16.75 7.39209C16.1977 7.39209 15.75 7.83981 15.75 8.39209C15.75 8.94437 16.1977 9.39209 16.75 9.39209ZM12 8.64209C9.51472 8.64209 7.5 10.6568 7.5 13.1421C7.5 15.6274 9.51472 17.6421 12 17.6421C14.4853 17.6421 16.5 15.6274 16.5 13.1421C16.5027 11.9478 16.0294 10.8017 15.1849 9.95717C14.3404 9.11268 13.1943 8.63943 12 8.64209ZM9.25 13.1421C9.25 14.6609 10.4812 15.8921 12 15.8921C13.5188 15.8921 14.75 14.6609 14.75 13.1421C14.75 11.6233 13.5188 10.3921 12 10.3921C10.4812 10.3921 9.25 11.6233 9.25 13.1421Z" fill="currentColor" />
+                </svg>
+              </a>
+            {%- endif -%}
+            {%- if footer_social_block.settings.show_twitter -%}
+              <a href="{{ footer_social_block.settings.twitter_url | default: '#' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+                  <path d="M17.1761 5.14209H19.9362L13.9061 11.9195L21 21.1421H15.4456L11.0951 15.5487L6.11723 21.1421H3.35544L9.80517 13.8929L3 5.14209H8.69545L12.6279 10.2547L17.1761 5.14209ZM16.2073 19.5175H17.7368L7.86441 6.68137H6.2232L16.2073 19.5175Z" fill="currentColor" />
+                </svg>
+              </a>
+            {%- endif -%}
+            {%- if footer_social_block.settings.show_linkedin -%}
+              <a href="{{ footer_social_block.settings.linkedin_url | default: '#' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 4.14209C3.67157 4.14209 3 4.81366 3 5.64209V20.6421C3 21.4705 3.67157 22.1421 4.5 22.1421H19.5C20.3284 22.1421 21 21.4705 21 20.6421V5.64209C21 4.81366 20.3284 4.14209 19.5 4.14209H4.5ZM8.52076 8.14481C8.52639 9.10106 7.81061 9.69028 6.96123 9.68606C6.16107 9.68184 5.46357 9.04481 5.46779 8.14622C5.47201 7.30106 6.13998 6.62184 7.00764 6.64153C7.88795 6.66122 8.52639 7.30669 8.52076 8.14481ZM12.2797 10.9038H9.75971H9.7583V19.4637H12.4217V19.264C12.4217 18.8841 12.4214 18.5041 12.4211 18.124C12.4203 17.1102 12.4194 16.0953 12.4246 15.0818C12.426 14.8357 12.4372 14.5798 12.5005 14.3449C12.7381 13.4674 13.5271 12.9007 14.4074 13.04C14.9727 13.1285 15.3467 13.4562 15.5042 13.9892C15.6013 14.3224 15.6449 14.681 15.6491 15.0284C15.6605 16.076 15.6589 17.1236 15.6573 18.1713C15.6567 18.5411 15.6561 18.9111 15.6561 19.2809V19.4623H18.328V19.257C18.328 18.805 18.3278 18.3531 18.3275 17.9012C18.327 16.7717 18.3264 15.6422 18.3294 14.5123C18.3308 14.0018 18.276 13.4984 18.1508 13.0048C17.9638 12.2707 17.5771 11.6632 16.9485 11.2245C16.5027 10.9123 16.0133 10.7112 15.4663 10.6887C15.404 10.6861 15.3412 10.6827 15.2781 10.6793C14.9984 10.6642 14.7141 10.6488 14.4467 10.7028C13.6817 10.856 13.0096 11.2062 12.5019 11.8235C12.4429 11.8943 12.3852 11.9662 12.2991 12.0735L12.2797 12.0978V10.9038ZM5.68164 19.4665H8.33242V10.9094H5.68164V19.4665Z" fill="currentColor" />
+                </svg>
+              </a>
+            {%- endif -%}
+            {%- if footer_social_block.settings.show_youtube -%}
+              <a href="{{ footer_social_block.settings.youtube_url | default: '#' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+                  <path d="M21.5931 8.10242C21.4792 7.67982 21.2566 7.29443 20.9475 6.98459C20.6383 6.67475 20.2534 6.45128 19.8311 6.33642C18.2651 5.90642 12.0001 5.89942 12.0001 5.89942C12.0001 5.89942 5.73609 5.89242 4.16909 6.30342C3.74701 6.42357 3.36291 6.6502 3.05365 6.96156C2.7444 7.27291 2.52037 7.65854 2.40309 8.08142C1.99009 9.64742 1.98609 12.8954 1.98609 12.8954C1.98609 12.8954 1.98209 16.1594 2.39209 17.7094C2.62209 18.5664 3.29709 19.2434 4.15509 19.4744C5.73709 19.9044 11.9851 19.9114 11.9851 19.9114C11.9851 19.9114 18.2501 19.9184 19.8161 19.5084C20.2386 19.3938 20.6238 19.1708 20.9337 18.8616C21.2436 18.5524 21.4675 18.1677 21.5831 17.7454C21.9971 16.1804 22.0001 12.9334 22.0001 12.9334C22.0001 12.9334 22.0201 9.66842 21.5931 8.10242ZM9.99609 15.9044L10.0011 9.90442L15.2081 12.9094L9.99609 15.9044Z" fill="currentColor" />
+                </svg>
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+      
+      {%- if footer_copyright_block or footer_links_blocks.size > 0 -%}
+        <div class="footer-bottom mt-12 md-tab-mt-0 flex justify-center align-center gap-6 md-tab-flex-row flex-col {{ footer_copyright_block.settings.font_weight | default: section.settings.footer_copy_right_font_weight }}">
+          {%- if footer_copyright_block -%}
+            <span class="copyright" {{ footer_copyright_block.fluid_attributes }}>© {{ footer_copyright_block.settings.year | default: '2024' }} {{ footer_copyright_block.settings.company_name | default: 'Relume' }}. {{ footer_copyright_block.settings.rights_text | default: 'All rights reserved' }}.</span>
+          {%- else -%}
+            <span class="copyright">© 2024 Relume. {{ 'footer.all_rights_reserved' | t }}.</span>
+          {%- endif -%}
+          
+          {%- if footer_links_blocks.size > 0 -%}
+            <div class="terms-policy flex justify-center align-center gap-6 md-tab-flex-row flex-col gap-6">
+              {%- for link_block in footer_links_blocks -%}
+                <a href="{{ link_block.settings.url | default: '#' }}" class="underline" {{ link_block.fluid_attributes }}>{{ link_block.settings.text }}</a>
+              {%- endfor -%}
+            </div>
+          {%- else -%}
+            <div class="terms-policy flex justify-center align-center gap-6 md-tab-flex-row flex-col gap-6">
+              <a href="" class="underline">{{ 'footer.privacy_policy' | t }}</a>
+              <a href="" class="underline">{{ 'footer.terms_of_service' | t }}</a>
+              <a href="" class="underline">{{ 'footer.cookies_settings' | t }}</a>
+            </div>
+          {%- endif -%}
+        </div>
+      {%- else -%}
+        <div class="footer-bottom mt-12 md-tab-mt-0 flex justify-center align-center gap-6 md-tab-flex-row flex-col {{ section.settings.footer_copy_right_font_weight }}">
+          <span class="copyright">© 2024 Relume. {{ 'footer.all_rights_reserved' | t }}.</span>
+          <div class="terms-policy flex justify-center align-center gap-6 md-tab-flex-row flex-col gap-6">
+            <a href="" class="underline">{{ 'footer.privacy_policy' | t }}</a>
+            <a href="" class="underline">{{ 'footer.terms_of_service' | t }}</a>
+            <a href="" class="underline">{{ 'footer.cookies_settings' | t }}</a>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </footer>
+{% endunless %}
+
+{% schema %}
+{
+  "name": "main_footer",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "footer",
+      "label": "Menu",
+      "info": "Fallback menu if footer_menu block is not used"
+    },
+    {
+      "type": "checkbox",
+      "id": "reset_footer_bg_color",
+      "label": "Reset footer background to default",
+      "default": false
+    },
+    {
+      "type": "color_background",
+      "id": "footer_bg_color",
+      "label": "Footer Background Color",
+      "default": ""
+    },
+    {
+      "type": "range",
+      "id": "footer_text_size",
+      "min": 10,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Footer Font Size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "footer_menu_font_weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Regular" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" },
+        { "value": "font-extrabold", "label": "Extra Bold" },
+        { "value": "font-semibold", "label": "Default" }
+      ],
+      "default": "font-semibold",
+      "label": "Footer Menu Font Weight",
+      "info": "Fallback font weight if footer_menu block is not used"
+    },
+    {
+      "type": "select",
+      "id": "footer_copy_right_font_weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Regular" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" },
+        { "value": "font-extrabold", "label": "Extra Bold" },
+        { "value": "font-normal", "label": "Default" }
+      ],
+      "default": "font-normal",
+      "label": "Footer Copy Right Section Font Weight",
+      "info": "Fallback font weight if footer_copyright block is not used"
+    },
+    {
+      "type": "checkbox",
+      "id": "reset_footer_text_color",
+      "label": "Reset Footer Text Color to default",
+      "default": false
+    },
+    {
+      "type": "color_background",
+      "id": "footer_text_color",
+      "default": "#000",
+      "label": "Footer Text Color"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "footer_logo",
+      "name": "Footer Logo",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Logo Image"
+        },
+        {
+          "type": "text",
+          "id": "logo_alt",
+          "label": "Logo Alt Text",
+          "default": "logo"
+        },
+        {
+          "type": "url",
+          "id": "logo_url",
+          "label": "Logo Link URL",
+          "default": "#"
+        }
+      ]
+    },
+    {
+      "type": "footer_menu",
+      "name": "Footer Menu",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "info": "Select a menu. If no menu is selected, placeholder items will be shown."
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Menu Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Regular" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" },
+            { "value": "font-extrabold", "label": "Extra Bold" }
+          ],
+          "default": "font-semibold"
+        }
+      ]
+    },
+    {
+      "type": "footer_social",
+      "name": "Social Icons",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Social Media Links"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_facebook",
+          "label": "Show Facebook",
+          "default": true
+        },
+        {
+          "type": "url",
+          "id": "facebook_url",
+          "label": "Facebook URL",
+          "default": "#"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_instagram",
+          "label": "Show Instagram",
+          "default": true
+        },
+        {
+          "type": "url",
+          "id": "instagram_url",
+          "label": "Instagram URL",
+          "default": "#"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_twitter",
+          "label": "Show Twitter",
+          "default": true
+        },
+        {
+          "type": "url",
+          "id": "twitter_url",
+          "label": "Twitter URL",
+          "default": "#"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_linkedin",
+          "label": "Show LinkedIn",
+          "default": true
+        },
+        {
+          "type": "url",
+          "id": "linkedin_url",
+          "label": "LinkedIn URL",
+          "default": "#"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_youtube",
+          "label": "Show YouTube",
+          "default": true
+        },
+        {
+          "type": "url",
+          "id": "youtube_url",
+          "label": "YouTube URL",
+          "default": "#"
+        }
+      ]
+    },
+    {
+      "type": "footer_copyright",
+      "name": "Copyright",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "year",
+          "label": "Year",
+          "default": "2024"
+        },
+        {
+          "type": "text",
+          "id": "company_name",
+          "label": "Company Name",
+          "default": "Relume"
+        },
+        {
+          "type": "text",
+          "id": "rights_text",
+          "label": "Rights Text",
+          "default": "All rights reserved"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Regular" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" },
+            { "value": "font-extrabold", "label": "Extra Bold" }
+          ],
+          "default": "font-normal"
+        }
+      ]
+    },
+    {
+      "type": "footer_link",
+      "name": "Footer Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Link Text",
+          "default": "Link"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link URL",
+          "default": "#"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Main Footer",
+      "blocks": [
+        {
+          "type": "footer_logo"
+        },
+        {
+          "type": "footer_menu"
+        },
+        {
+          "type": "footer_social"
+        },
+        {
+          "type": "footer_copyright"
+        },
+        {
+          "type": "footer_link",
+          "settings": {
+            "text": "Privacy Policy",
+            "url": "#"
+          }
+        },
+        {
+          "type": "footer_link",
+          "settings": {
+            "text": "Terms of Service",
+            "url": "#"
+          }
+        },
+        {
+          "type": "footer_link",
+          "settings": {
+            "text": "Cookies Settings",
+            "url": "#"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

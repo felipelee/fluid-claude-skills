@@ -1,0 +1,777 @@
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+  
+  
+  
+  .section-{{ section.id }} .product-name {
+    color: {{ section.settings.product_title_color | default: '#000000' }};
+  }
+  
+  .section-{{ section.id }} .product-weight {
+    color: {{ section.settings.product_variant_color | default: '#666666' }};
+  }
+  
+  .section-{{ section.id }} .product-price {
+    color: {{ section.settings.product_price_color | default: '#000000' }};
+  }
+  
+  
+  
+  .section-{{ section.id }} .order-summary .heading {
+    color: {{ section.settings.summary_text_color | default: '#666666' }};
+  }
+  
+  .section-{{ section.id }} .order-summary {
+    background-color: {{ section.settings.summary_background_color | default: 'transparent' }};
+    {%- assign b = section.settings.summary_border -%}
+    {%- if b -%}border: {{ b.width }} solid {{ b.color }};{%- endif -%}
+    {%- assign cr = section.settings.summary_border_radius -%}
+    {%- if cr -%}
+      {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+      border-radius: {% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %};
+    {%- endif -%}
+    padding: {{ section.settings.summary_padding | default: 24 }}px;
+  }
+  
+  .section-{{ section.id }} .order-summary ul {
+    background-color: {{ section.settings.summary_list_background_color | default: 'transparent' }};
+    {%- assign cr = section.settings.summary_list_border_radius -%}
+    {%- if cr -%}
+      {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+      border-radius: {% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+  
+  .section-{{ section.id }} .order-summary li {
+    background-color: {{ section.settings.summary_item_background_color | default: 'transparent' }};
+    {%- assign b = section.settings.summary_item_border -%}
+    {%- if b -%}border-bottom: {{ b.width }} solid {{ b.color }};{%- endif -%}
+    padding: {{ section.settings.summary_item_padding | default: 0 }}px 0;
+  }
+  
+  .section-{{ section.id }} .order-summary .heading {
+    color: {{ section.settings.summary_text_color | default: '#666666' }};
+  }
+  
+  .section-{{ section.id }} .order-summary .price {
+    color: {{ section.settings.summary_price_color | default: '#000000' }};
+  }
+  
+  .section-{{ section.id }} .order-summary .order-item {
+    background-color: {{ section.settings.total_item_background_color | default: 'transparent' }};
+    {%- assign b = section.settings.total_item_border -%}
+    {%- if b -%}border-top: {{ b.width }} solid {{ b.color }};{%- endif -%}
+    padding-top: {{ section.settings.total_item_padding_top | default: 16 }}px;
+    margin-top: {{ section.settings.total_item_margin_top | default: 16 }}px;
+  }
+  
+  .section-{{ section.id }} .order-summary .order-item .heading {
+    color: {{ section.settings.total_heading_color | default: '#000000' }};
+  }
+  
+  .section-{{ section.id }} .order-summary .order-item .price {
+    color: {{ section.settings.total_price_color | default: '#000000' }};
+  }
+  
+  .section-{{ section.id }} .checkout-btn {
+    background-color: {{ section.settings.button_background_color | default: '#000000' }};
+    color: {{ section.settings.button_text_color | default: '#ffffff' }};
+    {%- assign b = section.settings.button_border -%}
+    {%- if b -%}border: {{ b.width }} solid {{ b.color }};{%- endif -%}
+  }
+{%- endstyle -%}
+
+<main class="flex-1">
+     <section class="cart-content-section section-{{ section.id }}">
+        <div class="container">
+            <div class="cart-container">
+                <div class="page-title rte">
+                  {{ section.settings.page_title }}
+                </div>
+                <div class="product-summary-section mt-8">
+                    <div class="grid cart-grid gap-y-8">
+                        <div class="product-list" id="cart-items">
+                            {% for item in cart.items %}
+                                <div class="product-item grid gap-4 cart-product-item" data-variant-id="{{item.variant_id}}">
+                                    <div class="image-section">
+                                        <img
+                                        src="{{item.product.image_url}}"
+                                        alt="power"
+                                        class="image-cover product-image"
+                                        />
+                                    </div>
+                                    <div class="product-detail-section relative">
+                                        <div class="action cursor-pointer absolute right-0 top-0">
+                                            <span class="remove-icon remove-product">
+                                                <svg
+                                                width="13"
+                                                height="12"
+                                                viewBox="0 0 13 12"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                <path
+                                                    d="M11.7773 2.06641L7.55859 6.28516L11.7422 10.4688C12.0938 10.7852 12.0938 11.3125 11.7422 11.6289C11.4258 11.9805 10.8984 11.9805 10.582 11.6289L6.36328 7.44531L2.17969 11.6289C1.86328 11.9805 1.33594 11.9805 1.01953 11.6289C0.667969 11.3125 0.667969 10.7852 1.01953 10.4336L5.20312 6.25L1.01953 2.06641C0.667969 1.75 0.667969 1.22266 1.01953 0.871094C1.33594 0.554688 1.86328 0.554688 2.21484 0.871094L6.39844 5.08984L10.582 0.90625C10.8984 0.554688 11.4258 0.554688 11.7773 0.90625C12.0938 1.22266 12.0938 1.75 11.7773 2.06641Z"
+                                                    fill="currentColor"
+                                                    fill-opacity="0.5"
+                                                />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-wrap flex-col justify-between h-full gap-2">
+                                            <div class="grid grid-cols-1 md-tab-grid-cols-2 gap-col-2 gap-x-6 gap-y-2">
+                                                <div class="product-desc flex flex-col gap-2">
+                                                    <h5 class="product-name {{ section.settings.product_title_font_size | default: 'text-base' }} {{ section.settings.product_title_font_size_desktop | default: 'xl-tab-text-lg' }} {{ section.settings.product_title_font_weight | default: 'font-medium' }} product-title">{{item.product.title}}</h5>
+                                                    {% if section.settings.show_product_variant %}
+                                                      <div class="product-weight {{ section.settings.product_variant_font_size | default: 'text-sm' }} {{ section.settings.product_variant_font_size_desktop | default: 'xl-tab-text-sm' }} {{ section.settings.product_variant_font_weight | default: 'font-normal' }} variant">{{item.variant_title}}</div>
+                                                    {% endif %}
+                                                    {% unless section.settings.hide_product_price %}
+                                                      <h5 class="product-price {{ section.settings.product_price_font_size | default: 'text-lg' }} {{ section.settings.product_price_font_size_desktop | default: 'xl-tab-text-xl' }} {{ section.settings.product_price_font_weight | default: 'font-medium' }}">
+                                                          {{ item.price_in_currency }}
+                                                      </h5>
+                                                    {% endunless %}
+                                                </div>
+                                                <!-- .product-desc -->
+
+                                                <div class="quantity">
+                                                    <select
+                                                        name="quanity"
+                                                        id=""
+                                                        class="quantity-dropdown quantity custom-theme-select"
+                                                    >
+                                                        {% for i in (1..20) %}
+                                                        <option value="{{ i }}" {% if item.quantity == i %}selected{% endif %}>{{ i }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="delivery-days flex flex-wrap gap-2">
+                                                <div class="icon-section">
+                                                    <svg
+                                                        width="21"
+                                                        height="21"
+                                                        viewBox="0 0 21 21"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                        fill-rule="evenodd"
+                                                        clip-rule="evenodd"
+                                                        d="M10.7617 18.9453C12.8835 18.9453 14.9183 18.1025 16.4186 16.6022C17.9189 15.1019 18.7617 13.067 18.7617 10.9453C18.7617 8.82358 17.9189 6.78875 16.4186 5.28846C14.9183 3.78817 12.8835 2.94531 10.7617 2.94531C8.63999 2.94531 6.60516 3.78817 5.10486 5.28846C3.60457 6.78875 2.76172 8.82358 2.76172 10.9453C2.76172 13.067 3.60457 15.1019 5.10486 16.6022C6.60516 18.1025 8.63999 18.9453 10.7617 18.9453ZM11.5117 5.94531C11.5117 5.7464 11.4327 5.55563 11.292 5.41498C11.1514 5.27433 10.9606 5.19531 10.7617 5.19531C10.5628 5.19531 10.372 5.27433 10.2314 5.41498C10.0907 5.55563 10.0117 5.7464 10.0117 5.94531V10.9453C10.0117 11.3593 10.3477 11.6953 10.7617 11.6953H14.7617C14.9606 11.6953 15.1514 11.6163 15.292 11.4756C15.4327 11.335 15.5117 11.1442 15.5117 10.9453C15.5117 10.7464 15.4327 10.5556 15.292 10.415C15.1514 10.2743 14.9606 10.1953 14.7617 10.1953H11.5117V5.94531Z"
+                                                        fill="#D0D5DD"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div class="caption">
+                                                    <p>{{ 'cart_page.ships_in' | t }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="order-summary">
+                            <div class="summary-heading rte">
+                              {{ section.settings.summary_heading }}
+                            </div>
+                            <ul>
+                                <li
+                                class="flex flex-wrap justify-between align-center mt-6"
+                                    >
+                                                                    <div class="heading {{ section.settings.summary_text_font_size | default: 'text-base' }} {{ section.settings.summary_text_font_weight | default: 'font-normal' }}">{{ 'cart_page.subtotal' | t }}</div>
+                                <div class="price {{ section.settings.summary_price_font_size | default: 'text-xl' }} {{ section.settings.summary_price_font_weight | default: 'font-medium' }} subtotal">{{cart.sub_total_in_currency}}</div>
+                                </li>
+
+                                <li
+                                class="flex flex-wrap justify-between align-center mt-6"
+                                >
+                                    <div class="heading flex flex-wrap align-center">
+                                        <div class="caption {{ section.settings.summary_text_font_size | default: 'text-base' }} {{ section.settings.summary_text_font_weight | default: 'font-normal' }}">{{ 'cart_page.shipping' | t }}</div>
+                                        <div class="icon ml-2">
+                                        <svg
+                                            width="17"
+                                            height="17"
+                                            viewBox="0 0 17 17"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                            fill-rule="evenodd"
+                                            clip-rule="evenodd"
+                                            d="M16.4121 8.94531C16.4121 11.067 15.5693 13.1019 14.069 14.6022C12.5687 16.1025 10.5338 16.9453 8.41211 16.9453C6.29038 16.9453 4.25555 16.1025 2.75526 14.6022C1.25496 13.1019 0.412109 11.067 0.412109 8.94531C0.412109 6.82358 1.25496 4.78875 2.75526 3.28846C4.25555 1.78817 6.29038 0.945313 8.41211 0.945312C10.5338 0.945313 12.5687 1.78817 14.069 3.28846C15.5693 4.78875 16.4121 6.82358 16.4121 8.94531ZM7.35211 5.88531C7.28244 5.95498 7.19974 6.01024 7.10871 6.04794C7.01769 6.08565 6.92013 6.10505 6.82161 6.10505C6.72309 6.10505 6.62553 6.08565 6.5345 6.04794C6.44348 6.01024 6.36078 5.95498 6.29111 5.88531C6.22144 5.81565 6.16618 5.73294 6.12848 5.64192C6.09077 5.55089 6.07137 5.45334 6.07137 5.35481C6.07137 5.25629 6.09077 5.15873 6.12848 5.06771C6.16618 4.97668 6.22144 4.89398 6.29111 4.82431C6.61731 4.49806 7.01435 4.25143 7.45138 4.10361C7.88841 3.95579 8.35364 3.91075 8.81091 3.972C9.26818 4.03325 9.70516 4.19914 10.0879 4.45677C10.4706 4.71439 10.7887 5.05682 11.0176 5.45742C11.2464 5.85802 11.3798 6.306 11.4073 6.76653C11.4348 7.22706 11.3557 7.68773 11.1762 8.11273C10.9967 8.53772 10.7216 8.91559 10.3723 9.21695C10.023 9.51832 9.60883 9.73505 9.16211 9.85031V10.1953C9.16211 10.3942 9.08309 10.585 8.94244 10.7256C8.80179 10.8663 8.61102 10.9453 8.41211 10.9453C8.2132 10.9453 8.02243 10.8663 7.88178 10.7256C7.74113 10.585 7.66211 10.3942 7.66211 10.1953V9.69531C7.66211 8.97531 8.23211 8.52331 8.74311 8.40831C8.97014 8.35723 9.18218 8.25403 9.36245 8.10686C9.54271 7.95969 9.68627 7.7726 9.78175 7.56039C9.87724 7.34817 9.92204 7.11664 9.91261 6.88413C9.90318 6.65161 9.83979 6.42447 9.72743 6.22068C9.61508 6.01689 9.45685 5.84204 9.26526 5.70995C9.07367 5.57786 8.85397 5.49216 8.62355 5.45963C8.39312 5.42709 8.15829 5.44862 7.93762 5.5225C7.71695 5.59638 7.51649 5.72059 7.35211 5.88531ZM8.41211 13.9453C8.67733 13.9453 8.93168 13.84 9.11922 13.6524C9.30675 13.4649 9.41211 13.2105 9.41211 12.9453C9.41211 12.6801 9.30675 12.4257 9.11922 12.2382C8.93168 12.0507 8.67733 11.9453 8.41211 11.9453C8.14689 11.9453 7.89254 12.0507 7.705 12.2382C7.51747 12.4257 7.41211 12.6801 7.41211 12.9453C7.41211 13.2105 7.51747 13.4649 7.705 13.6524C7.89254 13.84 8.14689 13.9453 8.41211 13.9453Z"
+                                            fill="#999FB5"
+                                            />
+                                        </svg>
+                                        </div>
+                                    </div>
+                                    <div class="price {{ section.settings.summary_price_font_size | default: 'text-xl' }} {{ section.settings.summary_price_font_weight | default: 'font-medium' }} shipping">{{cart.shipping_total_in_currency}}</div>
+                                </li>
+
+                                <li
+                                class="flex flex-wrap justify-between align-center mt-6"
+                                >
+                                    <div class="heading flex flex-wrap align-center">
+                                        <div class="caption {{ section.settings.summary_text_font_size | default: 'text-base' }} {{ section.settings.summary_text_font_weight | default: 'font-normal' }}">{{ 'cart_page.tax' | t }}</div>
+                                        <div class="icon ml-2">
+                                        <svg
+                                            width="17"
+                                            height="17"
+                                            viewBox="0 0 17 17"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                            fill-rule="evenodd"
+                                            clip-rule="evenodd"
+                                            d="M16.4121 8.94531C16.4121 11.067 15.5693 13.1019 14.069 14.6022C12.5687 16.1025 10.5338 16.9453 8.41211 16.9453C6.29038 16.9453 4.25555 16.1025 2.75526 14.6022C1.25496 13.1019 0.412109 11.067 0.412109 8.94531C0.412109 6.82358 1.25496 4.78875 2.75526 3.28846C4.25555 1.78817 6.29038 0.945313 8.41211 0.945312C10.5338 0.945313 12.5687 1.78817 14.069 3.28846C15.5693 4.78875 16.4121 6.82358 16.4121 8.94531ZM7.35211 5.88531C7.28244 5.95498 7.19974 6.01024 7.10871 6.04794C7.01769 6.08565 6.92013 6.10505 6.82161 6.10505C6.72309 6.10505 6.62553 6.08565 6.5345 6.04794C6.44348 6.01024 6.36078 5.95498 6.29111 5.88531C6.22144 5.81565 6.16618 5.73294 6.12848 5.64192C6.09077 5.55089 6.07137 5.45334 6.07137 5.35481C6.07137 5.25629 6.09077 5.15873 6.12848 5.06771C6.16618 4.97668 6.22144 4.89398 6.29111 4.82431C6.61731 4.49806 7.01435 4.25143 7.45138 4.10361C7.88841 3.95579 8.35364 3.91075 8.81091 3.972C9.26818 4.03325 9.70516 4.19914 10.0879 4.45677C10.4706 4.71439 10.7887 5.05682 11.0176 5.45742C11.2464 5.85802 11.3798 6.306 11.4073 6.76653C11.4348 7.22706 11.3557 7.68773 11.1762 8.11273C10.9967 8.53772 10.7216 8.91559 10.3723 9.21695C10.023 9.51832 9.60883 9.73505 9.16211 9.85031V10.1953C9.16211 10.3942 9.08309 10.585 8.94244 10.7256C8.80179 10.8663 8.61102 10.9453 8.41211 10.9453C8.2132 10.9453 8.02243 10.8663 7.88178 10.7256C7.74113 10.585 7.66211 10.3942 7.66211 10.1953V9.69531C7.66211 8.97531 8.23211 8.52331 8.74311 8.40831C8.97014 8.35723 9.18218 8.25403 9.36245 8.10686C9.54271 7.95969 9.68627 7.7726 9.78175 7.56039C9.87724 7.34817 9.92204 7.11664 9.91261 6.88413C9.90318 6.65161 9.83979 6.42447 9.72743 6.22068C9.61508 6.01689 9.45685 5.84204 9.26526 5.70995C9.07367 5.57786 8.85397 5.49216 8.62355 5.45963C8.39312 5.42709 8.15829 5.44862 7.93762 5.5225C7.71695 5.59638 7.51649 5.72059 7.35211 5.88531ZM8.41211 13.9453C8.67733 13.9453 8.93168 13.84 9.11922 13.6524C9.30675 13.4649 9.41211 13.2105 9.41211 12.9453C9.41211 12.6801 9.30675 12.4257 9.11922 12.2382C8.93168 12.0507 8.67733 11.9453 8.41211 11.9453C8.14689 11.9453 7.89254 12.0507 7.705 12.2382C7.51747 12.4257 7.41211 12.6801 7.41211 12.9453C7.41211 13.2105 7.51747 13.4649 7.705 13.6524C7.89254 13.84 8.14689 13.9453 8.41211 13.9453Z"
+                                            fill="#999FB5"
+                                            />
+                                        </svg>
+                                        </div>
+                                    </div>
+                                    <div class="price {{ section.settings.summary_price_font_size | default: 'text-xl' }} {{ section.settings.summary_price_font_weight | default: 'font-medium' }} tax">{{cart.tax_total_in_currency}}</div>
+                                </li>
+
+                                <li
+                                class="order-item flex flex-wrap justify-between align-center mt-6"
+                                >
+                                    <div class="heading {{ section.settings.total_heading_font_size | default: 'text-xl' }} {{ section.settings.total_heading_font_weight | default: 'font-semibold' }}">
+                                        {{ 'cart_page.total' | t }}
+                                    </div>
+                                    <div class="price {{ section.settings.total_price_font_size | default: 'text-xl' }} {{ section.settings.total_price_font_weight | default: 'font-semibold' }} total">{{cart.amount_total_in_currency}}</div>
+                                </li>
+                            </ul>
+
+                            <div class="btn-section mt-8">
+                                <a href="{{cart.checkout_url}}" class="btn {{ section.settings.button_style | default: 'btn-bg-primary' }} w-full checkout-btn {{ section.settings.button_font_size | default: 'text-base' }} {{ section.settings.button_font_size_desktop | default: 'xl-tab-text-lg' }} {{ section.settings.button_font_weight | default: 'font-medium' }}">
+                                    {% if section.settings.checkout_button_text %}{{ section.settings.checkout_button_text }}{% else %}{{ 'cart_page.checkout' | t }}{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>  
+    </section>
+</main>
+{% render 'cart_template' %}
+<script src="{{ 'cart_page.js' | asset_url }}"></script>
+
+{% schema %}
+{
+  "name": "Shopping Cart",
+  "tag": "section",
+  "class": "cart-section",
+  "enabled_on": {
+    "templates": ["cart_page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "richtext",
+      "id": "page_title",
+      "label": "Page Title",
+      "default": "<p>Shopping Cart</p>"
+    },
+    {
+      "type": "header",
+      "content": "Product Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_variant",
+      "label": "Show Product Variant",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_product_price",
+      "label": "Hide Product Price",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "product_title_font_size",
+      "label": "Product Title Font Size (Mobile)",
+      "options": [
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" }
+      ],
+      "default": "text-base"
+    },
+    {
+      "type": "select",
+      "id": "product_title_font_size_desktop",
+      "label": "Product Title Font Size (Desktop)",
+      "options": [
+        { "value": "xl-tab-text-sm", "label": "Small" },
+        { "value": "xl-tab-text-base", "label": "Base" },
+        { "value": "xl-tab-text-lg", "label": "Large" },
+        { "value": "xl-tab-text-xl", "label": "Extra Large" }
+      ],
+      "default": "xl-tab-text-lg"
+    },
+    {
+      "type": "select",
+      "id": "product_title_font_weight",
+      "label": "Product Title Font Weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "color_background",
+      "id": "product_title_color",
+      "label": "Product Title Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "product_variant_font_size",
+      "label": "Product Variant Font Size (Mobile)",
+      "options": [
+        { "value": "text-xs", "label": "Extra Small" },
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" }
+      ],
+      "default": "text-sm"
+    },
+    {
+      "type": "select",
+      "id": "product_variant_font_size_desktop",
+      "label": "Product Variant Font Size (Desktop)",
+      "options": [
+        { "value": "xl-tab-text-xs", "label": "Extra Small" },
+        { "value": "xl-tab-text-sm", "label": "Small" },
+        { "value": "xl-tab-text-base", "label": "Base" },
+        { "value": "xl-tab-text-lg", "label": "Large" }
+      ],
+      "default": "xl-tab-text-sm"
+    },
+    {
+      "type": "select",
+      "id": "product_variant_font_weight",
+      "label": "Product Variant Font Weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-normal"
+    },
+    {
+      "type": "color_background",
+      "id": "product_variant_color",
+      "label": "Product Variant Color",
+      "default": "#666666"
+    },
+    {
+      "type": "select",
+      "id": "product_price_font_size",
+      "label": "Product Price Font Size (Mobile)",
+      "options": [
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" }
+      ],
+      "default": "text-lg"
+    },
+    {
+      "type": "select",
+      "id": "product_price_font_size_desktop",
+      "label": "Product Price Font Size (Desktop)",
+      "options": [
+        { "value": "xl-tab-text-sm", "label": "Small" },
+        { "value": "xl-tab-text-base", "label": "Base" },
+        { "value": "xl-tab-text-lg", "label": "Large" },
+        { "value": "xl-tab-text-xl", "label": "Extra Large" }
+      ],
+      "default": "xl-tab-text-xl"
+    },
+    {
+      "type": "select",
+      "id": "product_price_font_weight",
+      "label": "Product Price Font Weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "color_background",
+      "id": "product_price_color",
+      "label": "Product Price Color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Order Summary"
+    },
+    {
+      "type": "richtext",
+      "id": "summary_heading",
+      "label": "Order Summary Heading",
+      "default": "<p>Order Summary</p>"
+    },
+    {
+      "type": "color_background",
+      "id": "summary_text_color",
+      "label": "Summary Text Color",
+      "default": "#666666"
+    },
+    {
+      "type": "color_background",
+      "id": "summary_price_color",
+      "label": "Summary Price Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "summary_price_font_size",
+      "label": "Summary Price Font Size",
+      "options": [
+        { "value": "text-xs", "label": "Extra Small" },
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" },
+        { "value": "text-2xl", "label": "2X Large" }
+      ],
+      "default": "text-xl"
+    },
+    {
+      "type": "select",
+      "id": "summary_price_font_weight",
+      "label": "Summary Price Font Weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "select",
+      "id": "summary_text_font_size",
+      "label": "Summary Text Font Size",
+      "options": [
+        { "value": "text-xs", "label": "Extra Small" },
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" },
+        { "value": "text-2xl", "label": "2X Large" }
+      ],
+      "default": "text-base"
+    },
+    {
+      "type": "select",
+      "id": "summary_text_font_weight",
+      "label": "Summary Text Font Weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-normal"
+    },
+    {
+      "type": "color_background",
+      "id": "summary_background_color",
+      "label": "Order Summary Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "border",
+      "id": "summary_border",
+      "label": "Order Summary Border"
+    },
+    {
+      "type": "corner_radius",
+      "id": "summary_border_radius",
+      "label": "Order Summary Border Radius"
+    },
+    {
+      "type": "range",
+      "id": "summary_padding",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Order Summary Padding",
+      "default": 32
+    },
+    {
+      "type": "color_background",
+      "id": "summary_list_background_color",
+      "label": "Summary List Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "corner_radius",
+      "id": "summary_list_border_radius",
+      "label": "Summary List Border Radius"
+    },
+    {
+      "type": "color_background",
+      "id": "summary_item_background_color",
+      "label": "Summary Item Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "border",
+      "id": "summary_item_border",
+      "label": "Summary Item Border"
+    },
+    {
+      "type": "range",
+      "id": "summary_item_padding",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Summary Item Padding",
+      "default": 0
+    },
+    
+    {
+      "type": "color_background",
+      "id": "total_item_background_color",
+      "label": "Total Item Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "border",
+      "id": "total_item_border",
+      "label": "Total Item Border"
+    },
+    {
+      "type": "range",
+      "id": "total_item_padding_top",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Total Item Padding Top",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "total_item_margin_top",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Total Item Margin Top",
+      "default": 16
+    },
+    {
+      "type": "color_background",
+      "id": "total_heading_color",
+      "label": "Total Heading Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "total_heading_font_size",
+      "label": "Total Heading Font Size",
+      "options": [
+        { "value": "text-xs", "label": "Extra Small" },
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" },
+        { "value": "text-2xl", "label": "2X Large" }
+      ],
+      "default": "text-xl"
+    },
+    {
+      "type": "select",
+      "id": "total_heading_font_weight",
+      "label": "Total Heading Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" },
+        { "value": "font-extrabold", "label": "Extra Bold" }
+      ],
+      "default": "font-semibold"
+    },
+    {
+      "type": "color_background",
+      "id": "total_price_color",
+      "label": "Total Price Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "total_price_font_size",
+      "label": "Total Price Font Size",
+      "options": [
+        { "value": "text-xs", "label": "Extra Small" },
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" },
+        { "value": "text-2xl", "label": "2X Large" }
+      ],
+      "default": "text-xl"
+    },
+    {
+      "type": "select",
+      "id": "total_price_font_weight",
+      "label": "Total Price Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" },
+        { "value": "font-extrabold", "label": "Extra Bold" }
+      ],
+      "default": "font-semibold"
+    },
+    {
+      "type": "header",
+      "content": "Checkout Button"
+    },
+    {
+      "type": "text",
+      "id": "checkout_button_text",
+      "label": "Checkout Button Text",
+      "default": "checkout"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button Style",
+      "options": [
+        { "value": "btn-border-primary", "label": "Primary Border" },
+        { "value": "btn-bg-primary", "label": "Primary Background" },
+        { "value": "btn-border-black", "label": "Black Border" },
+        { "value": "btn-bg-black", "label": "Black Background" }
+      ],
+      "default": "btn-bg-primary"
+    },
+    {
+      "type": "select",
+      "id": "button_font_size",
+      "label": "Button Font Size (Mobile)",
+      "options": [
+        { "value": "text-sm", "label": "Small" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "Large" },
+        { "value": "text-xl", "label": "Extra Large" }
+      ],
+      "default": "text-base"
+    },
+    {
+      "type": "select",
+      "id": "button_font_size_desktop",
+      "label": "Button Font Size (Desktop)",
+      "options": [
+        { "value": "xl-tab-text-sm", "label": "Small" },
+        { "value": "xl-tab-text-base", "label": "Base" },
+        { "value": "xl-tab-text-lg", "label": "Large" },
+        { "value": "xl-tab-text-xl", "label": "Extra Large" }
+      ],
+      "default": "xl-tab-text-lg"
+    },
+    {
+      "type": "select",
+      "id": "button_font_weight",
+      "label": "Button Font Weight",
+      "options": [
+        { "value": "font-light", "label": "Light" },
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "color_background",
+      "id": "button_background_color",
+      "label": "Button Background Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color_background",
+      "id": "button_text_color",
+      "label": "Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "border",
+      "id": "button_border",
+      "label": "Button Border"
+    },
+    {
+      "type": "header",
+      "content": "Layout & Colors"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ]
+}
+{% endschema %}

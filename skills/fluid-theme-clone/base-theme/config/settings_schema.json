@@ -1,0 +1,877 @@
+[
+  {
+    "name": "typography",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Body Typography"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_family_body",
+        "default": "Roboto",
+        "label": "Body Font"
+      },
+      {
+        "type": "header",
+        "content": "Heading Typography"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_family_heading",
+        "default": "Roboto",
+        "label": "Heading Font"
+      },
+      {
+        "type": "header",
+        "content": "Body Font Sizes (px)"
+      },
+      {
+        "type": "range",
+        "id": "font_size_body",
+        "min": 14,
+        "max": 20,
+        "step": 1,
+        "label": "Body Font Size",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "font_size_caption",
+        "min": 11,
+        "max": 16,
+        "step": 1,
+        "label": "Caption Font Size",
+        "default": 13
+      },
+      {
+        "type": "range",
+        "id": "font_size_small",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Small Font Size",
+        "default": 14
+      },
+      {
+        "type": "range",
+        "id": "font_size_medium",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Medium Font Size",
+        "default": 18
+      },
+      {
+        "type": "range",
+        "id": "font_size_large",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Large Font Size",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "text_xs",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Extra Small Font Size",
+        "default": 12,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "XS",
+          "value": "text-xs"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_sm",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Small Font Size",
+        "default": 14,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "SM",
+          "value": "text-sm"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_base",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Base Font Size",
+        "default": 16,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "Base",
+          "value": "text-base"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_lg",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Large Font Size",
+        "default": 18,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "LG",
+          "value": "text-lg"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Extra Large Font Size",
+        "default": 20,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "XL",
+          "value": "text-xl"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_2xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "2X Large Font Size",
+        "default": 24,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "2XL",
+          "value": "text-2xl"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_3xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "3X Large Font Size",
+        "default": 32,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "3XL",
+          "value": "text-3xl"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_4xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "4X Large Font Size",
+        "default": 36,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "4XL",
+          "value": "text-4xl"
+        }
+      },
+      {
+        "type": "range",
+        "id": "text_5xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "5X Large Font Size",
+        "default": 40,
+        "option_group": {
+          "id": "font_sizes",
+          "label": "5XL",
+          "value": "text-5xl"
+        }
+      },
+      {
+        "type": "header",
+        "content": "Header Font Sizes (px)"
+      },
+      {
+        "type": "range",
+        "id": "font_size_h1",
+        "min": 32,
+        "max": 72,
+        "step": 1,
+        "label": "H1 Font Size",
+        "default": 42
+      },
+      {
+        "type": "range",
+        "id": "font_size_h2",
+        "min": 26,
+        "max": 56,
+        "step": 1,
+        "label": "H2 Font Size",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "font_size_h3",
+        "min": 20,
+        "max": 40,
+        "step": 1,
+        "label": "H3 Font Size",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "font_size_h4",
+        "min": 16,
+        "max": 32,
+        "step": 1,
+        "label": "H4 Font Size",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "font_size_h5",
+        "min": 14,
+        "max": 24,
+        "step": 1,
+        "label": "H5 Font Size",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "font_size_h6",
+        "min": 13,
+        "max": 20,
+        "step": 1,
+        "label": "H6 Font Size",
+        "default": 14
+      },
+      {
+        "type": "header",
+        "content": "Extra Large Sizes"
+      },
+      {
+        "type": "range",
+        "id": "font_size_3xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "3XL Font Size",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "font_weight_400",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "label": "Body Font Weight",
+        "default": 400
+      }
+    ]
+  },
+  {
+    "name": "color_schema",
+    "settings": [
+          {
+            "type": "color_background",
+            "id": "color_primary",
+            "label": "Primary Color",
+            "default": "#000000"
+          },
+          {
+            "type": "color_background",
+            "id": "color_secondary",
+            "label": "Secondary Color",
+            "default": "#000000"
+          },
+          {
+            "type": "color_background",
+            "id": "color_white",
+            "label": "White Color",
+            "default": "#ffffff"
+          },
+          {
+            "type": "color_background",
+            "id": "color_gray",
+            "label": "Gray Color",
+            "default": "#f2f2f2"
+          },
+          {
+            "type": "color_background",
+            "id": "color_black",
+            "label": "Color Black",
+            "default": "#000000"
+          },
+          {
+            "type": "color_background",
+            "id": "color_body",
+            "label": "Body Color",
+            "default": "#000000"
+          }
+    ]
+  },
+  {
+    "name": "page_background",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Default Page Background"
+      },
+      {
+        "type": "color_background",
+        "id": "default_page_background",
+        "label": "Default Page Background",
+        "default": "#ffffff",
+        "info": "Site-wide default page background. Individual pages can override this."
+      }
+    ]
+  },
+  {
+    "name": "media",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Media Container Defaults"
+      },
+      {
+        "type": "range",
+        "id": "media_container_radius",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "Default Media Container Radius (px)",
+        "default": 0,
+        "info": "Default border radius for all media containers. Can be overridden per block."
+      }
+    ]
+  },
+  {
+    "name": "button_hover",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Button Hover (Theme-Level)"
+      },
+      {
+        "type": "select",
+        "id": "button_hover_style",
+        "label": "Default Button Hover Style",
+        "options": [
+          { "value": "opacity", "label": "Opacity" },
+          { "value": "darken", "label": "Darken Background" },
+          { "value": "lighten", "label": "Lighten Background" },
+          { "value": "shadow", "label": "Subtle Shadow / Elevation" },
+          { "value": "scale-up", "label": "Scale Up" },
+          { "value": "pulse", "label": "Pulse" }
+        ],
+        "default": "opacity",
+        "info": "Default hover behavior for all buttons. Custom CSS hover behaviors can be added."
+      }
+    ]
+  },
+  {
+    "name": "spacing",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Spacing gap for column and row(px)"
+      },
+      {
+        "type": "range",
+        "id": "space_xs",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space XS",
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "space_sm",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space SM",
+        "default": 8
+      },
+      {
+        "type": "range",
+        "id": "space_md",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space MD",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "space_lg",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space LG",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "space_xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space XL",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "space_2xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 2XL",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "space_3xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 3XL",
+        "default": 28
+      },
+      {
+        "type": "range",
+        "id": "space_4xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 4XL",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "space_5xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 5XL",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "space_6xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 6XL",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "space_7xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 7XL",
+        "default": 48
+      },
+      {
+        "type": "range",
+        "id": "space_8xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 8XL",
+        "default": 54
+      },
+      {
+        "type": "range",
+        "id": "space_9xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 9XL",
+        "default": 64
+      },
+      {
+        "type": "range",
+        "id": "space_10xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Space 10XL",
+        "default": 72
+      }
+    ]
+  },
+  {
+    "name": "padding",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Padding"
+      },
+      {
+        "type": "range",
+        "id": "padding_xs",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding XS",
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "padding_sm",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding SM",
+        "default": 8
+      },
+      {
+        "type": "range",
+        "id": "padding_md",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding MD",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "padding_lg",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding LG",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "padding_xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding XL",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "padding_2xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 2XL",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "padding_3xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 3XL",
+        "default": 28
+      },
+      {
+        "type": "range",
+        "id": "padding_4xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 4XL",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "padding_5xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 5XL",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "padding_6xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 6XL",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "padding_7xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 7XL",
+        "default": 48
+      },
+      {
+        "type": "range",
+        "id": "padding_8xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 8XL",
+        "default": 54
+      },
+      {
+        "type": "range",
+        "id": "padding_9xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 9XL",
+        "default": 64
+      },
+      {
+        "type": "range",
+        "id": "padding_10xl",
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "label": "Padding 10XL",
+        "default": 72
+      }
+    ]
+  },
+  {
+    "name": "margin",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Margin"
+      },
+      {
+        "type": "range",
+        "id": "margin_xs",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin XS",
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "margin_sm",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin SM",
+        "default": 8
+      },
+      {
+        "type": "range",
+        "id": "margin_md",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin MD",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "margin_lg",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin LG",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "margin_xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin XL",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "margin_2xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 2XL",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "margin_3xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 3XL",
+        "default": 28
+      },
+      {
+        "type": "range",
+        "id": "margin_4xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 4XL",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "margin_5xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 5XL",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "margin_6xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 6XL",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "margin_7xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 7XL",
+        "default": 48
+      },
+      {
+        "type": "range",
+        "id": "margin_8xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 8XL",
+        "default": 54
+      },
+      {
+        "type": "range",
+        "id": "margin_9xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 9XL",
+        "default": 64
+      },
+      {
+        "type": "range",
+        "id": "margin_10xl",
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "label": "Margin 10XL",
+        "default": 72
+      }
+    ]
+  },
+  {
+    "name": "border_radius",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Radius Scale (px)"
+      },
+      {
+        "type": "range",
+        "id": "rounded",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "Extra Small",
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "rounded_sm",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "Small",
+        "default": 8
+      },
+      {
+        "type": "range",
+        "id": "rounded_md",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "Medium",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "rounded_lg",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "Large",
+        "default": 16
+      },
+      {
+        "type": "range",
+        "id": "rounded_xl",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "Extra Large",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "rounded_2xl",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "2X Large",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "rounded_3xl",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "3X Large",
+        "default": 28
+      },
+      {
+        "type": "range",
+        "id": "rounded_4xl",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "4X Large",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "rounded_5xl",
+        "min": 0,
+        "max": 500,
+        "step": 1,
+        "label": "5X Large",
+        "default": 36
+      }
+    ]
+  }
+]

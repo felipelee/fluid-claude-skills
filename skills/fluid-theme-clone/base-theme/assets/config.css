@@ -1,0 +1,119 @@
+:root {
+  /* font family */
+  --ff-body: "Roboto", sans-serif;
+  --ff-heading: "Roboto", sans-serif;
+  --fw-body: 400;
+
+  /* §6a: Desktop font sizes (base — new spec defaults) */
+  --fs-h1-desktop: 42px;
+  --fs-h2-desktop: 32px;
+  --fs-h3-desktop: 24px;
+  --fs-h4-desktop: 20px;
+  --fs-h5-desktop: 16px;
+  --fs-h6-desktop: 14px;
+  --fs-body-desktop: 16px;
+  --fs-caption-desktop: 13px;
+
+  /* §6a: Tablet font sizes (×0.80) */
+  --fs-h1-tablet: 34px;
+  --fs-h2-tablet: 26px;
+  --fs-h3-tablet: 19px;
+  --fs-h4-tablet: 16px;
+  --fs-h5-tablet: 13px;
+  --fs-h6-tablet: 11px;
+  --fs-body-tablet: 13px;
+  --fs-caption-tablet: 10px;
+
+  /* §6a: Mobile font sizes (×0.65) */
+  --fs-h1-mobile: 27px;
+  --fs-h2-mobile: 21px;
+  --fs-h3-mobile: 16px;
+  --fs-h4-mobile: 13px;
+  --fs-h5-mobile: 10px;
+  --fs-h6-mobile: 9px;
+  --fs-body-mobile: 10px;
+  --fs-caption-mobile: 8px;
+
+  /* Active font sizes — default to desktop */
+  --fs-h1: var(--fs-h1-desktop);
+  --fs-h2: var(--fs-h2-desktop);
+  --fs-h3: var(--fs-h3-desktop);
+  --fs-h4: var(--fs-h4-desktop);
+  --fs-h5: var(--fs-h5-desktop);
+  --fs-h6: var(--fs-h6-desktop);
+  --fs-body: var(--fs-body-desktop);
+  --fs-caption: var(--fs-caption-desktop);
+
+  --fs-sm: 14px;
+  --fs-md: 18px;
+  --fs-lg: 20px;
+  --fs-3xl: 40px;
+
+  /* Text sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 36px;
+  --text-5xl: 40px;
+
+  /* Theme template color setting */
+  --clr-body: #000000;
+  --clr-primary: #000000;
+  --clr-secondary: #000000;
+  --clr-black: #000000;
+  --clr-black-400: #444;
+  --clr-gray: #f2f2f2;
+  --clr-white: #ffffff;
+  --clr-white-400: rgba(217, 217, 217, 0.4);
+  --shadow-drodpown: 0px 153px 61px rgba(0, 0, 0, 0.01), 0px 86px 52px rgba(0, 0, 0, 0.05), 0px 38px 38px rgba(0, 0, 0, 0.09), 0px 10px 21px rgba(0, 0, 0, 0.1);
+
+  /* §4: Default page background */
+  --page-bg: #ffffff;
+
+  /* §5: Media container default radius */
+  --media-radius: 0px;
+
+  /* border radius */
+  --rounded: 4px;
+  --rounded-full: 100%;
+  --rounded-sm: 8px;
+  --rounded-md: 12px;
+  --rounded-lg: 16px;
+  --rounded-xl: 20px;
+  --rounded-2xl: 24px;
+  --rounded-3xl: 28px;
+  --rounded-4xl: 32px;
+  --rounded-5xl: 36px;
+}
+
+/* §6a: Tablet breakpoint — 768px–1023px */
+@media (max-width: 1023px) {
+  :root {
+    --fs-h1: var(--fs-h1-tablet);
+    --fs-h2: var(--fs-h2-tablet);
+    --fs-h3: var(--fs-h3-tablet);
+    --fs-h4: var(--fs-h4-tablet);
+    --fs-h5: var(--fs-h5-tablet);
+    --fs-h6: var(--fs-h6-tablet);
+    --fs-body: var(--fs-body-tablet);
+    --fs-caption: var(--fs-caption-tablet);
+  }
+}
+
+/* §6a: Mobile breakpoint — ≤767px */
+@media (max-width: 767px) {
+  :root {
+    --fs-h1: var(--fs-h1-mobile);
+    --fs-h2: var(--fs-h2-mobile);
+    --fs-h3: var(--fs-h3-mobile);
+    --fs-h4: var(--fs-h4-mobile);
+    --fs-h5: var(--fs-h5-mobile);
+    --fs-h6: var(--fs-h6-mobile);
+    --fs-body: var(--fs-body-mobile);
+    --fs-caption: var(--fs-caption-mobile);
+  }
+}

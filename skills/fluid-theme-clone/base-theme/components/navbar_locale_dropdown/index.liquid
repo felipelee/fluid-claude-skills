@@ -1,0 +1,55 @@
+<div class='language-country-selection-section flex flex-end align-center' id="show-language-country-dropdown" {% if block %}{{ block.fluid_attributes }}{% endif %}>
+  <div class='flex align-center gap-3'>
+    <div class='flex align-center gap-3'>
+      <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
+      <span>{{ current_country_iso | upcase }}</span>
+    </div>
+
+    <span class='seperator'></span>
+
+    <div class='flex align-center gap-3'>
+      <span>{{ current_selected_locale | upcase }}</span>
+      <span class="arrow-down">
+        <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.39819 7.16341C7.17851 7.38308 6.82241 7.38308 6.60274 7.16341L0.867876 1.42853C0.648208 1.20886 0.648208 0.852756 0.867876 0.633081L1.13305 0.367881C1.35271 0.148206 1.70887 0.148206 1.92854 0.367881L7.00046 5.43983L12.0724 0.367881C12.2921 0.148206 12.6482 0.148206 12.8679 0.367881L13.1331 0.633081C13.3527 0.852756 13.3527 1.20886 13.1331 1.42853L7.39819 7.16341Z" fill="currentColor"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  <ul class='language-country-dropdown-menu locale-selector'>
+    <li>
+      <label>{{ 'navbar.select_country' | t }}</label>
+      <div class="country-dropdown enable-search-dropdown">
+        <select id='countries' class='country-selector' name='country'>
+          {% for country in countries %}
+            <option
+              value='{{ country.iso }}'
+              data-flag='{{ country.iso }}'
+              {% if country.selected %}selected{% endif %}
+            >
+              {{ country.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </li>
+    <li>
+      <label>{{ 'navbar.select_language' | t }}</label>
+      <select id='languages' class='language-dropdown language-selector' name='language'>
+        {% for option in language_options %}
+          <option
+            value='{{ option.iso }}'
+            {% if option.selected %}selected{% endif %}
+          >
+            {{ option.locale }}
+          </option>
+        {% endfor %}
+      </select>
+    </li>
+    <li>
+      {%- assign _save_close_label = 'navbar.save_and_close' | t -%}
+      {% render 'button', text: _save_close_label, variant: 'primary', class: 'saveLocaleBtn', type: 'button' %}
+    </li>
+  </ul>
+</div>

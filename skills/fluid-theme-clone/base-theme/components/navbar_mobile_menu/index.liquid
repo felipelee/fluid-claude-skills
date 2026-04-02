@@ -1,0 +1,54 @@
+<div class="mobile-menu-section" id="mobile-menu-section" {% if block %}{{ block.fluid_attributes }}{% endif %}>
+  <div class="header-section">
+    <div class="logo-section">
+      <a href="{{ company.home_page_url }}" class="site-logo">
+        {% if company.logo_url != blank %}
+          <img src="{{ company.logo_url }}" alt="logo" />
+        {% else %}
+          <div class="logo">LOGO</div>
+        {% endif %}
+      </a>
+    </div>
+    <div class="flex align-center gap-3">
+      <div class="language-country-section flex align-center gap-3" id="show-language-and-country">
+        <div class="country-section flex gap-3 align-center">
+          <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
+          <span>{{ current_country_iso | upcase }}</span>
+        </div>
+
+        <span class="seperator-bar"></span>
+
+        <div class="flex gap-3 align-center">
+          <span>{{ current_selected_locale | upcase }}</span>
+          <span class="arrow-down">
+            <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M7.39819 7.16341C7.17851 7.38308 6.82241 7.38308 6.60274 7.16341L0.867876 1.42853C0.648208 1.20886 0.648208 0.852756 0.867876 0.633081L1.13305 0.367881C1.35271 0.148206 1.70887 0.148206 1.92854 0.367881L7.00046 5.43983L12.0724 0.367881C12.2921 0.148206 12.6482 0.148206 12.8679 0.367881L13.1331 0.633081C13.3527 0.852756 13.3527 1.20886 13.1331 1.42853L7.39819 7.16341Z" fill="currentColor"></path>
+            </svg>
+          </span>
+        </div>
+      </div>
+      <div class="close-icon-section">
+        <span class="menu-close" id="close-mobile-menu">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M16.192 6.34424L11.949 10.5862L7.70697 6.34424L6.29297 7.75824L10.535 12.0002L6.29297 16.2422L7.70697 17.6562L11.949 13.4142L16.192 17.6562L17.606 16.2422L13.364 12.0002L17.606 7.75824L16.192 6.34424Z"
+              fill="currentColor"
+            />
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div class='mobile-menu-container' id='mobile-menu-wrapper'></div>
+    <div class="button-section">
+      {{ feature_buttons }}
+    </div>
+  </div>
+</div>

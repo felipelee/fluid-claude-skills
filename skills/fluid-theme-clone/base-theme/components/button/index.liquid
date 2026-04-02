@@ -1,0 +1,63 @@
+
+{%- comment -%}
+    Props:
+    - tag: string (a or button, default: button)
+    - type: string (button, submit, reset; for button tag)
+    - href: string (for link buttons)
+    - variant: string (primary, white, outline-white, outline-black, outline-primary, transparent)
+                      or raw class name (btn-bg-primary, btn-bg-white, etc.)
+    - text: string (button label)
+    - size: string (btn-xs, btn-sm, btn-md, btn-lg, btn-xl — default: btn-md)
+    - disabled: boolean
+    - attr: string (additional attributes)
+    - class: string (custom classes, e.g. rounded-full or extra functional classes)
+{%- endcomment -%}
+
+{%- liquid
+  assign tag = tag | default: 'button'
+  if href != blank
+    assign tag = 'a'
+  endif
+  assign type = type | default: 'button'
+  assign size = size | default: 'btn-md'
+
+  case variant
+    when 'primary'
+      assign variant_class = 'btn-bg-primary'
+    when 'white'
+      assign variant_class = 'btn-bg-white'
+    when 'outline-white'
+      assign variant_class = 'btn-border-white'
+    when 'outline-black'
+      assign variant_class = 'btn-border-black'
+    when 'outline-primary'
+      assign variant_class = 'btn-border-primary'
+    when 'transparent'
+      assign variant_class = 'btn-bg-transparent'
+    else
+      assign variant_class = variant
+  endcase
+
+  assign _hover_style = settings.button_hover_style | default: 'opacity'
+  assign _hover_class = ''
+  case _hover_style
+    when 'darken'
+      assign _hover_class = 'btn-hover-darken'
+    when 'lighten'
+      assign _hover_class = 'btn-hover-lighten'
+    when 'shadow'
+      assign _hover_class = 'btn-hover-shadow'
+    when 'scale-up'
+      assign _hover_class = 'btn-hover-scale-up'
+    when 'pulse'
+      assign _hover_class = 'btn-hover-pulse'
+  endcase
+-%}
+
+<{{ tag }}
+  {% if tag == 'a' %}href="{{ href }}"{% else %}type="{{ type }}"{% endif %}
+  class="btn {{ variant_class }} {{ size }} {{ _hover_class }} {{ class }}"
+  {% if disabled %}disabled{% endif %}
+  {% if disabled and tag == 'a' %}style="pointer-events: none; opacity: 0.5;"{% endif %}
+  {{ attr }}
+>{{ text }}</{{ tag }}>

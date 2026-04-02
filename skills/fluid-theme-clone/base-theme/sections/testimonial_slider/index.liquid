@@ -1,0 +1,750 @@
+{% comment %} Handle background_image - can be string URL or object with url/fluid_media_id {% endcomment %}
+{% assign bg_url = '' %}
+{% assign bg_fluid_media_id = '' %}
+
+{% if section.settings.background_image %}
+  {% if section.settings.background_image.url %}
+    {% comment %} It's an object with url property {% endcomment %}
+    {% assign bg_url = section.settings.background_image.url %}
+    
+    {% comment %} Check if it also has fluid_media_id from media picker {% endcomment %}
+    {% if section.settings.background_image.fluid_media_id %}
+      {% assign bg_fluid_media_id = section.settings.background_image.fluid_media_id %}
+      {% assign bg_embed_type = section.settings.background_image.embed_type %}
+    {% endif %}
+  {% else %}
+    {% comment %} It's a string URL {% endcomment %}
+    {% assign bg_url = section.settings.background_image %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Determine whether to use fluid widget - if fluid_media_id exists, use widget {% endcomment %}
+{% assign use_fluid_widget = false %}
+
+{% if bg_fluid_media_id != '' %}
+  {% assign use_fluid_widget = true %}
+{% endif %}
+<!-- Customer Testimonials -->
+{%- style -%}
+  .section-{{ section.id }} {
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+
+<section class="testimonial-section section-{{ section.id }}" data-bg="{% unless use_fluid_widget %}{{ bg_url }}{% endunless %}">
+  {% if use_fluid_widget %}
+    <fluid-media-widget class="fluid-media-widget-background" media-id="{{ bg_fluid_media_id }}" responsive="true" embed-type="{{ bg_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+  {% endif %}
+  <div class="container">
+    {%- assign section_title_block = section.blocks | where: 'type', 'section_title' | first -%}
+    {%- assign section_description_block = section.blocks | where: 'type', 'section_description' | first -%}
+    <div class="header text-center flex flex-col {{ section.settings.title_spacing_mobile | default: 'space-md' }} {{ section.settings.title_spacing_desktop | default: 'lg:space-lg' }}">
+      {%- if section_title_block and section_title_block.settings.text != blank -%}
+        <div class="rte" {{ section_title_block.fluid_attributes }}>{{ section_title_block.settings.text }}</div>
+      {%- endif -%}
+      {%- if section_description_block and section_description_block.settings.text != blank -%}
+        <div class="rte" {{ section_description_block.fluid_attributes }}>{{ section_description_block.settings.text }}</div>
+      {%- endif -%}
+    </div>
+
+    {% if section.blocks.size > 0 %}
+    <div class="carousel-section {{ section.settings.content_spacing_mobile | default: 'pt-5xl' }} {{ section.settings.content_spacing_desktop | default: 'lg:pt-5xl' }}">
+      <div class="testimonial-carousel splide" id="testimonial-slider-{{ section.id }}">
+        <div class="splide__track">
+          <ul class="splide__list">
+            {% assign current_testimonial = null %}
+            {% assign current_rating = null %}
+            {% assign current_author = null %}
+            {% for block in section.blocks %}
+              {% case block.type %}
+                {% when 'testimonial' %}
+                  {% if current_testimonial %}
+                    {% if current_rating %}
+                      <div class="rating {{ section.settings.rating_spacing_mobile | default: 'mb-sm' }} {{ section.settings.rating_spacing_desktop | default: 'lg:mb-md' }}" {{ current_rating.fluid_attributes }}>
+                        {% assign rating = current_rating.settings.rating | default: 5 %}
+                        {% for i in (1..5) %}
+                          {% if i <= rating %}
+                            <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; margin-right: 4px;">
+                              <path d="M9.07088 0.612343C9.41462 -0.204115 10.5854 -0.204114 10.9291 0.612346L12.9579 5.43123C13.1029 5.77543 13.4306 6.01061 13.8067 6.0404L19.0727 6.45748C19.9649 6.52814 20.3267 7.62813 19.6469 8.2034L15.6348 11.5987C15.3482 11.8412 15.223 12.2218 15.3106 12.5843L16.5363 17.661C16.744 18.5211 15.7969 19.201 15.033 18.7401L10.5245 16.0196C10.2025 15.8252 9.7975 15.8252 9.47548 16.0196L4.96699 18.7401C4.20311 19.201 3.25596 18.5211 3.46363 17.661L4.68942 12.5843C4.77698 12.2218 4.65182 11.8412 4.36526 11.5987L0.353062 8.2034C-0.326718 7.62813 0.0350679 6.52814 0.927291 6.45748L6.19336 6.0404C6.5695 6.01061 6.89716 5.77543 7.04207 5.43123L9.07088 0.612343Z" fill="{{ current_rating.settings.star_color | default: '#000000' }}"/>
+                            </svg>
+                          {% else %}
+                            <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; margin-right: 4px;">
+                              <path d="M9.07088 0.612343C9.41462 -0.204115 10.5854 -0.204114 10.9291 0.612346L12.9579 5.43123C13.1029 5.77543 13.4306 6.01061 13.8067 6.0404L19.0727 6.45748C19.9649 6.52814 20.3267 7.62813 19.6469 8.2034L15.6348 11.5987C15.3482 11.8412 15.223 12.2218 15.3106 12.5843L16.5363 17.661C16.744 18.5211 15.7969 19.201 15.033 18.7401L10.5245 16.0196C10.2025 15.8252 9.7975 15.8252 9.47548 16.0196L4.96699 18.7401C4.20311 19.201 3.25596 18.5211 3.46363 17.661L4.68942 12.5843C4.77698 12.2218 4.65182 11.8412 4.36526 11.5987L0.353062 8.2034C-0.326718 7.62813 0.0350679 6.52814 0.927291 6.45748L6.19336 6.0404C6.5695 6.01061 6.89716 5.77543 7.04207 5.43123L9.07088 0.612343Z" fill="#e5e5e5"/>
+                            </svg>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                    <div class="rte">{{ current_testimonial.settings.testimonial_text }}</div>
+                    {% if current_author %}
+                      <div class="review-author-post flex flex-wrap align-center {{ section.settings.author_spacing_mobile | default: 'space-sm' }} {{ section.settings.author_spacing_desktop | default: 'lg:space-md' }}" {{ current_author.fluid_attributes }}>
+                        {% if current_author.settings.author_image %}
+                          {% assign img_input = current_author.settings.author_image %}
+                          {% assign img_fluid_media_id = '' %}
+                          {% if img_input.fluid_media_id %}
+                            {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                            {% assign img_embed_type = img_input.embed_type %}
+                          {% endif %}
+                          {% assign use_fluid_image_widget = false %}
+                          {% if img_fluid_media_id != '' %}
+                            {% assign use_fluid_image_widget = true %}
+                          {% endif %}
+                          <div class="author-image">
+                            {% if use_fluid_image_widget %}
+                              <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+                            {% else %}
+                              <img src="{{ current_author.settings.author_image | image_url }}" alt="{{ current_author.settings.author_name | default: 'Author' }}" class="image-cover" loading="lazy" width="" height=""/>
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                        <div class="desc col-12 {{ section.settings.author_info_padding_mobile | default: 'pl-md' }} {{ section.settings.author_info_padding_desktop | default: 'lg:pl-lg' }} flex flex-col {{ section.settings.author_info_spacing_mobile | default: 'space-xs' }} {{ section.settings.author_info_spacing_desktop | default: 'lg:space-sm' }}">
+                          {% if current_author.settings.author_name != blank %}
+                            <p>{{ current_author.settings.author_name }}</p>
+                          {% endif %}
+                          {% if current_author.settings.author_position != blank %}
+                            <p>{{ current_author.settings.author_position }}</p>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% endif %}
+                    </div></li>
+                  {% endif %}
+                  {% assign current_testimonial = block %}
+                  {% assign current_rating = null %}
+                  {% assign current_author = null %}
+                  {%- assign card_b = current_testimonial.settings.card_border -%}
+                  <li class="splide__slide" {{ current_testimonial.fluid_attributes }}>
+                    <div class="testimonial-post {{ current_testimonial.settings.card_padding_x_mobile | default: 'px-2xl' }} {{ current_testimonial.settings.card_padding_x_desktop | default: 'lg:px-4xl' }} {{ current_testimonial.settings.card_padding_y_mobile | default: 'py-2xl' }} {{ current_testimonial.settings.card_padding_y_desktop | default: 'lg:py-4xl' }} flex flex-col {{ section.settings.card_spacing_mobile | default: 'space-xl' }} {{ section.settings.card_spacing_desktop | default: 'lg:space-4xl' }}" style="
+                      background-color: {{ current_testimonial.settings.card_background_color | default: '#ffffff' }};
+                      {%- if card_b -%}border: {{ card_b.width }} solid {{ card_b.color }};{%- endif -%}
+                    ">
+                {% when 'rating' %}
+                  {% if current_testimonial %}
+                    {% assign current_rating = block %}
+                  {% endif %}
+                {% when 'author' %}
+                  {% if current_testimonial %}
+                    {% assign current_author = block %}
+                  {% endif %}
+              {% endcase %}
+            {% endfor %}
+            {% if current_testimonial %}
+              {% if current_rating %}
+                <div class="rating {{ section.settings.rating_spacing_mobile | default: 'mb-sm' }} {{ section.settings.rating_spacing_desktop | default: 'lg:mb-md' }}" {{ current_rating.fluid_attributes }}>
+                  {% assign rating = current_rating.settings.rating | default: 5 %}
+                  {% for i in (1..5) %}
+                    {% if i <= rating %}
+                      <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; margin-right: 4px;">
+                        <path d="M9.07088 0.612343C9.41462 -0.204115 10.5854 -0.204114 10.9291 0.612346L12.9579 5.43123C13.1029 5.77543 13.4306 6.01061 13.8067 6.0404L19.0727 6.45748C19.9649 6.52814 20.3267 7.62813 19.6469 8.2034L15.6348 11.5987C15.3482 11.8412 15.223 12.2218 15.3106 12.5843L16.5363 17.661C16.744 18.5211 15.7969 19.201 15.033 18.7401L10.5245 16.0196C10.2025 15.8252 9.7975 15.8252 9.47548 16.0196L4.96699 18.7401C4.20311 19.201 3.25596 18.5211 3.46363 17.661L4.68942 12.5843C4.77698 12.2218 4.65182 11.8412 4.36526 11.5987L0.353062 8.2034C-0.326718 7.62813 0.0350679 6.52814 0.927291 6.45748L6.19336 6.0404C6.5695 6.01061 6.89716 5.77543 7.04207 5.43123L9.07088 0.612343Z" fill="{{ current_rating.settings.star_color | default: '#000000' }}"/>
+                      </svg>
+                    {% else %}
+                      <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; margin-right: 4px;">
+                        <path d="M9.07088 0.612343C9.41462 -0.204115 10.5854 -0.204114 10.9291 0.612346L12.9579 5.43123C13.1029 5.77543 13.4306 6.01061 13.8067 6.0404L19.0727 6.45748C19.9649 6.52814 20.3267 7.62813 19.6469 8.2034L15.6348 11.5987C15.3482 11.8412 15.223 12.2218 15.3106 12.5843L16.5363 17.661C16.744 18.5211 15.7969 19.201 15.033 18.7401L10.5245 16.0196C10.2025 15.8252 9.7975 15.8252 9.47548 16.0196L4.96699 18.7401C4.20311 19.201 3.25596 18.5211 3.46363 17.661L4.68942 12.5843C4.77698 12.2218 4.65182 11.8412 4.36526 11.5987L0.353062 8.2034C-0.326718 7.62813 0.0350679 6.52814 0.927291 6.45748L6.19336 6.0404C6.5695 6.01061 6.89716 5.77543 7.04207 5.43123L9.07088 0.612343Z" fill="#e5e5e5"/>
+                      </svg>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="rte">{{ current_testimonial.settings.testimonial_text }}</div>
+              {% if current_author %}
+                <div class="review-author-post flex flex-wrap align-center {{ section.settings.author_spacing_mobile | default: 'space-sm' }} {{ section.settings.author_spacing_desktop | default: 'lg:space-md' }}" {{ current_author.fluid_attributes }}>
+                  {% if current_author.settings.author_image %}
+                    {% assign img_input = current_author.settings.author_image %}
+                    {% assign img_fluid_media_id = '' %}
+                    {% if img_input.fluid_media_id %}
+                      {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                      {% assign img_embed_type = img_input.embed_type %}
+                    {% endif %}
+                    {% assign use_fluid_image_widget = false %}
+                    {% if img_fluid_media_id != '' %}
+                      {% assign use_fluid_image_widget = true %}
+                    {% endif %}
+                    <div class="author-image">
+                      {% if use_fluid_image_widget %}
+                        <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+                      {% else %}
+                        <img src="{{ current_author.settings.author_image | image_url }}" alt="{{ current_author.settings.author_name | default: 'Author' }}" class="image-cover" loading="lazy" width="" height=""/>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                  <div class="desc col-12 {{ section.settings.author_info_padding_mobile | default: 'pl-md' }} {{ section.settings.author_info_padding_desktop | default: 'lg:pl-lg' }} flex flex-col {{ section.settings.author_info_spacing_mobile | default: 'space-xs' }} {{ section.settings.author_info_spacing_desktop | default: 'lg:space-sm' }}">
+                    {% if current_author.settings.author_name != blank %}
+                      <p>{{ current_author.settings.author_name }}</p>
+                    {% endif %}
+                    {% if current_author.settings.author_position != blank %}
+                      <p>{{ current_author.settings.author_position }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+              </div></li>
+            {% endif %}
+          </ul>
+
+          <div class="splide__arrows splide-arrow-section">
+            <button class="slide-arrow splide__arrow splide__arrow--prev arrow-prev-btn">
+              <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 11.4004H7.83L13.42 5.81039L12 4.40039L4 12.4004L12 20.4004L13.41 18.9904L7.83 13.4004H20V11.4004Z" fill="currentColor"/>
+              </svg>
+            </button>
+            <button class="slide-arrow splide__arrow splide__arrow--next arrow-next-btn">
+              <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 11.4004H7.83L13.42 5.81039L12 4.40039L4 12.4004L12 20.4004L13.41 18.9904L7.83 13.4004H20V11.4004Z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div><!-- .carousel-section -->
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  function testimonialCarousel() {
+    const testimonialCarousel = new Splide('.testimonial-carousel', {
+      perPage: 1,
+      perMove: 1,
+      speed: 500,
+      mediaQuery: "min",
+      interval: 5000,
+      gap: "32px",
+      arrows: false,
+      breakpoints: {
+        576:{
+          perPage: 2,
+        },
+        768: {
+          perPage: 3,
+          arrows: true,
+        },
+      }
+    });
+    testimonialCarousel.mount();
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    testimonialCarousel();
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Customer Testimonials",
+  "tag": "section",
+  "class": "testimonial-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Recommended size: 1920x1080px or larger"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "header",
+      "content": "Content Spacing"
+    },
+    {
+      "type": "select",
+      "id": "title_spacing_mobile",
+      "label": "Title & Intro Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-md"
+    },
+    {
+      "type": "select",
+      "id": "title_spacing_desktop",
+      "label": "Title & Intro Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-lg"
+    },
+    {
+      "type": "select",
+      "id": "content_spacing_mobile",
+      "label": "Content Spacing (Mobile)",
+      "options": [
+        { "value": "pt-0", "label": "0" },
+        { "value": "pt-xs", "label": "XS" },
+        { "value": "pt-sm", "label": "SM" },
+        { "value": "pt-md", "label": "MD" },
+        { "value": "pt-lg", "label": "LG" },
+        { "value": "pt-xl", "label": "XL" },
+        { "value": "pt-2xl", "label": "2XL" },
+        { "value": "pt-3xl", "label": "3XL" },
+        { "value": "pt-4xl", "label": "4XL" },
+        { "value": "pt-5xl", "label": "5XL" }
+      ],
+      "default": "pt-5xl"
+    },
+    {
+      "type": "select",
+      "id": "content_spacing_desktop",
+      "label": "Content Spacing (Desktop)",
+      "options": [
+        { "value": "lg:pt-0", "label": "0" },
+        { "value": "lg:pt-xs", "label": "XS" },
+        { "value": "lg:pt-sm", "label": "SM" },
+        { "value": "lg:pt-md", "label": "MD" },
+        { "value": "lg:pt-lg", "label": "LG" },
+        { "value": "lg:pt-xl", "label": "XL" },
+        { "value": "lg:pt-2xl", "label": "2XL" },
+        { "value": "lg:pt-3xl", "label": "3XL" },
+        { "value": "lg:pt-4xl", "label": "4XL" },
+        { "value": "lg:pt-5xl", "label": "5XL" }
+      ],
+      "default": "lg:pt-5xl"
+    },
+    {
+      "type": "select",
+      "id": "card_spacing_mobile",
+      "label": "Card Content Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-xl"
+    },
+    {
+      "type": "select",
+      "id": "card_spacing_desktop",
+      "label": "Card Content Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-4xl"
+    },
+    {
+      "type": "select",
+      "id": "rating_spacing_mobile",
+      "label": "Rating Margin Bottom (Mobile)",
+      "options": [
+        { "value": "mb-0", "label": "0" },
+        { "value": "mb-xs", "label": "XS" },
+        { "value": "mb-sm", "label": "SM" },
+        { "value": "mb-md", "label": "MD" },
+        { "value": "mb-lg", "label": "LG" },
+        { "value": "mb-xl", "label": "XL" },
+        { "value": "mb-2xl", "label": "2XL" }
+      ],
+      "default": "mb-sm"
+    },
+    {
+      "type": "select",
+      "id": "rating_spacing_desktop",
+      "label": "Rating Margin Bottom (Desktop)",
+      "options": [
+        { "value": "lg:mb-0", "label": "0" },
+        { "value": "lg:mb-xs", "label": "XS" },
+        { "value": "lg:mb-sm", "label": "SM" },
+        { "value": "lg:mb-md", "label": "MD" },
+        { "value": "lg:mb-lg", "label": "LG" },
+        { "value": "lg:mb-xl", "label": "XL" },
+        { "value": "lg:mb-2xl", "label": "2XL" }
+      ],
+      "default": "lg:mb-md"
+    },
+    {
+      "type": "select",
+      "id": "author_spacing_mobile",
+      "label": "Author Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" }
+      ],
+      "default": "space-sm"
+    },
+    {
+      "type": "select",
+      "id": "author_spacing_desktop",
+      "label": "Author Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" }
+      ],
+      "default": "lg:space-md"
+    },
+    {
+      "type": "select",
+      "id": "author_info_padding_mobile",
+      "label": "Author Info Padding Left (Mobile)",
+      "options": [
+        { "value": "pl-0", "label": "0" },
+        { "value": "pl-xs", "label": "XS" },
+        { "value": "pl-sm", "label": "SM" },
+        { "value": "pl-md", "label": "MD" },
+        { "value": "pl-lg", "label": "LG" },
+        { "value": "pl-xl", "label": "XL" },
+        { "value": "pl-2xl", "label": "2XL" }
+      ],
+      "default": "pl-md"
+    },
+    {
+      "type": "select",
+      "id": "author_info_padding_desktop",
+      "label": "Author Info Padding Left (Desktop)",
+      "options": [
+        { "value": "lg:pl-0", "label": "0" },
+        { "value": "lg:pl-xs", "label": "XS" },
+        { "value": "lg:pl-sm", "label": "SM" },
+        { "value": "lg:pl-md", "label": "MD" },
+        { "value": "lg:pl-lg", "label": "LG" },
+        { "value": "lg:pl-xl", "label": "XL" },
+        { "value": "lg:pl-2xl", "label": "2XL" }
+      ],
+      "default": "lg:pl-lg"
+    },
+    {
+      "type": "select",
+      "id": "author_info_spacing_mobile",
+      "label": "Author Info Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" }
+      ],
+      "default": "space-xs"
+    },
+    {
+      "type": "select",
+      "id": "author_info_spacing_desktop",
+      "label": "Author Info Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" }
+      ],
+      "default": "lg:space-sm"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "section_title",
+      "name": "Section Title",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Customer Testimonials</p>"
+        }
+      ]
+    },
+    {
+      "type": "section_description",
+      "name": "Section Description",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>"
+        }
+      ]
+    },
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "richtext",
+          "id": "testimonial_text",
+          "label": "Testimonial Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique.</p>"
+        },
+        {
+          "type": "header",
+          "content": "Card Styling"
+        },
+        {
+          "type": "select",
+          "id": "card_padding_x_mobile",
+          "label": "Card Padding X (Mobile)",
+          "options": [
+            { "value": "px-0", "label": "0" },
+            { "value": "px-xs", "label": "XS" },
+            { "value": "px-sm", "label": "SM" },
+            { "value": "px-md", "label": "MD" },
+            { "value": "px-lg", "label": "LG" },
+            { "value": "px-xl", "label": "XL" },
+            { "value": "px-2xl", "label": "2XL" },
+            { "value": "px-3xl", "label": "3XL" }
+          ],
+          "default": "px-2xl"
+        },
+        {
+          "type": "select",
+          "id": "card_padding_x_desktop",
+          "label": "Card Padding X (Desktop)",
+          "options": [
+            { "value": "lg:px-0", "label": "0" },
+            { "value": "lg:px-xs", "label": "XS" },
+            { "value": "lg:px-sm", "label": "SM" },
+            { "value": "lg:px-md", "label": "MD" },
+            { "value": "lg:px-lg", "label": "LG" },
+            { "value": "lg:px-xl", "label": "XL" },
+            { "value": "lg:px-2xl", "label": "2XL" },
+            { "value": "lg:px-3xl", "label": "3XL" },
+            { "value": "lg:px-4xl", "label": "4XL" },
+            { "value": "lg:px-5xl", "label": "5XL" }
+          ],
+          "default": "lg:px-4xl"
+        },
+        {
+          "type": "select",
+          "id": "card_padding_y_mobile",
+          "label": "Card Padding Y (Mobile)",
+          "options": [
+            { "value": "py-0", "label": "0" },
+            { "value": "py-xs", "label": "XS" },
+            { "value": "py-sm", "label": "SM" },
+            { "value": "py-md", "label": "MD" },
+            { "value": "py-lg", "label": "LG" },
+            { "value": "py-xl", "label": "XL" },
+            { "value": "py-2xl", "label": "2XL" },
+            { "value": "py-3xl", "label": "3XL" }
+          ],
+          "default": "py-2xl"
+        },
+        {
+          "type": "select",
+          "id": "card_padding_y_desktop",
+          "label": "Card Padding Y (Desktop)",
+          "options": [
+            { "value": "lg:py-0", "label": "0" },
+            { "value": "lg:py-xs", "label": "XS" },
+            { "value": "lg:py-sm", "label": "SM" },
+            { "value": "lg:py-md", "label": "MD" },
+            { "value": "lg:py-lg", "label": "LG" },
+            { "value": "lg:py-xl", "label": "XL" },
+            { "value": "lg:py-2xl", "label": "2XL" },
+            { "value": "lg:py-3xl", "label": "3XL" },
+            { "value": "lg:py-4xl", "label": "4XL" },
+            { "value": "lg:py-5xl", "label": "5XL" }
+          ],
+          "default": "lg:py-4xl"
+        },
+        {
+          "type": "color_background",
+          "id": "card_background_color",
+          "label": "Card Background Color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "border",
+          "id": "card_border",
+          "label": "Card Border"
+        }
+      ]
+    },
+    {
+      "type": "rating",
+      "name": "Rating",
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Rating (Stars)",
+          "default": 5
+        },
+        {
+          "type": "color_background",
+          "id": "star_color",
+          "label": "Star Color",
+          "default": "#000000"
+        }
+      ]
+    },
+    {
+      "type": "author",
+      "name": "Author",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "image_picker",
+          "id": "author_image",
+          "label": "Author Image",
+          "info": "Recommended size: 60x60px"
+        },
+        {
+          "type": "text",
+          "id": "author_name",
+          "label": "Author Name",
+          "default": "Name Surname"
+        },
+        {
+          "type": "text",
+          "id": "author_position",
+          "label": "Author Position",
+          "default": "Position, Company name"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customer Testimonials",
+      "blocks": [
+        {
+          "type": "section_title"
+        },
+        {
+          "type": "section_description"
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "testimonial_text": "<p>This product has completely transformed our business operations. The customer service is exceptional and the results speak for themselves. Highly recommended!</p>"
+          }
+        },
+        {
+          "type": "rating",
+          "settings": {
+            "rating": 5
+          }
+        },
+        {
+          "type": "author",
+          "settings": {
+            "author_name": "Sarah Mitchell",
+            "author_position": "CEO, TechStart Solutions"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "testimonial_text": "<p>Outstanding quality and incredible value. The team went above and beyond to ensure we had everything we needed. Best investment we've made this year.</p>"
+          }
+        },
+        {
+          "type": "rating",
+          "settings": {
+            "rating": 5
+          }
+        },
+        {
+          "type": "author",
+          "settings": {
+            "author_name": "James Rodriguez",
+            "author_position": "Marketing Director, Growth Co"
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "testimonial_text": "<p>Professional, reliable, and results-driven. They delivered exactly what they promised and exceeded our expectations. We're thrilled with the outcome.</p>"
+          }
+        },
+        {
+          "type": "rating",
+          "settings": {
+            "rating": 5
+          }
+        },
+        {
+          "type": "author",
+          "settings": {
+            "author_name": "Emily Thompson",
+            "author_position": "Founder, Creative Agency Pro"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

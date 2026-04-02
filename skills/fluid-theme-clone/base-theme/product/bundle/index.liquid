@@ -1,0 +1,31 @@
+{% section 'main_bundle_product', id: 'main_bundle_product' %}
+{% section 'testimonial_slider', id: 'testimonial_slider' %}
+{% section 'related_products', id: 'related_products' %}
+{% section 'cta_banner5', id: 'cta_banner5' %}
+
+{% schema %}
+{
+  "sections": {
+    "main_bundle_product": {
+      "type": "main_bundle_product"
+    },
+    "testimonial_slider": {
+      "type": "testimonial_slider"
+    },
+    "related_products": {
+      "type": "related_products",
+      "settings": {
+        "heading": "Products",
+        "heading_size": "h1"
+      }
+    },
+    "cta_banner5": {
+      "type": "cta_banner5",
+      "settings": {
+        "heading": "Medium length heading goes here",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      }
+    }
+  }
+}
+{% endschema %}

@@ -1,0 +1,607 @@
+{% comment %} Handle background_image - can be string URL or object with url/fluid_media_id {% endcomment %}
+{% assign bg_url = '' %}
+{% assign bg_fluid_media_id = '' %}
+
+{% if section.settings.background_image %}
+  {% if section.settings.background_image.url %}
+    {% comment %} It's an object with url property {% endcomment %}
+    {% assign bg_url = section.settings.background_image.url %}
+    
+    {% comment %} Check if it also has fluid_media_id from media picker {% endcomment %}
+    {% if section.settings.background_image.fluid_media_id %}
+      {% assign bg_fluid_media_id = section.settings.background_image.fluid_media_id %}
+      {% assign bg_embed_type = section.settings.background_image.embed_type %}
+    {% endif %}
+  {% else %}
+    {% comment %} It's a string URL {% endcomment %}
+    {% assign bg_url = section.settings.background_image %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Determine whether to use fluid widget - if fluid_media_id exists, use widget {% endcomment %}
+{% assign use_fluid_widget = false %}
+
+{% if bg_fluid_media_id != '' %}
+  {% assign use_fluid_widget = true %}
+{% endif %}
+
+<!-- Testimonial section -->
+{%- style -%}
+  .section-{{ section.id }} {
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+
+<section class="testimonial-section section-{{ section.id }}" data-bg="{% unless use_fluid_widget %}{{ bg_url }}{% endunless %}">
+  {% if use_fluid_widget %}
+    <fluid-media-widget class="fluid-media-widget-background" media-id="{{ bg_fluid_media_id }}" responsive="true" embed-type="{{ bg_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+  {% endif %}
+  <div class="container">
+    {%- assign section_title_block = section.blocks | where: 'type', 'section_title' | first -%}
+    {%- assign section_description_block = section.blocks | where: 'type', 'section_description' | first -%}
+    <div class="flex flex-col justify-center align-center {{ section.settings.title_spacing_mobile | default: 'space-xl' }} {{ section.settings.title_spacing_desktop | default: 'lg:space-2xl' }} section-title">
+      {%- if section_title_block -%}
+        <div class="rte" {{ section_title_block.fluid_attributes }}>{{ section_title_block.settings.text | default: "<p>Customer testimonials</p>" }}</div>
+      {%- endif -%}
+      {%- if section_description_block -%}
+        <div class="rte" {{ section_description_block.fluid_attributes }}>{{ section_description_block.settings.text | default: "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>" }}</div>
+      {%- endif -%}
+    </div>
+    <div class="grid grid-cols-3 {{ section.settings.content_gap_mobile | default: 'space-4xl' }} {{ section.settings.content_gap_desktop | default: 'lg:space-5xl' }} testimonial-grid">
+      {% assign current_testimonial = null %}
+      {% assign current_company_logo = null %}
+      {% assign current_testimonial_text = null %}
+      {% assign current_author = null %}
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'testimonial_item' %}
+            {% if current_testimonial %}
+              {% if current_company_logo %}
+                <div class="company-logo" {{ current_company_logo.fluid_attributes }}>
+                  {% assign img_input = current_company_logo.settings.logo %}
+                  {% assign img_fluid_media_id = '' %}
+                  {% if img_input.fluid_media_id %}
+                    {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                    {% assign img_embed_type = img_input.embed_type %}
+                  {% endif %}
+                  {% assign use_fluid_image_widget = false %}
+                  {% if img_fluid_media_id != '' %}
+                    {% assign use_fluid_image_widget = true %}
+                  {% endif %}
+                  {% if use_fluid_image_widget %}
+                    <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+                  {% else %}
+                    {% if current_company_logo.settings.logo %}
+                      <img src="{{ current_company_logo.settings.logo | image_url }}" alt="{{ current_company_logo.settings.company_name | default: 'logo' }}" height="" width="" loading="lazy" />
+                    {% else %}
+                      <img src="{{ 'https://cdn.filestackcontent.com/25BaNkw7SYu5hydjLRnk' | asset_url }}" alt="{{ current_company_logo.settings.company_name | default: 'logo' }}" height="" width="" loading="lazy" />
+                    {% endif %}
+                  {% endif %}
+                </div>
+              {% endif %}
+              {% if current_testimonial_text %}
+                <div class="rte testimonial-text" {{ current_testimonial_text.fluid_attributes }}>{{ current_testimonial_text.settings.text }}</div>
+              {% endif %}
+              {% if current_author %}
+                <div class="author text-center flex justify-center align-center flex-col {{ section.settings.author_spacing_mobile | default: 'space-xs' }} {{ section.settings.author_spacing_desktop | default: 'lg:space-sm' }}" {{ current_author.fluid_attributes }}>
+                  {% if current_author.settings.author_image %}
+                    <figure class="{{ current_author.settings.author_image_margin_bottom | default: 'mb-lg' }}">
+                      {% assign img_input = current_author.settings.author_image %}
+                      {% assign img_fluid_media_id = '' %}
+                      {% if img_input.fluid_media_id %}
+                        {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                        {% assign img_embed_type = img_input.embed_type %}
+                      {% endif %}
+                      {% assign use_fluid_image_widget = false %}
+                      {% if img_fluid_media_id != '' %}
+                        {% assign use_fluid_image_widget = true %}
+                      {% endif %}
+                      {% if use_fluid_image_widget %}
+                        <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+                      {% else %}
+                        {% if current_author.settings.author_image != '' %}
+                          <img src="{{ current_author.settings.author_image | image_url }}" alt="{{ current_author.settings.author_name | default: 'Author' }}" class="image-cover" loading="lazy" width="" height=""/>
+                        {% else %}
+                          <img src="{{ 'avatar.png' | asset_url }}" alt="author" class="image-cover" loading="lazy" width="" height=""/>
+                        {% endif %}
+                      {% endif %}
+                    </figure>
+                  {% endif %}
+                  {% if current_author.settings.author_name != blank %}
+                    <div class="author-name">
+                      {{ current_author.settings.author_name }}
+                    </div>
+                  {% endif %}
+                  {% if current_author.settings.author_position != blank %}
+                    <p class="author-position">
+                      {{ current_author.settings.author_position }}{% if current_author.settings.company_name %}, {{ current_author.settings.company_name }}{% endif %}
+                    </p>
+                  {% endif %}
+                </div>
+              {% endif %}
+              </div>
+            {% endif %}
+            {% assign current_testimonial = block %}
+            {% assign current_company_logo = null %}
+            {% assign current_testimonial_text = null %}
+            {% assign current_author = null %}
+            <div class="testimonial-col flex flex-col justify-center align-center {{ section.settings.testimonial_spacing_mobile | default: 'space-lg' }} {{ section.settings.testimonial_spacing_desktop | default: 'lg:space-2xl' }} text-center" {{ current_testimonial.fluid_attributes }}>
+          {% when 'company_logo' %}
+            {% if current_testimonial %}
+              {% assign current_company_logo = block %}
+            {% endif %}
+          {% when 'testimonial_text' %}
+            {% if current_testimonial %}
+              {% assign current_testimonial_text = block %}
+            {% endif %}
+          {% when 'author' %}
+            {% if current_testimonial %}
+              {% assign current_author = block %}
+            {% endif %}
+        {% endcase %}
+      {% endfor %}
+      {% if current_testimonial %}
+        {% if current_company_logo %}
+          <div class="company-logo" {{ current_company_logo.fluid_attributes }}>
+            {% assign img_input = current_company_logo.settings.logo %}
+            {% assign img_fluid_media_id = '' %}
+            {% if img_input.fluid_media_id %}
+              {% assign img_fluid_media_id = img_input.fluid_media_id %}
+              {% assign img_embed_type = img_input.embed_type %}
+            {% endif %}
+            {% assign use_fluid_image_widget = false %}
+            {% if img_fluid_media_id != '' %}
+              {% assign use_fluid_image_widget = true %}
+            {% endif %}
+            {% if use_fluid_image_widget %}
+              <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+            {% else %}
+              {% if current_company_logo.settings.logo %}
+                <img src="{{ current_company_logo.settings.logo | image_url }}" alt="{{ current_company_logo.settings.company_name | default: 'logo' }}" height="" width="" loading="lazy" />
+              {% else %}
+                <img src="{{ 'https://cdn.filestackcontent.com/25BaNkw7SYu5hydjLRnk' | asset_url }}" alt="{{ current_company_logo.settings.company_name | default: 'logo' }}" height="" width="" loading="lazy" />
+              {% endif %}
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if current_testimonial_text %}
+          <div class="rte testimonial-text" {{ current_testimonial_text.fluid_attributes }}>{{ current_testimonial_text.settings.text }}</div>
+        {% endif %}
+        {% if current_author %}
+          <div class="author text-center flex justify-center align-center flex-col {{ section.settings.author_spacing_mobile | default: 'space-xs' }} {{ section.settings.author_spacing_desktop | default: 'lg:space-sm' }}" {{ current_author.fluid_attributes }}>
+            {% if current_author.settings.author_image %}
+              <figure class="{{ current_author.settings.author_image_margin_bottom | default: 'mb-lg' }}">
+                {% assign img_input = current_author.settings.author_image %}
+                {% assign img_fluid_media_id = '' %}
+                {% if img_input.fluid_media_id %}
+                  {% assign img_fluid_media_id = img_input.fluid_media_id %}
+                  {% assign img_embed_type = img_input.embed_type %}
+                {% endif %}
+                {% assign use_fluid_image_widget = false %}
+                {% if img_fluid_media_id != '' %}
+                  {% assign use_fluid_image_widget = true %}
+                {% endif %}
+                {% if use_fluid_image_widget %}
+                  <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+                {% else %}
+                  {% if current_author.settings.author_image != '' %}
+                    <img src="{{ current_author.settings.author_image | image_url }}" alt="{{ current_author.settings.author_name | default: 'Author' }}" class="image-cover" loading="lazy" width="" height=""/>
+                  {% else %}
+                    <img src="{{ 'avatar.png' | asset_url }}" alt="author" class="image-cover" loading="lazy" width="" height=""/>
+                  {% endif %}
+                {% endif %}
+              </figure>
+            {% endif %}
+            {% if current_author.settings.author_name != blank %}
+              <div class="author-name">
+                {{ current_author.settings.author_name }}
+              </div>
+            {% endif %}
+            {% if current_author.settings.author_position != blank %}
+              <p class="author-position">
+                {{ current_author.settings.author_position }}{% if current_author.settings.company_name %}, {{ current_author.settings.company_name }}{% endif %}
+              </p>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Testimonial Section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Recommended size: 1920x1080px or larger"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "header",
+      "content": "Content Spacing"
+    },
+    {
+      "type": "select",
+      "id": "title_spacing_mobile",
+      "label": "Title & Description Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-xl"
+    },
+    {
+      "type": "select",
+      "id": "title_spacing_desktop",
+      "label": "Title & Description Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-2xl"
+    },
+    {
+      "type": "select",
+      "id": "content_gap_mobile",
+      "label": "Content Gap (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-4xl"
+    },
+    {
+      "type": "select",
+      "id": "content_gap_desktop",
+      "label": "Content Gap (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-5xl"
+    },
+    {
+      "type": "select",
+      "id": "testimonial_spacing_mobile",
+      "label": "Testimonial Item Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-lg"
+    },
+    {
+      "type": "select",
+      "id": "testimonial_spacing_desktop",
+      "label": "Testimonial Item Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-2xl"
+    },
+    {
+      "type": "select",
+      "id": "author_spacing_mobile",
+      "label": "Author Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-xs"
+    },
+    {
+      "type": "select",
+      "id": "author_spacing_desktop",
+      "label": "Author Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-sm"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "section_title",
+      "name": "Section Title",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Customer testimonials</p>"
+        }
+      ]
+    },
+    {
+      "type": "section_description",
+      "name": "Section Description",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>"
+        }
+      ]
+    },
+    {
+      "type": "testimonial_item",
+      "name": "Testimonial Item",
+      "settings": []
+    },
+    {
+      "type": "company_logo",
+      "name": "Company Logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Company Logo"
+        },
+        {
+          "type": "text",
+          "id": "company_name",
+          "label": "Company Name",
+          "default": "Company name"
+        }
+      ]
+    },
+    {
+      "type": "testimonial_text",
+      "name": "Testimonial Text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Testimonial Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare.</p>"
+        }
+      ]
+    },
+    {
+      "type": "author",
+      "name": "Author",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "image_picker",
+          "id": "author_image",
+          "label": "Author Image"
+        },
+        {
+          "type": "select",
+          "id": "author_image_margin_bottom",
+          "label": "Author Image Margin Bottom",
+          "options": [
+            { "value": "mb-0", "label": "0" },
+            { "value": "mb-xs", "label": "XS" },
+            { "value": "mb-sm", "label": "SM" },
+            { "value": "mb-md", "label": "MD" },
+            { "value": "mb-lg", "label": "LG" },
+            { "value": "mb-xl", "label": "XL" },
+            { "value": "mb-2xl", "label": "2XL" },
+            { "value": "mb-3xl", "label": "3XL" },
+            { "value": "mb-4xl", "label": "4XL" },
+            { "value": "mb-5xl", "label": "5XL" }
+          ],
+          "default": "mb-lg"
+        },
+        {
+          "type": "text",
+          "id": "author_name",
+          "label": "Author Name",
+          "default": "Name Surname"
+        },
+        {
+          "type": "text",
+          "id": "author_position",
+          "label": "Author Position",
+          "default": "Position"
+        },
+        {
+          "type": "text",
+          "id": "company_name",
+          "label": "Company Name",
+          "default": "Company name"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonial Section",
+      "blocks": [
+        {
+          "type": "section_title"
+        },
+        {
+          "type": "section_description"
+        },
+        {
+          "type": "testimonial_item"
+        },
+        {
+          "type": "company_logo",
+          "settings": {
+            "company_name": "Company name",
+            "logo": "https://cdn.filestackcontent.com/25BaNkw7SYu5hydjLRnk"
+          }
+        },
+        {
+          "type": "testimonial_text",
+          "settings": {
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare.</p>"
+          }
+        },
+        {
+          "type": "author",
+          "settings": {
+            "author_name": "Name Surname",
+            "author_position": "Position",
+            "company_name": "Company name",
+            "author_image": "https://cdn.filestackcontent.com/Aecnt3MASgOodip2XVp8"
+          }
+        },
+        {
+          "type": "testimonial_item"
+        },
+        {
+          "type": "company_logo",
+          "settings": {
+            "company_name": "Company name",
+            "logo": "https://cdn.filestackcontent.com/25BaNkw7SYu5hydjLRnk"
+          }
+        },
+        {
+          "type": "testimonial_text",
+          "settings": {
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare.</p>"
+          }
+        },
+        {
+          "type": "author",
+          "settings": {
+            "author_name": "Name Surname",
+            "author_position": "Position",
+            "company_name": "Company name",
+            "author_image": "https://cdn.filestackcontent.com/Aecnt3MASgOodip2XVp8"
+          }
+        },
+        {
+          "type": "testimonial_item"
+        },
+        {
+          "type": "company_logo",
+          "settings": {
+            "company_name": "Company name",
+            "logo": "https://cdn.filestackcontent.com/25BaNkw7SYu5hydjLRnk"
+          }
+        },
+        {
+          "type": "testimonial_text",
+          "settings": {
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare.</p>"
+          }
+        },
+        {
+          "type": "author",
+          "settings": {
+            "author_name": "Name Surname",
+            "author_position": "Position",
+            "company_name": "Company name",
+            "author_image": "https://cdn.filestackcontent.com/Aecnt3MASgOodip2XVp8"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,351 @@
+{% comment %} Handle background_image - can be string URL or object with url/fluid_media_id {% endcomment %}
+{% assign bg_url = '' %}
+{% assign bg_fluid_media_id = '' %}
+
+{% if section.settings.background_image %}
+  {% if section.settings.background_image.url %}
+    {% assign bg_url = section.settings.background_image.url %}
+    {% if section.settings.background_image.fluid_media_id %}
+      {% assign bg_fluid_media_id = section.settings.background_image.fluid_media_id %}
+      {% assign bg_embed_type = section.settings.background_image.embed_type %}
+    {% endif %}
+  {% else %}
+    {% assign bg_url = section.settings.background_image %}
+  {% endif %}
+{% endif %}
+
+{% assign use_fluid_widget = false %}
+{% if bg_fluid_media_id != '' %}
+  {% assign use_fluid_widget = true %}
+{% endif %}
+
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+<section class="banner relative placeholde-bg-color section-{{ section.id }}" data-bg="{% unless use_fluid_widget %}{{ bg_url }}{% endunless %}" style="background-color: {{ section.settings.background_color | default: '#000000' }};">
+  {% if use_fluid_widget %}
+    <fluid-media-widget class="fluid-media-widget-background" media-id="{{ bg_fluid_media_id }}" responsive="true" embed-type="{{ bg_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+  {% endif %}
+
+  {%- assign ov = section.settings.overlay -%}
+  {%- if ov and ov.enabled -%}
+    <div class="overlay-{{ section.id }}"></div>
+    {%- style -%}
+      .overlay-{{ section.id }} {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        {%- if ov.mode == 'gradient' and ov.colors.size > 1 -%}
+          background:
+            {%- if ov.gradientType == 'radial' -%}
+              radial-gradient(
+            {%- else -%}
+              linear-gradient({{ ov.angle }}deg,
+            {%- endif -%}
+            {%- for stop in ov.colors -%}
+              {{ stop.color }} {{ stop.position }}%{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          );
+          opacity: {{ ov.colors.first.opacity | divided_by: 100.0 }};
+        {%- else -%}
+          {%- assign c = ov.colors | first -%}
+          background-color: {{ c.color }};
+          opacity: {{ c.opacity | divided_by: 100.0 }};
+        {%- endif -%}
+      }
+    {%- endstyle -%}
+  {%- endif -%}
+
+  <div class="container relative z-2">
+    <div class="wrapper xl-phone-flex flex-col justify-{{ section.settings.text_alignment | default: 'center' }}">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'tagline' -%}
+            <div class="tagline leading-none rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+          {%- when 'heading' -%}
+            <div class="heading rte {{ section.settings.heading_spacing_mobile | default: 'pt-md' }} {{ section.settings.heading_spacing_desktop | default: 'lg:pt-lg' }}" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+          {%- when 'description' -%}
+            <p class="description rte leading-6 {{ section.settings.description_spacing_mobile | default: 'pt-lg' }} {{ section.settings.description_spacing_desktop | default: 'lg:pt-xl' }}" {{ block.fluid_attributes }}>{{ block.settings.text }}</p>
+          {%- when 'buttons' -%}
+            {% if block.settings.button_text != blank %}
+              {%- assign cr = block.settings.button_border_radius -%}
+              {%- assign _btn_attr = '' -%}
+              {%- if cr -%}
+                {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
+                {%- assign _btn_attr = 'style="border-radius: ' | append: _br_val | append: ';"' -%}
+              {%- endif -%}
+              <div class="{{ section.settings.button_spacing_mobile | default: 'pt-2xl' }} {{ section.settings.button_spacing_desktop | default: 'lg:pt-4xl' }} flex justify-start align-center" {{ block.fluid_attributes }}>
+                {% render 'button',
+                  href: block.settings.button_url | default: '#',
+                  text: block.settings.button_text,
+                  variant: block.settings.button_style | default: 'btn-bg-white',
+                  attr: _btn_attr
+                %}
+              </div>
+            {% endif %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page Hero Banner",
+  "tag": "section",
+  "class": "page-hero-banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Background Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Recommended size: 1920x1080px or larger"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#000000"
+    },
+    {
+      "type": "gradient_overlay",
+      "id": "overlay",
+      "label": "Overlay"
+    },
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "end", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "select",
+      "id": "heading_spacing_mobile",
+      "label": "Heading Margin Top (Mobile)",
+      "options": [
+        { "value": "pt-0", "label": "0" },
+        { "value": "pt-xs", "label": "XS" },
+        { "value": "pt-sm", "label": "SM" },
+        { "value": "pt-md", "label": "MD" },
+        { "value": "pt-lg", "label": "LG" },
+        { "value": "pt-xl", "label": "XL" },
+        { "value": "pt-2xl", "label": "2XL" },
+        { "value": "pt-3xl", "label": "3XL" }
+      ],
+      "default": "pt-md"
+    },
+    {
+      "type": "select",
+      "id": "heading_spacing_desktop",
+      "label": "Heading Margin Top (Desktop)",
+      "options": [
+        { "value": "lg:pt-0", "label": "0" },
+        { "value": "lg:pt-xs", "label": "XS" },
+        { "value": "lg:pt-sm", "label": "SM" },
+        { "value": "lg:pt-md", "label": "MD" },
+        { "value": "lg:pt-lg", "label": "LG" },
+        { "value": "lg:pt-xl", "label": "XL" },
+        { "value": "lg:pt-2xl", "label": "2XL" },
+        { "value": "lg:pt-3xl", "label": "3XL" }
+      ],
+      "default": "lg:pt-lg"
+    },
+    {
+      "type": "select",
+      "id": "description_spacing_mobile",
+      "label": "Description Margin Top (Mobile)",
+      "options": [
+        { "value": "pt-0", "label": "0" },
+        { "value": "pt-xs", "label": "XS" },
+        { "value": "pt-sm", "label": "SM" },
+        { "value": "pt-md", "label": "MD" },
+        { "value": "pt-lg", "label": "LG" },
+        { "value": "pt-xl", "label": "XL" },
+        { "value": "pt-2xl", "label": "2XL" },
+        { "value": "pt-3xl", "label": "3XL" }
+      ],
+      "default": "pt-lg"
+    },
+    {
+      "type": "select",
+      "id": "description_spacing_desktop",
+      "label": "Description Margin Top (Desktop)",
+      "options": [
+        { "value": "lg:pt-0", "label": "0" },
+        { "value": "lg:pt-xs", "label": "XS" },
+        { "value": "lg:pt-sm", "label": "SM" },
+        { "value": "lg:pt-md", "label": "MD" },
+        { "value": "lg:pt-lg", "label": "LG" },
+        { "value": "lg:pt-xl", "label": "XL" },
+        { "value": "lg:pt-2xl", "label": "2XL" },
+        { "value": "lg:pt-3xl", "label": "3XL" }
+      ],
+      "default": "lg:pt-xl"
+    },
+    {
+      "type": "select",
+      "id": "button_spacing_mobile",
+      "label": "Button Margin Top (Mobile)",
+      "options": [
+        { "value": "pt-0", "label": "0" },
+        { "value": "pt-xs", "label": "XS" },
+        { "value": "pt-sm", "label": "SM" },
+        { "value": "pt-md", "label": "MD" },
+        { "value": "pt-lg", "label": "LG" },
+        { "value": "pt-xl", "label": "XL" },
+        { "value": "pt-2xl", "label": "2XL" },
+        { "value": "pt-3xl", "label": "3XL" },
+        { "value": "pt-4xl", "label": "4XL" },
+        { "value": "pt-5xl", "label": "5XL" }
+      ],
+      "default": "pt-2xl"
+    },
+    {
+      "type": "select",
+      "id": "button_spacing_desktop",
+      "label": "Button Margin Top (Desktop)",
+      "options": [
+        { "value": "lg:pt-0", "label": "0" },
+        { "value": "lg:pt-xs", "label": "XS" },
+        { "value": "lg:pt-sm", "label": "SM" },
+        { "value": "lg:pt-md", "label": "MD" },
+        { "value": "lg:pt-lg", "label": "LG" },
+        { "value": "lg:pt-xl", "label": "XL" },
+        { "value": "lg:pt-2xl", "label": "2XL" },
+        { "value": "lg:pt-3xl", "label": "3XL" },
+        { "value": "lg:pt-4xl", "label": "4XL" },
+        { "value": "lg:pt-5xl", "label": "5XL" }
+      ],
+      "default": "lg:pt-4xl"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tagline",
+      "name": "Tagline",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Welcome to our store</p>"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Discover Amazing Products</p>"
+        }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Description",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Explore our curated collection of high-quality products designed to enhance your lifestyle.</p>"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "Buttons",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text",
+          "default": "Shop Now"
+        },
+        {
+          "type": "url",
+          "id": "button_url",
+          "label": "Button URL"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Style",
+          "options": [
+            { "value": "btn-bg-white", "label": "White" },
+            { "value": "btn-bg-primary", "label": "Primary" },
+            { "value": "btn-border-white", "label": "White Border" },
+            { "value": "btn-border-black", "label": "Black Border" },
+            { "value": "btn-border-primary", "label": "Primary Border" }
+          ],
+          "default": "btn-bg-white"
+        },
+        {
+          "type": "corner_radius",
+          "id": "button_border_radius",
+          "label": "Border Radius"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page Hero Banner",
+      "blocks": [
+        { "type": "tagline" },
+        { "type": "heading" },
+        { "type": "description" },
+        { "type": "buttons" }
+      ]
+    }
+  ]
+}
+{% endschema %}

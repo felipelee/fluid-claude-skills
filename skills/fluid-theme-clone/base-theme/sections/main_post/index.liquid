@@ -1,0 +1,1037 @@
+{% comment %}
+  sections/main_post/index.liquid
+
+  Single blog post detail page with block-driven structure.
+  Blocks:
+    breadcrumb   → optional breadcrumb row
+    page_header  → post title + optional author/date meta
+    post_image   → hero image for the post
+    post_content → the post body content + optional related posts settings
+{% endcomment %}
+
+{%- assign section_width = section.settings.section_width | default: 'contained' -%}
+
+{% comment %} ── Defaults ──────────────────────────────────────────────────── {% endcomment %}
+{%- assign breadcrumb_home_text = 'Home' -%}
+{%- assign breadcrumb_posts_text = 'Posts' -%}
+{%- assign breadcrumb_posts_link = '/post_page' -%}
+
+{%- assign show_page_title      = true -%}
+{%- assign show_meta            = true -%}
+{%- assign title_heading_tag    = 'h1' -%}
+{%- assign title_font_size      = 'text-h1' -%}
+{%- assign title_font_weight    = 'font-bold' -%}
+{%- assign title_color          = '#000000' -%}
+
+{%- assign show_related_posts   = false -%}
+{%- assign related_posts_title  = 'Related Posts' -%}
+{%- assign related_posts_count  = 3 -%}
+{%- assign related_image_ratio  = 'landscape' -%}
+{%- assign related_col_desktop  = 3 -%}
+{%- assign related_col_tablet   = 2 -%}
+
+{% comment %} ── Extract block settings ───────────────────────────────────── {% endcomment %}
+{%- for block in section.blocks -%}
+  {%- if block.type == 'breadcrumb' -%}
+    {%- assign breadcrumb_block = block -%}
+    {%- if block.settings.home_text != blank -%}{%- assign breadcrumb_home_text = block.settings.home_text -%}{%- endif -%}
+    {%- if block.settings.posts_text != blank -%}{%- assign breadcrumb_posts_text = block.settings.posts_text -%}{%- endif -%}
+    {%- if block.settings.posts_link != blank -%}{%- assign breadcrumb_posts_link = block.settings.posts_link -%}{%- endif -%}
+
+  {%- elsif block.type == 'page_header' -%}
+    {%- assign header_block = block -%}
+    {%- assign show_page_title = block.settings.show_page_title -%}
+    {%- assign show_meta = block.settings.show_meta -%}
+    {%- assign title_heading_tag = block.settings.title_heading_tag | default: 'h1' -%}
+    {%- assign title_font_size = block.settings.title_font_size | default: 'text-h1' -%}
+    {%- assign title_font_weight = block.settings.title_font_weight | default: 'font-bold' -%}
+    {%- assign title_color = block.settings.title_color | default: '#000000' -%}
+    {%- assign meta_font_size = block.settings.meta_font_size | default: 'text-sm' -%}
+    {%- assign meta_font_weight = block.settings.meta_font_weight | default: 'font-normal' -%}
+    {%- assign meta_color = block.settings.meta_color | default: '#666666' -%}
+
+  {%- elsif block.type == 'post_image' -%}
+    {%- assign image_block = block -%}
+    {%- assign image_border_radius = block.settings.image_border_radius | default: '' -%}
+    {%- assign image_height = block.settings.image_height | default: 'auto' -%}
+
+  {%- elsif block.type == 'post_content' -%}
+    {%- assign content_block = block -%}
+    {%- assign show_related_posts = block.settings.show_related_posts | default: false -%}
+    {%- if block.settings.related_posts_title != blank -%}{%- assign related_posts_title = block.settings.related_posts_title -%}{%- endif -%}
+    {%- assign related_posts_count = block.settings.related_posts_count | default: 3 -%}
+    {%- assign related_image_ratio = block.settings.related_image_ratio | default: 'landscape' -%}
+    {%- assign related_col_desktop = block.settings.related_col_desktop | default: 3 -%}
+    {%- assign related_col_tablet  = block.settings.related_col_tablet  | default: 2 -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- comment -%} Get post image {%- endcomment -%}
+{%- assign post_hero_image = post.image | default: post.image_url | default: post.thumbnail_image | default: post.thumbnail_url -%}
+{%- assign post_hero_image_obj = null -%}
+{%- if post.image -%}
+  {%- assign post_hero_image_obj = post.image -%}
+  {%- assign post_hero_image = post.image | image_url: width: 1200 -%}
+{%- elsif post.image_url != blank -%}
+  {%- assign post_hero_image = post.image_url -%}
+{%- endif -%}
+{%- if post_hero_image == blank and post.images and post.images.size > 0 -%}
+  {%- assign first_post_image = post.images[0] -%}
+  {%- assign post_hero_image = first_post_image.url | default: first_post_image.image_url | default: first_post_image -%}
+{%- endif -%}
+
+{%- comment -%} Get related posts {%- endcomment -%}
+{%- assign related_posts = null -%}
+{%- if show_related_posts -%}
+  {%- if posts and posts.size > 1 -%}
+    {%- assign related_posts = posts -%}
+  {%- elsif blog.posts.size > 1 -%}
+    {%- assign related_posts = blog.posts -%}
+  {%- endif -%}
+{%- endif -%}
+
+<section
+  id="MainPost-{{ section.id }}"
+  class="post-detail-section post-detail-{{ section.id }} section-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+>
+  {%- style -%}
+    .section-{{ section.id }} {
+      {%- assign p = section.settings.section_padding -%}
+      {%- if p -%}
+        {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+        {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+        {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+        {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+        padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+        padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+        padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+        padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+      {%- endif -%}
+      {%- assign sr = section.settings.section_border_radius -%}
+      {%- if sr -%}
+        {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+        {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+        {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+        {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+        border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+      {%- endif -%}
+    }
+  {%- endstyle -%}
+  <div class="{% if section_width == 'full' %}container-full{% else %}container{% endif %}">
+
+    {%- if breadcrumb_block -%}
+      <nav class="post-breadcrumb mb-4 text-sm flex items-center gap-2" aria-label="Breadcrumb" {{ breadcrumb_block.fluid_attributes }}>
+        <a href="/" class="hover:opacity-80 transition-opacity">{{ breadcrumb_home_text }}</a>
+        <span class="mx-1" aria-hidden="true">›</span>
+        <a href="{{ breadcrumb_posts_link }}" class="hover:opacity-80 transition-opacity">{{ breadcrumb_posts_text }}</a>
+        <span class="mx-1" aria-hidden="true">›</span>
+        <span>{{ post.title }}</span>
+      </nav>
+    {%- endif -%}
+
+    {%- if show_page_title or show_meta -%}
+      <header class="post-detail-header mb-8" {% if header_block %}{{ header_block.fluid_attributes }}{% endif %}>
+        {%- if show_page_title -%}
+          <{{ title_heading_tag }} class="{{ title_font_size }} {{ title_font_weight }}" style="color: {{ title_color }};">{{ post.title }}</{{ title_heading_tag }}>
+        {%- endif -%}
+        {%- if show_meta -%}
+          <div class="post-detail-meta mt-2 flex items-center gap-2 {{ meta_font_size }} {{ meta_font_weight }}" style="color: {{ meta_color }};">
+            {%- if post.published_at != blank -%}
+              <time datetime="{{ post.published_at | date: '%Y-%m-%d' }}">{{ post.published_at | date: '%b %d, %Y' }}</time>
+            {%- endif -%}
+            {%- if post.author != blank -%}
+              {%- if post.published_at != blank -%}
+                <span aria-hidden="true">&middot;</span>
+              {%- endif -%}
+              <span>{{ post.author }}</span>
+            {%- endif -%}
+            {%- if post.category and post.category.title != blank -%}
+              {%- if post.published_at != blank or post.author != blank -%}
+                <span aria-hidden="true">&middot;</span>
+              {%- endif -%}
+              <span>{{ post.category.title }}</span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if image_block and post_hero_image != blank -%}
+      <div class="post-detail-image mb-8" {{ image_block.fluid_attributes }}>
+        {%- assign cr = image_block.settings.image_border_radius -%}
+        {%- assign _img_cr_style = '' -%}
+        {%- if cr -%}
+          {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+          {%- capture _img_cr_style -%}border-radius: {% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}; {%- endcapture -%}
+        {%- endif -%}
+        <figure class="blog-image relative overflow-hidden" style="{{ _img_cr_style }}height: {{ image_height }};">
+          {%- assign img_input = post_hero_image_obj -%}
+          {%- assign img_fluid_media_id = '' -%}
+          {%- if img_input and img_input.fluid_media_id -%}
+            {%- assign img_fluid_media_id = img_input.fluid_media_id -%}
+            {%- assign img_embed_type = img_input.embed_type -%}
+          {%- endif -%}
+          {%- assign use_fluid_image_widget = false -%}
+          {%- if img_fluid_media_id != '' -%}
+            {%- assign use_fluid_image_widget = true -%}
+          {%- endif -%}
+          {%- if use_fluid_image_widget -%}
+            <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+          {%- else -%}
+            <img src="{{ post_hero_image }}" alt="{{ post.title | escape }}" class="image-cover w-full" loading="eager" width="" height=""/>
+          {%- endif -%}
+        </figure>
+      </div>
+    {%- endif -%}
+
+    {%- if content_block and post.content != blank -%}
+      <div class="post-detail-body rte {{ section.settings.content_font_size | default: 'text-base' }} {{ section.settings.content_font_size_desktop | default: 'lg:text-lg' }}" style="color: {{ section.settings.content_color | default: '#000000' }};" {{ content_block.fluid_attributes }}>
+        {{ post.content }}
+      </div>
+    {%- endif -%}
+
+    {% comment %} ── Related Posts ──────────────────────────────────────────── {% endcomment %}
+    {%- if show_related_posts and related_posts and related_posts.size > 1 -%}
+      <div class="post-related mt-12">
+        {%- if related_posts_title != blank -%}
+          <h2 class="post-related-title {{ section.settings.related_title_font_size | default: 'text-h2' }} {{ section.settings.related_title_font_weight | default: 'font-bold' }} mb-6" style="color: {{ section.settings.related_title_color | default: '#000000' }};">{{ related_posts_title }}</h2>
+        {%- endif -%}
+        <div class="grid grid-cols-1 {% if related_col_tablet == 2 %}lg-tab-grid-cols-2{% elsif related_col_tablet == 3 %}lg-tab-grid-cols-3{% endif %} {% if related_col_desktop == 2 %}xl-desktop-grid-cols-2{% elsif related_col_desktop == 3 %}xl-desktop-grid-cols-3{% elsif related_col_desktop == 4 %}xl-desktop-grid-cols-4{% endif %} {{ section.settings.related_grid_gap_mobile | default: 'space-5xl' }} {{ section.settings.related_grid_gap_desktop | default: 'lg:space-5xl' }}">
+          {%- assign related_count = 0 -%}
+          {%- for related in related_posts -%}
+            {%- if related.id != post.id and related_count < related_posts_count -%}
+              {%- assign related_url = related.url | default: related.preview_url | default: '#' -%}
+              <div class="blog-col flex flex-col {{ section.settings.related_item_spacing_mobile | default: 'space-xl' }} {{ section.settings.related_item_spacing_desktop | default: 'lg:space-2xl' }}">
+                {%- comment -%} Image {%- endcomment -%}
+                {%- assign related_image_url = '' -%}
+                {%- assign related_image_obj = null -%}
+                {%- if related.image_url != blank -%}
+                  {%- assign related_image_url = related.image_url -%}
+                {%- elsif related.image != blank -%}
+                  {%- assign related_image_obj = related.image -%}
+                  {%- assign related_image_url = related.image | image_url: width: 600 -%}
+                {%- endif -%}
+                
+                {%- if related_image_url != blank or related_image_obj -%}
+                  {%- assign cr = section.settings.related_image_border_radius -%}
+                  {%- assign _rel_img_cr_style = '' -%}
+                  {%- if cr -%}
+                    {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                    {%- capture _rel_img_cr_style -%}border-radius: {% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}; {%- endcapture -%}
+                  {%- endif -%}
+                  <figure class="blog-image relative overflow-hidden" style="{{ _rel_img_cr_style }}height: {{ section.settings.related_image_height | default: 'auto' }};">
+                    {%- assign img_input = related_image_obj -%}
+                    {%- assign img_fluid_media_id = '' -%}
+                    {%- if img_input and img_input.fluid_media_id -%}
+                      {%- assign img_fluid_media_id = img_input.fluid_media_id -%}
+                      {%- assign img_embed_type = img_input.embed_type -%}
+                    {%- endif -%}
+                    {%- assign use_fluid_image_widget = false -%}
+                    {%- if img_fluid_media_id != '' -%}
+                      {%- assign use_fluid_image_widget = true -%}
+                    {%- endif -%}
+                    {%- if use_fluid_image_widget -%}
+                      <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+                    {%- else -%}
+                      {%- if related_image_url != '' -%}
+                        <a href="{{ related_url }}">
+                          <img src="{{ related_image_url }}" alt="{{ related.title | escape }}" class="image-cover" loading="lazy" width="" height=""/>
+                        </a>
+                      {%- else -%}
+                        <a href="{{ related_url }}">
+                          <img src="{{ 'blog-placeholder.png' | asset_url }}" alt="blog" class="image-cover" width="" height=""/>
+                        </a>
+                      {%- endif -%}
+                    {%- endif -%}
+                  </figure>
+                {%- endif -%}
+                
+                <div class="blog-content flex flex-col {{ section.settings.related_content_spacing_mobile | default: 'space-md' }} {{ section.settings.related_content_spacing_desktop | default: 'lg:space-lg' }}">
+                  {%- comment -%} Category {%- endcomment -%}
+                  {%- if section.settings.show_related_category and related.category -%}
+                    <div class="blog-category">
+                      <span class="{{ section.settings.related_category_font_size | default: 'text-sm' }} {{ section.settings.related_category_font_weight | default: 'font-medium' }}" style="color: {{ section.settings.related_category_color | default: '#666666' }};">
+                        {{ related.category.title | default: related.category }}
+                      </span>
+                    </div>
+                  {%- endif -%}
+                  
+                  {%- comment -%} Title {%- endcomment -%}
+                  {%- assign related_title_tag = section.settings.related_title_tag | default: 'h3' -%}
+                  <{{ related_title_tag }} class="{{ section.settings.related_card_title_font_size | default: 'text-h4' }} {{ section.settings.related_card_title_font_weight | default: 'font-semibold' }}" style="color: {{ section.settings.related_card_title_color | default: '#000000' }};">
+                    <a href="{{ related_url }}" class="text-inherit hover:opacity-80 transition-opacity">{{ related.title }}</a>
+                  </{{ related_title_tag }}>
+                  
+                  {%- comment -%} Excerpt {%- endcomment -%}
+                  {%- if section.settings.show_related_excerpt -%}
+                    {%- assign related_excerpt = related.excerpt | default: related.summary -%}
+                    {%- if related_excerpt != blank -%}
+                      <p class="{{ section.settings.related_excerpt_font_size | default: 'text-base' }} {{ section.settings.related_excerpt_font_size_desktop | default: 'lg:text-base' }} {{ section.settings.related_excerpt_font_weight | default: 'font-normal' }}" style="color: {{ section.settings.related_excerpt_color | default: '#000000' }};">
+                        {{ related_excerpt | strip_html | truncate: 150 }}
+                      </p>
+                    {%- endif -%}
+                  {%- endif -%}
+                  
+                  {%- comment -%} Author {%- endcomment -%}
+                  {%- if section.settings.show_related_author or section.settings.show_related_date -%}
+                    <div class="blog-author flex align-center {{ section.settings.related_author_gap | default: 'space-sm' }}">
+                      {%- if section.settings.show_related_author -%}
+                        {%- assign related_author = related.author | default: related.post_author -%}
+                        {%- if related_author != blank -%}
+                          {%- if section.settings.show_related_author_image -%}
+                            <img src="{{ 'avatar.png' | asset_url }}" alt="{{ related_author }}" class="rounded-full w-10 h-10 object-cover" loading="lazy" width="" height=""/>
+                          {%- endif -%}
+                          <div class="flex flex-col {{ section.settings.related_author_info_spacing | default: 'space-xs' }}">
+                            <p class="{{ section.settings.related_author_font_size | default: 'text-sm' }} {{ section.settings.related_author_font_weight | default: 'font-medium' }}" style="color: {{ section.settings.related_author_color | default: '#000000' }};">
+                              {{ related_author }}
+                            </p>
+                            {%- if section.settings.show_related_date -%}
+                              {%- assign related_date = related.published_at | default: related.post_date -%}
+                              {%- if related_date != blank -%}
+                                <p class="text-xs" style="color: {{ section.settings.related_date_color | default: '#666666' }};">
+                                  {{ related_date | date: '%b %d, %Y' }}
+                                </p>
+                              {%- endif -%}
+                            {%- endif -%}
+                          </div>
+                        {%- elsif section.settings.show_related_date -%}
+                          {%- assign related_date = related.published_at | default: related.post_date -%}
+                          {%- if related_date != blank -%}
+                            <p class="{{ section.settings.related_meta_font_size | default: 'text-sm' }} {{ section.settings.related_meta_font_weight | default: 'font-normal' }}" style="color: {{ section.settings.related_meta_color | default: '#666666' }};">
+                              {{ related_date | date: '%b %d, %Y' }}
+                            </p>
+                          {%- endif -%}
+                        {%- endif -%}
+                      {%- elsif section.settings.show_related_date -%}
+                        {%- assign related_date = related.published_at | default: related.post_date -%}
+                        {%- if related_date != blank -%}
+                          <p class="{{ section.settings.related_meta_font_size | default: 'text-sm' }} {{ section.settings.related_meta_font_weight | default: 'font-normal' }}" style="color: {{ section.settings.related_meta_color | default: '#666666' }};">
+                            {{ related_date | date: '%b %d, %Y' }}
+                          </p>
+                        {%- endif -%}
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                  
+                  {%- comment -%} Button {%- endcomment -%}
+                  {%- if section.settings.show_related_read_more -%}
+                    <div class="blog-btn {{ section.settings.related_read_more_margin_top | default: 'mt-md' }}">
+                      <a href="{{ related_url }}" class="btn {{ section.settings.related_read_more_button_style | default: 'btn-link' }}" style="color: {{ section.settings.related_read_more_button_color | default: '#000000' }};">
+                        <span>{{ section.settings.related_read_more_button_text | default: "Read more" }}</span>
+                        {%- if section.settings.show_related_read_more_icon -%}
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none" class="mt-1">
+                            <path d="M9.70697 17.3491L15.414 11.6421L9.70697 5.93506L8.29297 7.34906L12.586 11.6421L8.29297 15.9351L9.70697 17.3491Z" fill="currentColor" />
+                          </svg>
+                        {%- endif -%}
+                      </a>
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+              {%- assign related_count = related_count | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Post Details",
+  "tag": "section",
+  "class": "post-detail-section",
+  "enabled_on": {
+    "templates": ["post"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section Width",
+      "options": [
+        { "value": "contained", "label": "Contained" },
+        { "value": "full", "label": "Full Width" }
+      ],
+      "default": "contained"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "header",
+      "content": "Post Content Typography"
+    },
+    {
+      "type": "select",
+      "id": "content_font_size",
+      "label": "Content Font Size (Mobile)",
+      "options": [
+        { "value": "text-sm", "label": "SM" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "LG" },
+        { "value": "text-xl", "label": "XL" },
+        { "value": "text-2xl", "label": "2XL" }
+      ],
+      "default": "text-base"
+    },
+    {
+      "type": "select",
+      "id": "content_font_size_desktop",
+      "label": "Content Font Size (Desktop)",
+      "options": [
+        { "value": "lg:text-sm", "label": "SM" },
+        { "value": "lg:text-base", "label": "Base" },
+        { "value": "lg:text-lg", "label": "LG" },
+        { "value": "lg:text-xl", "label": "XL" },
+        { "value": "lg:text-2xl", "label": "2XL" }
+      ],
+      "default": "lg:text-lg"
+    },
+    {
+      "type": "color_background",
+      "id": "content_color",
+      "label": "Content Color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Related Posts Settings"
+    },
+    {
+      "type": "select",
+      "id": "related_title_font_size",
+      "label": "Related Posts Title Font Size",
+      "options": [
+        { "value": "text-h1", "label": "H1" },
+        { "value": "text-h2", "label": "H2" },
+        { "value": "text-h3", "label": "H3" },
+        { "value": "text-h4", "label": "H4" }
+      ],
+      "default": "text-h2"
+    },
+    {
+      "type": "select",
+      "id": "related_title_font_weight",
+      "label": "Related Posts Title Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-bold"
+    },
+    {
+      "type": "color_background",
+      "id": "related_title_color",
+      "label": "Related Posts Title Color",
+      "default": "#000000"
+    },
+    {
+      "type": "select",
+      "id": "related_grid_gap_mobile",
+      "label": "Related Grid Gap (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" },
+        { "value": "space-3xl", "label": "3XL" },
+        { "value": "space-4xl", "label": "4XL" },
+        { "value": "space-5xl", "label": "5XL" }
+      ],
+      "default": "space-5xl"
+    },
+    {
+      "type": "select",
+      "id": "related_grid_gap_desktop",
+      "label": "Related Grid Gap (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" },
+        { "value": "lg:space-3xl", "label": "3XL" },
+        { "value": "lg:space-4xl", "label": "4XL" },
+        { "value": "lg:space-5xl", "label": "5XL" }
+      ],
+      "default": "lg:space-5xl"
+    },
+    {
+      "type": "select",
+      "id": "related_item_spacing_mobile",
+      "label": "Related Item Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" },
+        { "value": "space-2xl", "label": "2XL" }
+      ],
+      "default": "space-xl"
+    },
+    {
+      "type": "select",
+      "id": "related_item_spacing_desktop",
+      "label": "Related Item Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" },
+        { "value": "lg:space-2xl", "label": "2XL" }
+      ],
+      "default": "lg:space-2xl"
+    },
+    {
+      "type": "select",
+      "id": "related_content_spacing_mobile",
+      "label": "Related Content Spacing (Mobile)",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" },
+        { "value": "space-lg", "label": "LG" },
+        { "value": "space-xl", "label": "XL" }
+      ],
+      "default": "space-md"
+    },
+    {
+      "type": "select",
+      "id": "related_content_spacing_desktop",
+      "label": "Related Content Spacing (Desktop)",
+      "options": [
+        { "value": "lg:space-xs", "label": "XS" },
+        { "value": "lg:space-sm", "label": "SM" },
+        { "value": "lg:space-md", "label": "MD" },
+        { "value": "lg:space-lg", "label": "LG" },
+        { "value": "lg:space-xl", "label": "XL" }
+      ],
+      "default": "lg:space-lg"
+    },
+    {
+      "type": "corner_radius",
+      "id": "related_image_border_radius",
+      "label": "Related Image Border Radius"
+    },
+    {
+      "type": "select",
+      "id": "related_image_height",
+      "label": "Related Image Height",
+      "options": [
+        { "value": "auto", "label": "Auto" },
+        { "value": "200px", "label": "Small (200px)" },
+        { "value": "250px", "label": "Medium (250px)" },
+        { "value": "300px", "label": "Large (300px)" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_category",
+      "label": "Show Related Category",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "related_category_font_size",
+      "label": "Related Category Font Size",
+      "options": [
+        { "value": "text-xs", "label": "XS" },
+        { "value": "text-sm", "label": "SM" },
+        { "value": "text-base", "label": "Base" }
+      ],
+      "default": "text-sm"
+    },
+    {
+      "type": "select",
+      "id": "related_category_font_weight",
+      "label": "Related Category Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "color_background",
+      "id": "related_category_color",
+      "label": "Related Category Color",
+      "default": "#666666"
+    },
+    {
+      "type": "select",
+      "id": "related_title_tag",
+      "label": "Related Post Title Tag",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" },
+        { "value": "h5", "label": "H5" }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "related_card_title_font_size",
+      "label": "Related Post Title Font Size",
+      "options": [
+        { "value": "text-h3", "label": "H3" },
+        { "value": "text-h4", "label": "H4" },
+        { "value": "text-h5", "label": "H5" },
+        { "value": "text-h6", "label": "H6" }
+      ],
+      "default": "text-h4"
+    },
+    {
+      "type": "select",
+      "id": "related_card_title_font_weight",
+      "label": "Related Post Title Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-semibold"
+    },
+    {
+      "type": "color_background",
+      "id": "related_card_title_color",
+      "label": "Related Post Title Color",
+      "default": "#000000"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_excerpt",
+      "label": "Show Related Excerpt",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "related_excerpt_font_size",
+      "label": "Related Excerpt Font Size (Mobile)",
+      "options": [
+        { "value": "text-sm", "label": "SM" },
+        { "value": "text-base", "label": "Base" },
+        { "value": "text-lg", "label": "LG" }
+      ],
+      "default": "text-base"
+    },
+    {
+      "type": "select",
+      "id": "related_excerpt_font_size_desktop",
+      "label": "Related Excerpt Font Size (Desktop)",
+      "options": [
+        { "value": "lg:text-sm", "label": "SM" },
+        { "value": "lg:text-base", "label": "Base" },
+        { "value": "lg:text-lg", "label": "LG" }
+      ],
+      "default": "lg:text-base"
+    },
+    {
+      "type": "select",
+      "id": "related_excerpt_font_weight",
+      "label": "Related Excerpt Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" }
+      ],
+      "default": "font-normal"
+    },
+    {
+      "type": "color_background",
+      "id": "related_excerpt_color",
+      "label": "Related Excerpt Color",
+      "default": "#000000"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_author",
+      "label": "Show Related Author",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_author_image",
+      "label": "Show Related Author Image",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_date",
+      "label": "Show Related Date",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "related_author_font_size",
+      "label": "Related Author Font Size",
+      "options": [
+        { "value": "text-xs", "label": "XS" },
+        { "value": "text-sm", "label": "SM" },
+        { "value": "text-base", "label": "Base" }
+      ],
+      "default": "text-sm"
+    },
+    {
+      "type": "select",
+      "id": "related_author_font_weight",
+      "label": "Related Author Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "color_background",
+      "id": "related_author_color",
+      "label": "Related Author Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color_background",
+      "id": "related_date_color",
+      "label": "Related Date Color",
+      "default": "#666666"
+    },
+    {
+      "type": "select",
+      "id": "related_author_gap",
+      "label": "Related Author Gap",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" },
+        { "value": "space-md", "label": "MD" }
+      ],
+      "default": "space-sm"
+    },
+    {
+      "type": "select",
+      "id": "related_author_info_spacing",
+      "label": "Related Author Info Spacing",
+      "options": [
+        { "value": "space-xs", "label": "XS" },
+        { "value": "space-sm", "label": "SM" }
+      ],
+      "default": "space-xs"
+    },
+    {
+      "type": "select",
+      "id": "related_meta_font_size",
+      "label": "Related Meta Font Size",
+      "options": [
+        { "value": "text-xs", "label": "XS" },
+        { "value": "text-sm", "label": "SM" }
+      ],
+      "default": "text-sm"
+    },
+    {
+      "type": "select",
+      "id": "related_meta_font_weight",
+      "label": "Related Meta Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" }
+      ],
+      "default": "font-normal"
+    },
+    {
+      "type": "color_background",
+      "id": "related_meta_color",
+      "label": "Related Meta Color",
+      "default": "#666666"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_read_more",
+      "label": "Show Related Read More Button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "related_read_more_button_text",
+      "label": "Related Read More Button Text",
+      "default": "Read more"
+    },
+    {
+      "type": "select",
+      "id": "related_read_more_button_style",
+      "label": "Related Read More Button Style",
+      "options": [
+        { "value": "btn-link", "label": "Link" },
+        { "value": "btn-bg-primary", "label": "Primary Background" },
+        { "value": "btn-border-primary", "label": "Primary Border" }
+      ],
+      "default": "btn-link"
+    },
+    {
+      "type": "color_background",
+      "id": "related_read_more_button_color",
+      "label": "Related Read More Button Color",
+      "default": "#000000"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_read_more_icon",
+      "label": "Show Related Read More Icon",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "related_read_more_margin_top",
+      "label": "Related Read More Button Margin Top",
+      "options": [
+        { "value": "mt-0", "label": "0" },
+        { "value": "mt-xs", "label": "XS" },
+        { "value": "mt-sm", "label": "SM" },
+        { "value": "mt-md", "label": "MD" },
+        { "value": "mt-lg", "label": "LG" }
+      ],
+      "default": "mt-md"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "breadcrumb",
+      "name": "Breadcrumb",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "home_text",
+          "label": "Home Label",
+          "default": "Home"
+        },
+        {
+          "type": "text",
+          "id": "posts_text",
+          "label": "Posts Label",
+          "default": "Posts"
+        },
+        {
+          "type": "text",
+          "id": "posts_link",
+          "label": "Posts Link",
+          "default": "/post_page"
+        }
+      ]
+    },
+    {
+      "type": "page_header",
+      "name": "Page Header",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_page_title",
+          "label": "Show Title",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "title_heading_tag",
+          "label": "Title HTML Tag",
+          "options": [
+            { "value": "h1", "label": "H1" },
+            { "value": "h2", "label": "H2" },
+            { "value": "h3", "label": "H3" }
+          ],
+          "default": "h1"
+        },
+        {
+          "type": "select",
+          "id": "title_font_size",
+          "label": "Title Font Size",
+          "options": [
+            { "value": "text-h1", "label": "H1" },
+            { "value": "text-h2", "label": "H2" },
+            { "value": "text-h3", "label": "H3" },
+            { "value": "text-h4", "label": "H4" }
+          ],
+          "default": "text-h1"
+        },
+        {
+          "type": "select",
+          "id": "title_font_weight",
+          "label": "Title Font Weight",
+          "options": [
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-bold"
+        },
+        {
+          "type": "color_background",
+          "id": "title_color",
+          "label": "Title Color",
+          "default": "#000000"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_meta",
+          "label": "Show Date & Author",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "meta_font_size",
+          "label": "Meta Font Size",
+          "options": [
+            { "value": "text-xs", "label": "XS" },
+            { "value": "text-sm", "label": "SM" },
+            { "value": "text-base", "label": "Base" }
+          ],
+          "default": "text-sm"
+        },
+        {
+          "type": "select",
+          "id": "meta_font_weight",
+          "label": "Meta Font Weight",
+          "options": [
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" }
+          ],
+          "default": "font-normal"
+        },
+        {
+          "type": "color_background",
+          "id": "meta_color",
+          "label": "Meta Color",
+          "default": "#666666"
+        }
+      ]
+    },
+    {
+      "type": "post_image",
+      "name": "Post Image",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "corner_radius",
+          "id": "image_border_radius",
+          "label": "Image Border Radius"
+        },
+        {
+          "type": "select",
+          "id": "image_height",
+          "label": "Image Height",
+          "options": [
+            { "value": "auto", "label": "Auto" },
+            { "value": "300px", "label": "Small (300px)" },
+            { "value": "400px", "label": "Medium (400px)" },
+            { "value": "500px", "label": "Large (500px)" },
+            { "value": "600px", "label": "Extra Large (600px)" }
+          ],
+          "default": "auto"
+        }
+      ]
+    },
+    {
+      "type": "post_content",
+      "name": "Post Content",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Related Posts"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_related_posts",
+          "label": "Show Related Posts",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "related_posts_title",
+          "label": "Related Posts Heading",
+          "default": "Related Posts"
+        },
+        {
+          "type": "range",
+          "id": "related_posts_count",
+          "label": "Number of Related Posts",
+          "min": 1,
+          "max": 6,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "select",
+          "id": "related_image_ratio",
+          "label": "Related Card Image Ratio",
+          "options": [
+            { "value": "landscape", "label": "Landscape (16:10)" },
+            { "value": "square", "label": "Square (1:1)" },
+            { "value": "portrait", "label": "Portrait (4:5)" },
+            { "value": "adapt", "label": "Adapt to image" }
+          ],
+          "default": "landscape"
+        },
+        {
+          "type": "range",
+          "id": "related_col_desktop",
+          "label": "Related Columns (Desktop)",
+          "min": 1,
+          "max": 4,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "related_col_tablet",
+          "label": "Related Columns (Tablet)",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "default": 2
+        },
+        {
+          "type": "range",
+          "id": "related_col_mobile",
+          "label": "Related Columns (Mobile)",
+          "min": 1,
+          "max": 2,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Post Details",
+      "blocks": [
+        { "type": "breadcrumb" },
+        { "type": "page_header" },
+        { "type": "post_image" },
+        { "type": "post_content" }
+      ]
+    }
+  ]
+}
+{% endschema %}

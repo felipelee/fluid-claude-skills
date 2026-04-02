@@ -1,0 +1,626 @@
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+
+{% assign bg_url = '' %}
+{% assign bg_fluid_media_id = '' %}
+
+{% if section.settings.background_image %}
+  {% if section.settings.background_image.url %}
+    {% comment %} It's an object with url property {% endcomment %}
+    {% assign bg_url = section.settings.background_image.url %}
+    {% comment %} Check if it also has fluid_media_id from media picker {% endcomment %}
+    {% if section.settings.background_image.fluid_media_id %}
+      {% assign bg_fluid_media_id = section.settings.background_image.fluid_media_id %}
+      {% assign bg_embed_type = section.settings.background_image.embed_type %}
+    {% endif %}
+  {% else %}
+    {% comment %} It's a string URL {% endcomment %}
+    {% assign bg_url = section.settings.background_image %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Determine whether to use fluid widget - if fluid_media_id exists, use widget {% endcomment %}
+{% assign use_fluid_widget = false %}
+
+{% if bg_fluid_media_id != '' %}
+  {% assign use_fluid_widget = true %}
+{% endif %}
+
+<section class="feature8-section section-{{ section.id }}" 
+         style="background-color: {{ section.settings.background_color | default: '#ffffff' }};
+                {% if section.settings.background_image != blank %}
+                background-image: url('{% unless use_fluid_widget %}{{ bg_url }}{% endunless %}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                {% endif %}
+                position: relative;">
+  
+  {% if use_fluid_widget %}
+    <fluid-media-widget class="fluid-media-widget-background" media-id="{{ bg_fluid_media_id }}" responsive="true" embed-type="{{ bg_embed_type | default: 'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+  {% endif %}
+  {%- assign ov = section.settings.overlay -%}
+  {%- if ov and ov.enabled -%}
+    <div class="overlay-{{ section.id }}"></div>
+    {%- style -%}
+      .overlay-{{ section.id }} {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        {%- if ov.mode == 'gradient' and ov.colors.size > 1 -%}
+          background:
+            {%- if ov.gradientType == 'radial' -%}
+              radial-gradient(
+            {%- else -%}
+              linear-gradient({{ ov.angle }}deg,
+            {%- endif -%}
+            {%- for stop in ov.colors -%}
+              {{ stop.color }} {{ stop.position }}%{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          );
+          opacity: {{ ov.colors.first.opacity | divided_by: 100.0 }};
+        {%- else -%}
+          {%- assign c = ov.colors | first -%}
+          background-color: {{ c.color }};
+          opacity: {{ c.opacity | divided_by: 100.0 }};
+        {%- endif -%}
+      }
+    {%- endstyle -%}
+  {%- endif -%}
+  
+  <div class="container" style="position: relative; z-index: 2;">
+    <div class="feature8-wrapper grid grid-cols-1 sm-desktop-grid-cols-2 space-7xl align-center">
+      
+      <!-- Heading Column -->
+      <div class="feature8-heading-column">
+        {% if section.settings.tagline != blank %}
+          <div class="feature8-tagline rte mb-4xl">
+            {{ section.settings.tagline }}
+          </div>
+        {% endif %}
+        
+        {% if section.settings.heading != blank %}
+          <div class="feature8__heading rte">
+            {{ section.settings.heading }}
+          </div>
+        {% endif %}
+        
+        {% if section.settings.description != blank %}
+          <div class="feature8-description rte mt-2xl">
+            {{ section.settings.description }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Features Column -->
+      <div class="feature8-features-column">
+        <div class="feature8-features-grid grid grid-cols-2 md-tab-grid-cols-3 sm-desktop-grid-cols-6 space-2xl">
+          
+          <!-- Feature 1 -->
+          <div class="feature8-feature text-center">
+            <div class="feature8-image mb-md flex justify-center">
+              {% assign feature_1_image_input = section.settings.feature_1_image %}
+              {% assign feature_1_image_input_fluid_media_id = '' %}
+              
+              {% if feature_1_image_input.fluid_media_id %}
+                {% assign feature_1_image_input_fluid_media_id = feature_1_image_input.fluid_media_id %}
+                {% assign feature_1_image_input_embed_type = feature_1_image_input.embed_type %}
+              {% endif %}
+
+              {% assign use_feature_1_image_fluid_image_widget = false %}
+              
+              {% if feature_1_image_input_fluid_media_id != '' %}
+                {% assign use_feature_1_image_fluid_image_widget = true %}
+              {% endif %}
+
+              {% if use_feature_1_image_fluid_image_widget %}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ feature_1_image_input_fluid_media_id }}" responsive="true" embed-type="{{ feature_1_image_input_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {% else %}
+                {% if feature_1_image_input != blank %}
+                  
+                    <img src="{{ feature_1_image_input | image_url }}" alt="{{ block.settings.feature_1_image_alt | default: section.settings.feature_1_text}}" class="feature8-feature-image" loading="lazy" width="" height=""/>
+                  
+                {% else %}
+                  
+                  <div class="feature8-image-placeholder">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                  
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if section.settings.feature_1_text != blank %}
+              <div class="feature8-feature-text rte">
+                {{ section.settings.feature_1_text }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="feature8-feature text-center">
+            <div class="feature8-image mb-md flex justify-center">
+              {% assign feature_2_image_input = section.settings.feature_2_image %}
+              {% assign feature_2_image_input_fluid_media_id = '' %}
+              
+              {% if feature_2_image_input.fluid_media_id %}
+                {% assign feature_2_image_input_fluid_media_id = feature_2_image_input.fluid_media_id %}
+                {% assign feature_2_image_input_embed_type = feature_2_image_input.embed_type %}
+              {% endif %}
+
+              {% assign use_feature_2_image_fluid_image_widget = false %}
+              
+              {% if feature_2_image_input_fluid_media_id != blank %}
+                {% assign use_feature_2_image_fluid_image_widget = true %}
+              {% endif %}
+
+              {% if use_feature_2_image_fluid_image_widget %}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ feature_2_image_input_fluid_media_id }}" responsive="true" embed-type="{{ feature_2_image_input_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {% else %}
+                {% if feature_2_image_input != blank %}
+                  
+                    <img src="{{ feature_2_image_input | image_url }}" alt="{{ block.settings.feature_2_image_alt | default: section.settings.feature_2_text}}" class="feature8-feature-image" loading="lazy" width="" height=""/>
+                  
+                {% else %}
+                  
+                  <div class="feature8-image-placeholder">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                  
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if section.settings.feature_2_text != blank %}
+              <div class="feature8-feature-text rte">
+                {{ section.settings.feature_2_text }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature8-feature text-center">
+            <div class="feature8-image mb-md flex justify-center">
+              {% assign feature_3_image_input = section.settings.feature_3_image %}
+              {% assign feature_3_image_fluid_media_id = '' %}
+              
+              {% if feature_3_image_input.fluid_media_id %}
+                {% assign feature_3_image_fluid_media_id = feature_3_image_input.fluid_media_id %}
+                {% assign feature_3_image_embed_type = feature_3_image_input.embed_type %}
+              {% endif %}
+
+              {% assign use_feature_3_image_fluid_image_widget = false %}
+              
+              {% if feature_3_image_fluid_media_id != blank %}
+                {% assign use_feature_3_image_fluid_image_widget = true %}
+              {% endif %}
+
+              {% if use_feature_3_image_fluid_image_widget %}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ feature_3_image_fluid_media_id }}" responsive="true" embed-type="{{ feature_3_image_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {% else %}
+                {% if feature_3_image_input != blank %}
+                  
+                    <img src="{{ feature_3_image_input | image_url }}" alt="{{ block.settings.feature_3_image_alt | default: section.settings.feature_3_text}}" class="feature8-feature-image" loading="lazy" width="" height=""/>
+                  
+                {% else %}
+                  
+                  <div class="feature8-image-placeholder">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                  
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if section.settings.feature_3_text != blank %}
+              <div class="feature8-feature-text rte">
+                {{ section.settings.feature_3_text }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="feature8-feature text-center">
+            <div class="feature8-image mb-md flex justify-center">
+              {% assign feature_4_image_input = section.settings.feature_4_image %}
+              {% assign feature_4_image_input_fluid_media_id = '' %}
+              
+              {% if feature_4_image_input.fluid_media_id %}
+                {% assign feature_4_image_input_fluid_media_id = feature_4_image_input.fluid_media_id %}
+                {% assign feature_4_image_input_embed_type = feature_4_image_input.embed_type %}
+              {% endif %}
+
+              {% assign use_feature_4_image_fluid_image_widget = false %}
+              
+              {% if feature_4_image_input_fluid_media_id != blank %}
+                {% assign use_feature_4_image_fluid_image_widget = true %}
+              {% endif %}
+
+              {% if use_feature_4_image_fluid_image_widget %}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ feature_4_image_input_fluid_media_id }}" responsive="true" embed-type="{{ feature_4_image_input_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {% else %}
+                {% if feature_4_image_input != blank %}
+                  
+                    <img src="{{ feature_4_image_input | image_url }}" alt="{{ block.settings.feature_4_image_alt | default: section.settings.feature_4_text}}" class="ffeature8-feature-image" loading="lazy" width="" height=""/>
+                  
+                {% else %}
+                  
+                  <div class="feature8-image-placeholder">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                  
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if section.settings.feature_4_text != blank %}
+              <div class="feature8-feature-text rte">
+                {{ section.settings.feature_4_text }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="feature8-feature text-center">
+            <div class="feature8-image mb-md flex justify-center">
+              {% assign feature_5_image_input = section.settings.feature_5_image %}
+              {% assign feature_5_image_input_fluid_media_id = '' %}
+              
+              {% if feature_5_image_input.fluid_media_id %}
+                {% assign feature_5_image_input_fluid_media_id = feature_5_image_input.fluid_media_id %}
+                {% assign feature_5_image_input_embed_type = feature_5_image_input.embed_type %}
+              {% endif %}
+
+              {% assign use_feature_5_image_fluid_image_widget = false %}
+              
+              {% if feature_5_image_input_fluid_media_id != blank %}
+                {% assign use_feature_5_image_fluid_image_widget = true %}
+              {% endif %}
+
+              {% if use_feature_5_image_fluid_image_widget %}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ feature_5_image_input_fluid_media_id }}" responsive="true" embed-type="{{ feature_5_image_input_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {% else %}
+                {% if feature_5_image_input != blank %}
+                  
+                    <img src="{{ feature_5_image_input | image_url }}" alt="{{ block.settings.feature_5_image_alt | default: section.settings.feature_5_text}}" class="ffeature8-feature-image" loading="lazy" width="" height=""/>
+                  
+                {% else %}
+                  
+                  <div class="feature8-image-placeholder">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                  
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if section.settings.feature_5_text != blank %}
+              <div class="feature8-feature-text rte">
+                {{ section.settings.feature_5_text }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="feature8-feature text-center">
+            <div class="feature8-image mb-md flex justify-center">
+              {% assign feature_6_image_input = section.settings.feature_6_image %}
+              {% assign feature_6_image_fluid_media_id = '' %}
+              
+              {% if feature_6_image_input.fluid_media_id %}
+                {% assign feature_6_image_fluid_media_id = feature_6_image_input.fluid_media_id %}
+                {% assign feature_6_image_embed_type = feature_6_image_input.embed_type %}
+              {% endif %}
+
+              {% assign use_feature_6_image_fluid_image_widget = false %}
+              
+              {% if feature_6_image_fluid_media_id != blank %}
+                {% assign use_feature_6_image_fluid_image_widget = true %}
+              {% endif %}
+
+              {% if use_feature_6_image_fluid_image_widget %}
+                <fluid-media-widget class="fluid-media-widget-image" media-id="{{ feature_6_image_fluid_media_id }}" responsive="true" embed-type="{{ feature_6_image_embed_type | default:'inline' }}" data-fluid-widget="true"></fluid-media-widget>
+              {% else %}
+                {% if feature_6_image_input != blank %}
+                  
+                    <img src="{{ feature_6_image_input | image_url }}" alt="{{ block.settings.feature_6_image_alt | default: section.settings.feature_6_text}}" class="ffeature8-feature-image" loading="lazy" width="" height=""/>
+                  
+                {% else %}
+                  
+                  <div class="feature8-image-placeholder">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                  </div>
+                  
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if section.settings.feature_6_text != blank %}
+              <div class="feature8-feature-text rte">
+                {{ section.settings.feature_6_text }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.feature8-section .feature8-feature-image {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.feature8-section .feature8-image-placeholder {
+  width: 48px;
+  height: 48px;
+  background-color: #f3f4f6;
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+@media (max-width: 1023px) {
+  .feature8-section .feature8-wrapper {
+    gap: 48px;
+    grid-template-columns: 1fr;
+  }
+  
+  .feature8-section .feature8-heading-column {
+    text-align: center;
+  }
+  
+  .feature8-section .feature8-features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .feature8-section .feature8-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  
+  .feature8-section .feature8-wrapper {
+    gap: 32px;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Feature 8",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "tagline",
+      "label": "Tagline",
+      "info": "Optional tagline above the heading"
+    },
+    {
+      "type": "richtext",
+      "id": "heading",
+      "default": "<p>Amazing <em>features</em></p>",
+      "label": "Heading",
+      "info": "Main heading text — use italic for emphasis"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "info": "Optional description below the heading"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_1_image",
+      "label": "Feature 1 - Image"
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "label": "Image Fit",
+      "options": [
+        { "value": "cover", "label": "Cover (Fill Container)" },
+        { "value": "contain", "label": "Contain (Fit Inside)" },
+        { "value": "fit-width", "label": "Fit to Width" },
+        { "value": "fit-height", "label": "Fit to Height" }
+      ],
+      "default": "cover"
+    },
+
+    {
+
+      "type": "range",
+
+      "id": "max_width",
+
+      "min": 0,
+
+      "max": 2000,
+
+      "step": 1,
+
+      "label": "Max Width (px)",
+
+      "info": "Leave empty for no limit"
+
+    },
+
+    {
+
+      "type": "range",
+
+      "id": "max_height",
+
+      "min": 0,
+
+      "max": 2000,
+
+      "step": 1,
+
+      "label": "Max Height (px)",
+
+      "info": "Leave empty for no limit"
+
+    },
+    {
+      "type": "corner_radius",
+      "id": "media_border_radius",
+      "label": "Image Border Radius",
+      "info": "Override theme default media radius"
+    },
+    {
+      "type": "text",
+      "id": "feature_1_image_alt",
+      "label": "Feature 1 - Image Alt Text"
+    },
+    {
+      "type": "richtext",
+      "id": "feature_1_text",
+      "default": "<p>Feature benefit one</p>",
+      "label": "Feature 1 - Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_2_image",
+      "label": "Feature 2 - Image"
+    },
+    {
+      "type": "text",
+      "id": "feature_2_image_alt",
+      "label": "Feature 2 - Image Alt Text"
+    },
+    {
+      "type": "richtext",
+      "id": "feature_2_text",
+      "default": "<p>Feature benefit two</p>",
+      "label": "Feature 2 - Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_3_image",
+      "label": "Feature 3 - Image"
+    },
+    {
+      "type": "text",
+      "id": "feature_3_image_alt",
+      "label": "Feature 3 - Image Alt Text"
+    },
+    {
+      "type": "richtext",
+      "id": "feature_3_text",
+      "default": "<p>Feature benefit three</p>",
+      "label": "Feature 3 - Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_4_image",
+      "label": "Feature 4 - Image"
+    },
+    {
+      "type": "text",
+      "id": "feature_4_image_alt",
+      "label": "Feature 4 - Image Alt Text"
+    },
+    {
+      "type": "richtext",
+      "id": "feature_4_text",
+      "default": "<p>Feature benefit four</p>",
+      "label": "Feature 4 - Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_5_image",
+      "label": "Feature 5 - Image"
+    },
+    {
+      "type": "text",
+      "id": "feature_5_image_alt",
+      "label": "Feature 5 - Image Alt Text"
+    },
+    {
+      "type": "richtext",
+      "id": "feature_5_text",
+      "default": "<p>Feature benefit five</p>",
+      "label": "Feature 5 - Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "feature_6_image",
+      "label": "Feature 6 - Image"
+    },
+    {
+      "type": "text",
+      "id": "feature_6_image_alt",
+      "label": "Feature 6 - Image Alt Text"
+    },
+    {
+      "type": "richtext",
+      "id": "feature_6_text",
+      "default": "<p>Feature benefit six</p>",
+      "label": "Feature 6 - Text"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "default": "#ffffff",
+      "label": "Background Color"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Optional background image (will override background color)"
+    },
+    {
+      "type": "gradient_overlay",
+      "id": "overlay",
+      "label": "Overlay"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ]
+}
+{% endschema %}

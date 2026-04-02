@@ -1,0 +1,673 @@
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+<section class="cta-banner3-section section-{{ section.id }}" 
+         style="background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+                {% if section.settings.background_image != blank %}
+                background-image: url('{{ section.settings.background_image | image_url: width: 1920 }}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                {% endif %}">
+  
+  {%- assign ov = section.settings.overlay -%}
+  {%- if ov and ov.enabled -%}
+    <div class="overlay-{{ section.id }}"></div>
+    {%- style -%}
+      .overlay-{{ section.id }} {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        {%- if ov.mode == 'gradient' and ov.colors.size > 1 -%}
+          background:
+            {%- if ov.gradientType == 'radial' -%}
+              radial-gradient(
+            {%- else -%}
+              linear-gradient({{ ov.angle }}deg,
+            {%- endif -%}
+            {%- for stop in ov.colors -%}
+              {{ stop.color }} {{ stop.position }}%{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          );
+          opacity: {{ ov.colors.first.opacity | divided_by: 100.0 }};
+        {%- else -%}
+          {%- assign c = ov.colors | first -%}
+          background-color: {{ c.color }};
+          opacity: {{ c.opacity | divided_by: 100.0 }};
+        {%- endif -%}
+      }
+    {%- endstyle -%}
+  {%- endif -%}
+  
+  <div class="container" style="position: relative; z-index: 2;">
+    <div class="cta-banner3-wrapper text-center py-10xl">
+      
+      <!-- Centered Content -->
+      <div class="cta-banner3-content max-w-4xl mx-auto">
+        {%- if section.blocks.size > 0 -%}
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'heading' -%}
+                <div class="rte mb-lg" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+              {%- when 'text' -%}
+                <div class="rte mb-2xl max-w-3xl mx-auto" {{ block.fluid_attributes }}>{{ block.settings.content }}</div>
+              {%- when 'buttons' -%}
+                <div class="cta-banner3-buttons flex justify-center space-lg flex-wrap mb-7xl" {{ block.fluid_attributes }}>
+                  {% if block.settings.show_button_1 and block.settings.button_1_text != blank %}
+                    {%- assign _primary_bg = block.settings.button_1_bg | default: '#000000' -%}
+                    {%- assign _primary_text = block.settings.button_1_text_color | default: '#ffffff' -%}
+                    {%- assign _btn1_size = block.settings.button_1_size | default: 'btn-md' -%}
+                    {%- assign _btn1_fw = block.settings.button_1_font_weight | default: '600' -%}
+                    {%- assign _btn1_w = block.settings.button_1_width -%}
+                    {%- assign _btn1_h = block.settings.button_1_height -%}
+                    {%- capture _btn1_extra_style -%}font-weight: {{ _btn1_fw }};{% if _btn1_w != blank %} width: {{ _btn1_w }}px;{% endif %}{% if _btn1_h != blank %} height: {{ _btn1_h }}px;{% endif %}{%- endcapture -%}
+                    {%- assign _primary_style = 'background-color: ' | append: _primary_bg | append: '; color: ' | append: _primary_text | append: '; border: 1px solid ' | append: _primary_bg | append: '; ' | append: _btn1_extra_style -%}
+                    {%- assign _primary_attr = 'style="' | append: _primary_style | append: '"' -%}
+                    {% render 'button', href: block.settings.button_1_link | default: '#', text: block.settings.button_1_text, class: _btn1_size, attr: _primary_attr %}
+                  {% endif %}
+                  {% if block.settings.show_button_2 and block.settings.button_2_text != blank %}
+                    {%- assign _secondary_text = block.settings.button_2_text_color | default: '#000000' -%}
+                    {%- assign _secondary_border = block.settings.button_2_border | default: '#000000' -%}
+                    {%- assign _btn2_size = block.settings.button_2_size | default: 'btn-md' -%}
+                    {%- assign _btn2_fw = block.settings.button_2_font_weight | default: '600' -%}
+                    {%- assign _btn2_w = block.settings.button_2_width -%}
+                    {%- assign _btn2_h = block.settings.button_2_height -%}
+                    {%- capture _btn2_extra_style -%}font-weight: {{ _btn2_fw }};{% if _btn2_w != blank %} width: {{ _btn2_w }}px;{% endif %}{% if _btn2_h != blank %} height: {{ _btn2_h }}px;{% endif %}{%- endcapture -%}
+                    {%- assign _secondary_style = 'background-color: transparent; color: ' | append: _secondary_text | append: '; border: 1px solid ' | append: _secondary_border | append: '; ' | append: _btn2_extra_style -%}
+                    {%- assign _secondary_attr = 'style="' | append: _secondary_style | append: '"' -%}
+                    {% render 'button', href: block.settings.button_2_link | default: '#', text: block.settings.button_2_text, class: _btn2_size, attr: _secondary_attr %}
+                  {% endif %}
+                </div>
+              {%- when 'link' -%}
+                {% if block.settings.text != blank %}
+                  {% render 'link',
+                    href: block.settings.url | default: '#',
+                    text: block.settings.text,
+                    underline: block.settings.underline_style,
+                    icon_position: block.settings.icon_position,
+                    color: block.settings.color,
+                    font_weight: block.settings.font_weight,
+                    attr: block.fluid_attributes
+                  %}
+                {% endif %}
+            {%- endcase -%}
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+      
+      <!-- Logos Section -->
+      <div class="cta-banner3-logos">
+        <div class="logos-container flex justify-center align-center space-4xl flex-wrap">
+          
+          <!-- Logo 1 -->
+          <div class="logo-item">
+            {% if section.settings.logo_1 != blank %}
+              {% if section.settings.logo_1_link != blank %}
+                <a href="{{ section.settings.logo_1_link }}" target="_blank" rel="noopener">
+              {% endif %}
+              <img src="{{ section.settings.logo_1 | image_url: width: 120 }}" 
+                   alt="{{ section.settings.logo_1_alt | default: 'Partner logo' }}"
+                   class="logo-image"
+                   style="height: 40px; width: auto; object-fit: contain; opacity: 0.7;">
+              {% if section.settings.logo_1_link != blank %}
+                </a>
+              {% endif %}
+            {% else %}
+              <!-- Logo placeholder -->
+              <div class="logo-placeholder" style="background-color: #e5e5e5; border-radius: 6px; height: 40px; width: 100px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">
+                <div class="placeholder-content text-center" style="color: #999;">
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin: 0 auto;">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Logo 2 -->
+          <div class="logo-item">
+            {% if section.settings.logo_2 != blank %}
+              {% if section.settings.logo_2_link != blank %}
+                <a href="{{ section.settings.logo_2_link }}" target="_blank" rel="noopener">
+              {% endif %}
+              <img src="{{ section.settings.logo_2 | image_url: width: 120 }}" 
+                   alt="{{ section.settings.logo_2_alt | default: 'Partner logo' }}"
+                   class="logo-image"
+                   style="height: 40px; width: auto; object-fit: contain; opacity: 0.7;">
+              {% if section.settings.logo_2_link != blank %}
+                </a>
+              {% endif %}
+            {% else %}
+              <div class="logo-placeholder" style="background-color: #e5e5e5; border-radius: 6px; height: 40px; width: 100px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">
+                <div class="placeholder-content text-center" style="color: #999;">
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin: 0 auto;">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Logo 3 -->
+          <div class="logo-item">
+            {% if section.settings.logo_3 != blank %}
+              {% if section.settings.logo_3_link != blank %}
+                <a href="{{ section.settings.logo_3_link }}" target="_blank" rel="noopener">
+              {% endif %}
+              <img src="{{ section.settings.logo_3 | image_url: width: 120 }}" 
+                   alt="{{ section.settings.logo_3_alt | default: 'Partner logo' }}"
+                   class="logo-image"
+                   style="height: 40px; width: auto; object-fit: contain; opacity: 0.7;">
+              {% if section.settings.logo_3_link != blank %}
+                </a>
+              {% endif %}
+            {% else %}
+              <div class="logo-placeholder" style="background-color: #e5e5e5; border-radius: 6px; height: 40px; width: 100px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">
+                <div class="placeholder-content text-center" style="color: #999;">
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin: 0 auto;">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Logo 4 -->
+          <div class="logo-item">
+            {% if section.settings.logo_4 != blank %}
+              {% if section.settings.logo_4_link != blank %}
+                <a href="{{ section.settings.logo_4_link }}" target="_blank" rel="noopener">
+              {% endif %}
+              <img src="{{ section.settings.logo_4 | image_url: width: 120 }}" 
+                   alt="{{ section.settings.logo_4_alt | default: 'Partner logo' }}"
+                   class="logo-image"
+                   style="height: 40px; width: auto; object-fit: contain; opacity: 0.7;">
+              {% if section.settings.logo_4_link != blank %}
+                </a>
+              {% endif %}
+            {% else %}
+              <div class="logo-placeholder" style="background-color: #e5e5e5; border-radius: 6px; height: 40px; width: 100px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">
+                <div class="placeholder-content text-center" style="color: #999;">
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin: 0 auto;">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Logo 5 -->
+          <div class="logo-item">
+            {% if section.settings.logo_5 != blank %}
+              {% if section.settings.logo_5_link != blank %}
+                <a href="{{ section.settings.logo_5_link }}" target="_blank" rel="noopener">
+              {% endif %}
+              <img src="{{ section.settings.logo_5 | image_url: width: 120 }}" 
+                   alt="{{ section.settings.logo_5_alt | default: 'Partner logo' }}"
+                   class="logo-image"
+                   style="height: 40px; width: auto; object-fit: contain; opacity: 0.7;">
+              {% if section.settings.logo_5_link != blank %}
+                </a>
+              {% endif %}
+            {% else %}
+              <div class="logo-placeholder" style="background-color: #e5e5e5; border-radius: 6px; height: 40px; width: 100px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">
+                <div class="placeholder-content text-center" style="color: #999;">
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin: 0 auto;">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Logo 6 -->
+          <div class="logo-item">
+            {% if section.settings.logo_6 != blank %}
+              {% if section.settings.logo_6_link != blank %}
+                <a href="{{ section.settings.logo_6_link }}" target="_blank" rel="noopener">
+              {% endif %}
+              <img src="{{ section.settings.logo_6 | image_url: width: 120 }}" 
+                   alt="{{ section.settings.logo_6_alt | default: 'Partner logo' }}"
+                   class="logo-image"
+                   style="height: 40px; width: auto; object-fit: contain; opacity: 0.7;">
+              {% if section.settings.logo_6_link != blank %}
+                </a>
+              {% endif %}
+            {% else %}
+              <div class="logo-placeholder" style="background-color: #e5e5e5; border-radius: 6px; height: 40px; width: 100px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">
+                <div class="placeholder-content text-center" style="color: #999;">
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style="margin: 0 auto;">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<style>
+.cta-banner3-section {
+  position: relative;
+}
+
+.cta-banner3-section .cta-banner3-content {
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.cta-banner3-section .cta-banner3-content h2 {
+  margin-bottom: 24px;
+}
+
+.cta-banner3-section .cta-banner3-content p {
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.cta-banner3-section .cta-banner3-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.cta-banner3-section .cta-banner3-buttons .btn {
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cta-banner3-section .cta-banner3-buttons .btn:hover {
+  opacity: 0.8;
+}
+
+.cta-banner3-section .cta-banner3-logos {
+  margin-top: 48px;
+  padding-top: 32px;
+}
+
+.cta-banner3-section .logos-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.cta-banner3-section .logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cta-banner3-section .logo-image {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.cta-banner3-section .logo-image:hover {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .cta-banner3-section .cta-banner3-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-banner3-section .cta-banner3-buttons .btn {
+    text-align: center;
+    min-width: 200px;
+  }
+  
+  .cta-banner3-section .logos-container {
+    gap: 24px;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "CTA Banner 3",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "default": "#f8f8f8",
+      "label": "Background Color"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Optional background image (will override background color)"
+    },
+    {
+      "type": "gradient_overlay",
+      "id": "overlay",
+      "label": "Overlay"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_1",
+      "label": "Logo 1"
+    },
+    {
+      "type": "text",
+      "id": "logo_1_alt",
+      "label": "Logo 1 Alt Text",
+      "info": "Describe the logo for accessibility"
+    },
+    {
+      "type": "url",
+      "id": "logo_1_link",
+      "label": "Logo 1 Link",
+      "info": "Optional link when logo is clicked"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_2",
+      "label": "Logo 2"
+    },
+    {
+      "type": "text",
+      "id": "logo_2_alt",
+      "label": "Logo 2 Alt Text",
+      "info": "Describe the logo for accessibility"
+    },
+    {
+      "type": "url",
+      "id": "logo_2_link",
+      "label": "Logo 2 Link",
+      "info": "Optional link when logo is clicked"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_3",
+      "label": "Logo 3"
+    },
+    {
+      "type": "text",
+      "id": "logo_3_alt",
+      "label": "Logo 3 Alt Text",
+      "info": "Describe the logo for accessibility"
+    },
+    {
+      "type": "url",
+      "id": "logo_3_link",
+      "label": "Logo 3 Link",
+      "info": "Optional link when logo is clicked"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_4",
+      "label": "Logo 4"
+    },
+    {
+      "type": "text",
+      "id": "logo_4_alt",
+      "label": "Logo 4 Alt Text",
+      "info": "Describe the logo for accessibility"
+    },
+    {
+      "type": "url",
+      "id": "logo_4_link",
+      "label": "Logo 4 Link",
+      "info": "Optional link when logo is clicked"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_5",
+      "label": "Logo 5"
+    },
+    {
+      "type": "text",
+      "id": "logo_5_alt",
+      "label": "Logo 5 Alt Text",
+      "info": "Describe the logo for accessibility"
+    },
+    {
+      "type": "url",
+      "id": "logo_5_link",
+      "label": "Logo 5 Link",
+      "info": "Optional link when logo is clicked"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_6",
+      "label": "Logo 6"
+    },
+    {
+      "type": "text",
+      "id": "logo_6_alt",
+      "label": "Logo 6 Alt Text",
+      "info": "Describe the logo for accessibility"
+    },
+    {
+      "type": "url",
+      "id": "logo_6_link",
+      "label": "Logo 6 Link",
+      "info": "Optional link when logo is clicked"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Medium length heading</p>" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        { "type": "richtext", "id": "content", "label": "Content", "default": "<p>Lorem ipsum dolor sit amet.</p>" }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "Buttons",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "show_button_1", "label": "Show Button 1", "default": true },
+        { "type": "text", "id": "button_1_text", "label": "Button 1 Text", "default": "Button" },
+        { "type": "url", "id": "button_1_link", "label": "Button 1 Link" },
+        { "type": "color_background", "id": "button_1_bg", "label": "Button 1 Background", "default": "#000000" },
+        { "type": "color_background", "id": "button_1_text_color", "label": "Button 1 Text Color", "default": "#ffffff" },
+        { "type": "checkbox", "id": "show_button_2", "label": "Show Button 2", "default": false },
+        { "type": "text", "id": "button_2_text", "label": "Button 2 Text", "default": "Button" },
+        { "type": "url", "id": "button_2_link", "label": "Button 2 Link" },
+        { "type": "color_background", "id": "button_2_text_color", "label": "Button 2 Text Color", "default": "#000000" },
+        { "type": "color_background", "id": "button_2_border", "label": "Button 2 Border Color", "default": "#000000" },
+        {
+          "type": "select",
+          "id": "button_1_size",
+          "label": "Button 1 Size",
+          "options": [
+            { "value": "btn-xs", "label": "Extra Small" },
+            { "value": "btn-sm", "label": "Small" },
+            { "value": "btn-md", "label": "Medium" },
+            { "value": "btn-lg", "label": "Large" },
+            { "value": "btn-xl", "label": "Extra Large" }
+          ],
+          "default": "btn-md"
+        },
+        {
+          "type": "select",
+          "id": "button_1_font_weight",
+          "label": "Button 1 Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal" },
+            { "value": "500", "label": "Medium" },
+            { "value": "600", "label": "Semi Bold" },
+            { "value": "700", "label": "Bold" }
+          ],
+          "default": "600"
+        },
+        {
+          "type": "range",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "label": "Button 1 Width (px)",
+          "info": "Leave empty for auto width"
+        },
+        {
+          "type": "range",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "label": "Button 1 Height (px)",
+          "info": "Leave empty for auto height"
+        },
+        {
+          "type": "select",
+          "id": "button_2_size",
+          "label": "Button 2 Size",
+          "options": [
+            { "value": "btn-xs", "label": "Extra Small" },
+            { "value": "btn-sm", "label": "Small" },
+            { "value": "btn-md", "label": "Medium" },
+            { "value": "btn-lg", "label": "Large" },
+            { "value": "btn-xl", "label": "Extra Large" }
+          ],
+          "default": "btn-md"
+        },
+        {
+          "type": "select",
+          "id": "button_2_font_weight",
+          "label": "Button 2 Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal" },
+            { "value": "500", "label": "Medium" },
+            { "value": "600", "label": "Semi Bold" },
+            { "value": "700", "label": "Bold" }
+          ],
+          "default": "600"
+        },
+        {
+          "type": "range",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "label": "Button 2 Width (px)",
+          "info": "Leave empty for auto width"
+        },
+        {
+          "type": "range",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "label": "Button 2 Height (px)",
+          "info": "Leave empty for auto height"
+        }
+      ]
+    },
+    {
+      "type": "link",
+      "name": "Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Link Text",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link URL"
+        },
+        {
+          "type": "select",
+          "id": "underline_style",
+          "label": "Underline Style",
+          "options": [
+            { "value": "always", "label": "Always" },
+            { "value": "hover", "label": "On Hover Only" },
+            { "value": "never", "label": "Never" }
+          ],
+          "default": "hover"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Icon Position",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "before", "label": "Before Text" },
+            { "value": "after", "label": "After Text" }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "color",
+          "id": "color",
+          "label": "Link Color"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            { "value": "400", "label": "Normal" },
+            { "value": "500", "label": "Medium" },
+            { "value": "600", "label": "Semi Bold" },
+            { "value": "700", "label": "Bold" }
+          ],
+          "default": "400"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "CTA Banner 3", "blocks": [ { "type": "heading" }, { "type": "text" }, { "type": "buttons" } ] }
+  ]
+}
+{% endschema %} 

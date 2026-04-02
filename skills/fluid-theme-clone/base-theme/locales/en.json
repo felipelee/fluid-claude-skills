@@ -1,0 +1,130 @@
+{
+  "bundle": {
+    "whats_included": "What's Included",
+    "customize": "Customize Your Bundle",
+    "build_your_box": "Build Your Box",
+    "selected": "selected",
+    "qty": "Qty",
+    "add_item": "Add",
+    "remove": "Remove",
+    "pick_more": "PICK {{count}} MORE",
+    "bundle_complete": "BUNDLE COMPLETE!",
+    "total": "Total",
+    "selection_required": "Please complete all required selections before adding to cart."
+  },
+  "cart_page": {
+    "checkout": "Checkout",
+    "order_summary": "Order Summary",
+    "shipping": "Shipping estimate",
+    "ships_in": "Ships in 3-5 business days",
+    "shopping_cart": "Shopping Cart",
+    "subtotal": "Subtotal",
+    "tax": "Tax estimate",
+    "total": "Order total"
+  },
+	"components": {
+		"comment_form": {
+      "email": "Email",
+      "full_name": "Full Name",
+      "leave_info": "Please leave your information so {{ company }} will know who you are. You only need to do this once.",
+      "placeholder": "Add your comment",
+      "post": "Post",
+      "want_to_leave_comment": "Want to leave a comment?"
+    }
+	},
+  "enrollment_pack": {
+    "agree_to": "I agree to the",
+    "all_products": "All Products",
+    "checkout": "Checkout",
+    "first_payment": "First Payment on {{ date }}",
+    "learn_more": "Learn More",
+    "monthly_subscription": "Monthly Subscription",
+    "todays_purchase": "Today's Purchase"
+  },
+	"footer": {
+    "all_rights_reserved": "All rights reserved",
+    "cookies_settings": "Cookies Settings",
+    "link_1": "Link 1",
+    "link_2": "Link 2",
+    "link_3": "Link 3",
+    "link_4": "Link 4",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service"
+  },
+  "library": {
+    "commented": "commented",
+    "comments": "Comments",
+    "playlist": "Playlist"
+  },
+	"medium": {
+    "commented": "commented",
+    "comments": "Comments",
+		"products": "Products"
+	},
+	"navbar": {
+    "button_1": "Button 1",
+    "button_2": "Button 2",
+    "countries": "Countries",
+    "country": "Country",
+    "country_and_language": "Country and Language",
+    "done": "Done",
+    "language": "Language",
+    "languages": "Languages",
+    "link_1": "Link one",
+    "link_2": "Link two",
+    "link_3": "Link three",
+    "link_4": "Link four",
+    "save_and_close": "Save and Close",
+    "select_country": "Select your country",
+    "select_language": "Select Language",
+    "shop": "Shop",
+    "enrollments": "Enrollments",
+    "view_my_site": "View MySite"
+  },
+	"product": {
+    "add_to_cart": "Add to Cart",
+    "buy_now": "Buy Now",
+    "details": "Details",
+    "free_shipping": "Free Shipping over {{amount}}",
+    "product_name": "Product name",
+    "quantity": "Quantity",
+    "related_products": "Products",
+    "related_products_intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "return": "Return",
+    "return_content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat. Aenean faucibus nibh et justo cursus id rutrum lorem imperdiet. Nunc ut sem vitae risus tristique posuere.",
+    "reviews": "{{reviews}} reviews",
+    "shipping": "Shipping",
+    "shipping_content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat. Aenean faucibus nibh et justo cursus id rutrum lorem imperdiet. Nunc ut sem vitae risus tristique posuere.",
+    "shop_all": "Shop All",
+    "stars": "{{stars}} stars",
+    "tagline": "Tagline",
+    "testimonials": "Customer Testimonials",
+    "testimonials_intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "variant": "Variant",
+    "one_time_purchase":"One time purchase",
+    "subscribe":"Subscribe"
+  },
+  "subscribe_feature": {
+    "subscribe_and_save": "Subscribe to get {{save}}% off",
+    "subscribe_to_get": "Subscribe to get",
+    "off": "off",
+    "update_subscription": "Update your subscription anytime"
+  },
+	"shared": {
+    "button": "Button",
+    "medium_heading": "Medium length heading goes here",
+    "medium_intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique.",
+    "short_heading": "Short heading here",
+    "short_intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique.",
+    "tagline": "Tagline",
+    "view_all": "View All"
+  },
+	"shop_page": {
+    "button": "Button",
+    "heading": "Short heading here",
+    "intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique.",
+    "products": "Products",
+    "products_intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "tagline": "Tagline"
+  }
+}

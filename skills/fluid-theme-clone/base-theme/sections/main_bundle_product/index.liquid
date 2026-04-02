@@ -1,0 +1,1051 @@
+{% assign not_purchasable = product.out_of_stock | default: false %}
+{% if product.available_for_country != true %}{% assign not_purchasable = true %}{% endif %}
+{% if product.active != true %}{% assign not_purchasable = true %}{% endif %}
+
+{% assign breadcrumb_block = section.blocks | where: 'type', 'breadcrumb' | first %}
+{% assign heading_block = section.blocks | where: 'type', 'heading' | first %}
+{% assign description_block = section.blocks | where: 'type', 'description' | first %}
+{% assign bundle_groups_block = section.blocks | where: 'type', 'bundle_groups' | first %}
+{% assign subscribe_block = section.blocks | where: 'type', 'subscribe' | first %}
+{% assign subscription_package_block = section.blocks | where: 'type', 'subscription_package' | first %}
+{% assign buttons_block = section.blocks | where: 'type', 'buttons' | first %}
+
+{% assign layout_mode = section.settings.layout_mode | default: 'side-by-side' %}
+{% assign card_columns_mobile = bundle_groups_block.settings.card_columns_mobile | default: '2' %}
+{% assign card_columns_desktop = bundle_groups_block.settings.card_columns_desktop | default: '3' %}
+{% assign card_image_ratio = bundle_groups_block.settings.card_image_ratio | default: 'square' %}
+{% assign show_slot_preview = bundle_groups_block.settings.show_slot_preview | default: true %}
+{% assign show_variant_pills = bundle_groups_block.settings.show_variant_pills | default: true %}
+{% assign card_style = bundle_groups_block.settings.card_style | default: 'elevated' %}
+
+{%- style -%}
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     DESIGN TOKENS
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} {
+    --bbs-accent: {{ section.settings.accent_color | default: 'var(--clr-primary, #2365ea)' }};
+    --bbs-accent-light: {{ section.settings.accent_color_light | default: 'var(--clr-primary-50, #eff6ff)' }};
+    --bbs-card-bg: {{ bundle_groups_block.settings.card_background_color | default: '#ffffff' }};
+    --bbs-card-border: {{ bundle_groups_block.settings.card_border_color | default: '#e5e7eb' }};
+    --bbs-card-selected-border: {{ bundle_groups_block.settings.card_selected_border_color | default: 'var(--clr-primary, #2365ea)' }};
+    --bbs-card-radius: {{ bundle_groups_block.settings.card_border_radius | default: '16' }}px;
+    --bbs-group-bg: {{ bundle_groups_block.settings.group_background_color | default: '#f9fafb' }};
+    --bbs-group-heading-color: {{ bundle_groups_block.settings.group_heading_color | default: '#111827' }};
+    --bbs-item-name-color: {{ bundle_groups_block.settings.item_name_color | default: '#111827' }};
+    --bbs-item-price-color: {{ bundle_groups_block.settings.item_price_color | default: '#6b7280' }};
+    --bbs-pill-bg: {{ bundle_groups_block.settings.variant_pill_bg | default: '#f3f4f6' }};
+    --bbs-pill-active-bg: {{ bundle_groups_block.settings.variant_pill_active_bg | default: '#111827' }};
+    --bbs-pill-color: {{ bundle_groups_block.settings.variant_pill_color | default: '#374151' }};
+    --bbs-pill-active-color: {{ bundle_groups_block.settings.variant_pill_active_color | default: '#ffffff' }};
+    --bbs-slot-empty-border: {{ bundle_groups_block.settings.slot_empty_border_color | default: '#d1d5db' }};
+    --bbs-slot-filled-bg: {{ bundle_groups_block.settings.slot_filled_bg | default: 'var(--clr-primary-50, #eff6ff)' }};
+    --bbs-counter-bg: {{ bundle_groups_block.settings.counter_bg_color | default: 'var(--clr-primary, #2365ea)' }};
+    --bbs-counter-color: {{ bundle_groups_block.settings.counter_text_color | default: '#ffffff' }};
+    --bbs-panel-bg: {{ section.settings.summary_panel_bg | default: '#111827' }};
+    --bbs-panel-text: {{ section.settings.summary_panel_text_color | default: '#ffffff' }};
+  }
+
+  {% if breadcrumb_block and breadcrumb_block.settings.color != blank %}
+  .bbs-{{ section.id }} .breadcrumb a { color: {{ breadcrumb_block.settings.color }}; }
+  {% endif %}
+  {% if breadcrumb_block and breadcrumb_block.settings.active_color != blank %}
+  .bbs-{{ section.id }} .breadcrumb .active { color: {{ breadcrumb_block.settings.active_color }}; }
+  {% endif %}
+  {% if subscribe_block %}
+  .bbs-{{ section.id }} .subscribe-option input[type="radio"]:checked {
+    background-color: {{ subscribe_block.settings.radio_button_checked_color | default: '#ffffff' }};
+    border-color: {{ subscribe_block.settings.radio_button_checked_color | default: '#ffffff' }} !important;
+    accent-color: {{ subscribe_block.settings.radio_button_checked_color | default: '#ffffff' }} !important;
+  }
+  {% endif %}
+  {% if subscribe_block and subscribe_block.settings.radio_label_color != blank %}
+  .bbs-{{ section.id }} .subscribe-option label { color: {{ subscribe_block.settings.radio_label_color }}; }
+  {% endif %}
+
+  .bbs-{{ section.id }} .error-message {
+    background: {{ section.settings.error_message_background_color | default: '#fee2e2' }};
+    color: {{ section.settings.error_message_text_color | default: '#dc2626' }};
+    padding: 14px 18px; border-radius: 12px; margin: 8px 0;
+    font-size: 13px; font-weight: 500;
+  }
+  .bbs-{{ section.id }} .custom-select, .bbs-{{ section.id }} .quantity-input-field {
+    background-color: {{ section.settings.input_background_color | default: '#ffffff' }};
+    border-color: {{ section.settings.input_border_color | default: '#d1d5db' }};
+    color: {{ section.settings.input_text_color | default: '#374151' }};
+  }
+  .bbs-{{ section.id }} .custom-select:focus, .bbs-{{ section.id }} .quantity-input-field:focus {
+    border-color: {{ section.settings.input_focus_border_color | default: '#3b82f6' }};
+  }
+
+  {%- assign p = section.settings.section_padding -%}
+  {%- if p -%}
+    .section-{{ section.id }} {
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}{%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}{%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    }
+  {%- endif -%}
+  .section-{{ section.id }} {
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}{%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}{%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     LAYOUT
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-layout {
+    display: grid; gap: 40px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 1024px) {
+    .bbs-{{ section.id }} .bbs-layout--side-by-side {
+      grid-template-columns: 1fr 400px;
+      gap: 48px;
+    }
+  }
+  @media (min-width: 1280px) {
+    .bbs-{{ section.id }} .bbs-layout--side-by-side {
+      grid-template-columns: 1fr 440px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .bbs-{{ section.id }} .bbs-sidebar {
+      position: sticky; top: 100px; align-self: start;
+    }
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SUMMARY PANEL (right sidebar)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-panel {
+    background: var(--bbs-panel-bg);
+    color: var(--bbs-panel-text);
+    border-radius: 20px;
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bbs-{{ section.id }} .bbs-panel::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .bbs-{{ section.id }} .bbs-panel-title {
+    font-size: 28px; font-weight: 800;
+    line-height: 1.1; letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .bbs-{{ section.id }} .bbs-panel-subtitle {
+    font-size: 14px; opacity: 0.65;
+    line-height: 1.5; margin-bottom: 28px;
+    position: relative;
+  }
+
+  /* ── Slot preview ── */
+  .bbs-{{ section.id }} .bbs-slots {
+    display: flex; gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .bbs-{{ section.id }} .bbs-slot {
+    width: 60px; height: 60px;
+    border-radius: 14px;
+    border: 2px dashed rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .bbs-{{ section.id }} .bbs-slot.is-filled {
+    border-style: solid;
+    border-color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.12);
+    transform: scale(1);
+    animation: bbs-slot-pop-{{ section.id }} 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes bbs-slot-pop-{{ section.id }} {
+    0% { transform: scale(0.7); opacity: 0.3; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .bbs-{{ section.id }} .bbs-slot img {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 12px;
+  }
+
+  /* ── Progress ── */
+  .bbs-{{ section.id }} .bbs-progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .bbs-{{ section.id }} .bbs-progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.7), #fff);
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    width: 0%;
+    position: relative;
+  }
+  .bbs-{{ section.id }} .bbs-progress-fill::after {
+    content: '';
+    position: absolute; right: 0; top: -3px;
+    width: 10px; height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(255,255,255,0.6);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .bbs-{{ section.id }} .bbs-progress-fill.has-progress::after {
+    opacity: 1;
+  }
+  .bbs-{{ section.id }} .bbs-progress-label {
+    font-size: 15px; font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .bbs-{{ section.id }} .bbs-progress-label.is-complete {
+    color: #86efac;
+  }
+
+  /* ── Selected items list in panel ── */
+  .bbs-{{ section.id }} .bbs-panel-items {
+    position: relative;
+  }
+  .bbs-{{ section.id }} .bbs-panel-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    opacity: 0.85;
+    animation: bbs-item-in-{{ section.id }} 0.3s ease;
+  }
+  @keyframes bbs-item-in-{{ section.id }} {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 0.85; transform: translateX(0); }
+  }
+  .bbs-{{ section.id }} .bbs-panel-item + .bbs-panel-item {
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .bbs-{{ section.id }} .bbs-panel-item img {
+    width: 32px; height: 32px; border-radius: 8px; object-fit: cover;
+    flex-shrink: 0;
+  }
+  .bbs-{{ section.id }} .bbs-panel-item-name { flex: 1; }
+  .bbs-{{ section.id }} .bbs-panel-item-qty {
+    font-weight: 700; font-size: 12px;
+    background: rgba(255,255,255,0.12);
+    padding: 2px 8px; border-radius: 6px;
+  }
+
+  /* ── Divider ── */
+  .bbs-{{ section.id }} .bbs-panel-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 16px 0;
+    position: relative;
+  }
+
+  /* ── Total ── */
+  .bbs-{{ section.id }} .bbs-panel-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; font-weight: 500;
+    opacity: 0.7;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .bbs-{{ section.id }} .bbs-panel-total-price {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.02em;
+    position: relative;
+  }
+
+  /* ── CTA ── */
+  .bbs-{{ section.id }} .bbs-cta {
+    width: 100%;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    margin-top: 20px;
+    background: #fff;
+    color: var(--bbs-panel-bg);
+  }
+  .bbs-{{ section.id }} .bbs-cta:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .bbs-{{ section.id }} .bbs-cta:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+  .bbs-{{ section.id }} .bbs-cta:disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+  .bbs-{{ section.id }} .bbs-cta .bbs-cta-shimmer {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: bbs-shimmer-{{ section.id }} 2.5s infinite;
+  }
+  @keyframes bbs-shimmer-{{ section.id }} {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .bbs-{{ section.id }} .bbs-cta:disabled .bbs-cta-shimmer { display: none; }
+  .bbs-{{ section.id }} .bbs-cta-inner {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     GROUPS
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-group {
+    margin-bottom: 36px;
+  }
+  .bbs-{{ section.id }} .bbs-group-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .bbs-{{ section.id }} .bbs-group-title {
+    font-size: 22px; font-weight: 700;
+    color: var(--bbs-group-heading-color);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .bbs-{{ section.id }} .bbs-group-desc {
+    font-size: 14px; color: #9ca3af;
+    margin-top: 4px; line-height: 1.4;
+  }
+
+  /* ── Selection badge ── */
+  .bbs-{{ section.id }} .bbs-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: var(--bbs-accent-light);
+    color: var(--bbs-accent);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
+  }
+  .bbs-{{ section.id }} .bbs-badge.is-complete {
+    background: #dcfae6; color: #059669;
+  }
+  .bbs-{{ section.id }} .bbs-badge.is-error {
+    background: #fee2e2; color: #dc2626;
+  }
+  .bbs-{{ section.id }} .bbs-badge svg {
+    width: 14px; height: 14px;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     CARD GRID
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat({{ card_columns_mobile }}, 1fr);
+  }
+  @media (min-width: 768px) {
+    .bbs-{{ section.id }} .bbs-grid {
+      gap: 20px;
+      grid-template-columns: repeat({{ card_columns_desktop }}, 1fr);
+    }
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     PRODUCT CARD
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-card {
+    position: relative;
+    background: var(--bbs-card-bg);
+    border-radius: var(--bbs-card-radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  {% if card_style == 'elevated' %}
+  .bbs-{{ section.id }} .bbs-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    border: 2px solid transparent;
+  }
+  .bbs-{{ section.id }} .bbs-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.04);
+  }
+  {% elsif card_style == 'bordered' %}
+  .bbs-{{ section.id }} .bbs-card {
+    border: 2px solid var(--bbs-card-border);
+    box-shadow: none;
+  }
+  .bbs-{{ section.id }} .bbs-card:hover {
+    border-color: var(--bbs-card-selected-border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+  {% else %}
+  .bbs-{{ section.id }} .bbs-card {
+    border: 2px solid transparent; background: transparent; box-shadow: none;
+  }
+  .bbs-{{ section.id }} .bbs-card:hover { transform: translateY(-2px); }
+  {% endif %}
+
+  .bbs-{{ section.id }} .bbs-card.is-selected {
+    border-color: var(--bbs-card-selected-border) !important;
+    box-shadow: 0 0 0 1px var(--bbs-card-selected-border), 0 8px 24px rgba(0,0,0,0.08) !important;
+  }
+
+  /* ── Card image ── */
+  .bbs-{{ section.id }} .bbs-card-img {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
+    {% if card_image_ratio == 'portrait' %}aspect-ratio: 3/4;
+    {% elsif card_image_ratio == 'landscape' %}aspect-ratio: 4/3;
+    {% else %}aspect-ratio: 1/1;{% endif %}
+  }
+  .bbs-{{ section.id }} .bbs-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .bbs-{{ section.id }} .bbs-card:hover .bbs-card-img img {
+    transform: scale(1.06);
+  }
+
+  /* ── Add overlay (+ button) ── */
+  .bbs-{{ section.id }} .bbs-card-add {
+    position: absolute; top: 12px; right: 12px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bbs-accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 400; line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  .bbs-{{ section.id }} .bbs-card:hover .bbs-card-add,
+  .bbs-{{ section.id }} .bbs-card.is-selected .bbs-card-add {
+    opacity: 1; transform: scale(1);
+  }
+  .bbs-{{ section.id }} .bbs-card-add:hover {
+    transform: scale(1.15) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .bbs-{{ section.id }} .bbs-card-add:disabled {
+    opacity: 0.25 !important; cursor: not-allowed;
+    transform: scale(1) !important;
+  }
+
+  /* ── Qty badge ── */
+  .bbs-{{ section.id }} .bbs-qty-badge {
+    position: absolute; top: 12px; left: 12px;
+    min-width: 28px; height: 28px;
+    background: var(--bbs-counter-bg);
+    color: var(--bbs-counter-color);
+    border-radius: 8px;
+    display: none; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    padding: 0 8px; z-index: 2;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .bbs-{{ section.id }} .bbs-card.is-selected .bbs-qty-badge {
+    display: flex;
+    animation: bbs-badge-pop-{{ section.id }} 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes bbs-badge-pop-{{ section.id }} {
+    0% { transform: scale(0.5); } 100% { transform: scale(1); }
+  }
+
+  /* ── Card body ── */
+  .bbs-{{ section.id }} .bbs-card-body {
+    padding: 14px 16px 16px;
+  }
+  .bbs-{{ section.id }} .bbs-card-name {
+    font-size: 14px; font-weight: 600;
+    color: var(--bbs-item-name-color);
+    line-height: 1.35;
+    margin-bottom: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .bbs-{{ section.id }} .bbs-card-price {
+    font-size: 14px; font-weight: 500;
+    color: var(--bbs-item-price-color);
+    margin-bottom: 10px;
+  }
+
+  /* ── Variant pills ── */
+  .bbs-{{ section.id }} .bbs-pills {
+    display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .bbs-{{ section.id }} .bbs-pill {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px; font-weight: 600;
+    background: var(--bbs-pill-bg);
+    color: var(--bbs-pill-color);
+    border: none; cursor: default;
+    transition: all 0.2s ease;
+    letter-spacing: 0.01em;
+  }
+  .bbs-{{ section.id }} .bbs-pill.is-active {
+    background: var(--bbs-pill-active-bg);
+    color: var(--bbs-pill-active-color);
+  }
+
+  /* ── Inline qty stepper ── */
+  .bbs-{{ section.id }} .bbs-stepper {
+    display: none; align-items: center;
+    margin-top: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    width: fit-content;
+    background: #f9fafb;
+  }
+  .bbs-{{ section.id }} .bbs-card.is-selected .bbs-stepper {
+    display: inline-flex;
+    animation: bbs-item-in-{{ section.id }} 0.25s ease;
+  }
+  .bbs-{{ section.id }} .bbs-stepper button {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer;
+    font-size: 16px; color: #374151;
+    transition: background 0.15s;
+  }
+  .bbs-{{ section.id }} .bbs-stepper button:hover { background: #e5e7eb; }
+  .bbs-{{ section.id }} .bbs-stepper button:disabled { opacity: 0.25; cursor: not-allowed; }
+  .bbs-{{ section.id }} .bbs-stepper .bbs-stepper-val {
+    width: 36px; text-align: center; font-size: 14px; font-weight: 700;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    line-height: 34px;
+    color: var(--bbs-item-name-color);
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     INCLUDED ITEMS
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-inc-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .bbs-{{ section.id }} .bbs-inc-item:last-child { border-bottom: none; }
+  .bbs-{{ section.id }} .bbs-inc-item img {
+    width: 52px; height: 52px; object-fit: cover;
+    border-radius: 12px; flex-shrink: 0;
+    background: #f9fafb;
+  }
+  .bbs-{{ section.id }} .bbs-inc-name {
+    font-size: 14px; font-weight: 500; color: var(--bbs-item-name-color);
+  }
+  .bbs-{{ section.id }} .bbs-inc-meta {
+    font-size: 12px; color: #9ca3af; margin-top: 2px;
+  }
+  .bbs-{{ section.id }} .bbs-inc-price {
+    font-size: 14px; font-weight: 600; color: var(--bbs-item-name-color);
+    margin-left: auto; white-space: nowrap;
+  }
+
+  /* ── Accordion ── */
+  .bbs-{{ section.id }} .bbs-acc-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px;
+    background: var(--bbs-group-bg);
+    border-radius: var(--bbs-card-radius);
+    cursor: pointer;
+    transition: background 0.15s;
+    font-weight: 600; font-size: 15px;
+  }
+  .bbs-{{ section.id }} .bbs-acc-head:hover { background: #f0f1f3; }
+  .bbs-{{ section.id }} .bbs-acc-head .bbs-chevron { transition: transform 0.25s ease; }
+  .bbs-{{ section.id }} .bbs-acc-head.is-open .bbs-chevron { transform: rotate(180deg); }
+  .bbs-{{ section.id }} .bbs-acc-body { display: none; padding: 8px 0; }
+  .bbs-{{ section.id }} .bbs-acc-head.is-open + .bbs-acc-body { display: block; }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SUBSCRIBE (in-panel)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bbs-{{ section.id }} .bbs-sub-wrap {
+    position: relative;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ── Shipping ── */
+  .bbs-{{ section.id }} .bbs-shipping-note {
+    text-align: center;
+    font-size: 12px; opacity: 0.55;
+    margin-top: 10px;
+    position: relative;
+  }
+{%- endstyle -%}
+
+<main class="bundle-product-section bbs-{{ section.id }} section-{{ section.id }}" style="background-color: {{ section.settings.section_background_color | default: '#ffffff' }};" data-bundle-section>
+
+  {% if breadcrumb_block %}
+    <div class="breadcrumb {{ breadcrumb_block.settings.font_size | default: 'text-sm' }}" {{ breadcrumb_block.fluid_attributes }}>
+      <div class="container">
+        <ul class="flex flex-wrap align-center space-xs leading-none">
+          <li class="flex space-xs align-center">
+            <a href="{{ company.shop_page_url }}">{{ 'product.shop_all' | t }}</a>
+            <span class="seperator"><svg width="6" height="8" viewBox="0 0 6 8" fill="none"><path d="M1.47099 7.79976L5.27565 3.9951L1.47099 0.19043L0.52832 1.1331L3.39032 3.9951L0.52832 6.8571L1.47099 7.79976Z" fill="currentColor"/></svg></span>
+          </li>
+          <li><a href="#" class="active font-semibold">{{ product.title }}</a></li>
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+
+  <section class="bundle-details-section pt-2xl">
+    <div class="container">
+      <div class="bbs-layout bbs-layout--{{ layout_mode }}">
+
+        <div class="bbs-main">
+          {% assign product_title_tag = heading_block.settings.heading_tag | default: 'h1' %}
+          {% if layout_mode == 'stacked' %}
+            <{{ product_title_tag }} class="bundle-title {{ heading_block.settings.font_weight | default: 'font-bold' }}" style="color: {{ heading_block.settings.color | default: '#000000' }}; margin-bottom: 8px; font-size: 32px; letter-spacing: -0.02em;" {% if heading_block %}{{ heading_block.fluid_attributes }}{% endif %}>{{ product.title }}</{{ product_title_tag }}>
+            {% if product.introduction != blank %}
+              <div class="bundle-description {{ description_block.settings.font_size_mobile | default: 'text-base' }} {{ description_block.settings.font_size_desktop | default: 'lg:text-lg' }} {{ description_block.settings.font_weight | default: 'font-normal' }}" style="color: {{ description_block.settings.color | default: '#666666' }}; margin-bottom: 32px;" {% if description_block %}{{ description_block.fluid_attributes }}{% endif %}>{{ product.introduction }}</div>
+            {% endif %}
+          {% endif %}
+
+          {% if bundle_groups_block %}
+            {%- for group in product.product_bundle_groups -%}
+              <div class="bbs-group"
+                data-bundle-group-id="{{ group.id }}"
+                data-group-type="{{ group.group_type }}"
+                {% if group.group_type == 'customizable' %}
+                  data-min-selections="{{ group.min_selections | default: 0 }}"
+                  data-max-selections="{{ group.max_selections | default: 999 }}"
+                  data-selection-type="{{ group.selection_type }}"
+                {% endif %}
+                {{ bundle_groups_block.fluid_attributes }}
+              >
+                <div class="bbs-group-header">
+                  <div>
+                    <div class="bbs-group-title">{{ group.title }}</div>
+                    {% if group.description != blank %}
+                      <div class="bbs-group-desc">{{ group.description }}</div>
+                    {% endif %}
+                  </div>
+                  {% if group.group_type == 'customizable' and group.max_selections %}
+                    <div class="bbs-badge" data-group-id="{{ group.id }}">
+                      <span class="bbs-sel-count">0</span> / {{ group.max_selections }}
+                    </div>
+                  {% endif %}
+                </div>
+
+                {%- if group.group_type == 'included' -%}
+                  {% assign display_mode = bundle_groups_block.settings.included_display_mode | default: 'list' %}
+
+                  {% if display_mode == 'accordion' %}
+                    <div class="bbs-acc-head is-open">
+                      <span>{{ 'bundle.whats_included' | t }}</span>
+                      <svg class="bbs-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="bbs-acc-body" style="display:block;">
+                      {%- for item in group.bundle_group_items -%}
+                        {% assign item_image = item.variant.primary_image | default: item.variant.product.image_url %}
+                        <div class="bbs-inc-item">
+                          {% if item_image %}<img src="{{ item_image }}" alt="{{ item.variant.product.title }}" loading="lazy" />{% endif %}
+                          <div class="flex-1">
+                            <div class="bbs-inc-name">{{ item.variant.product.title }}{% if item.variant.title %} &mdash; {{ item.variant.title }}{% endif %}</div>
+                            <div class="bbs-inc-meta">{{ 'bundle.qty' | t }}: {{ item.quantity }}</div>
+                          </div>
+                          <div class="bbs-inc-price">{{ item.variant.price_in_currency }}</div>
+                        </div>
+                      {%- endfor -%}
+                    </div>
+                  {% elsif display_mode == 'grid' %}
+                    <div class="bbs-grid">
+                      {%- for item in group.bundle_group_items -%}
+                        {% assign item_image = item.variant.primary_image | default: item.variant.product.image_url %}
+                        <div class="bbs-card is-selected" style="cursor: default;">
+                          <div class="bbs-qty-badge" style="display:flex;">{{ item.quantity }}&times;</div>
+                          <div class="bbs-card-img">
+                            {% if item_image %}<img src="{{ item_image }}" alt="{{ item.variant.product.title }}" loading="lazy" />{% endif %}
+                          </div>
+                          <div class="bbs-card-body">
+                            <div class="bbs-card-name">{{ item.variant.product.title }}{% if item.variant.title %} &mdash; {{ item.variant.title }}{% endif %}</div>
+                            <div class="bbs-card-price">{{ item.variant.price_in_currency }}</div>
+                            {% if show_variant_pills and item.variant.options.size > 0 %}
+                              <div class="bbs-pills">{%- for opt in item.variant.options -%}<span class="bbs-pill is-active">{{ opt.value | capitalize }}</span>{%- endfor -%}</div>
+                            {% endif %}
+                          </div>
+                        </div>
+                      {%- endfor -%}
+                    </div>
+                  {% else %}
+                    {%- for item in group.bundle_group_items -%}
+                      {% assign item_image = item.variant.primary_image | default: item.variant.product.image_url %}
+                      <div class="bbs-inc-item">
+                        {% if item_image %}<img src="{{ item_image }}" alt="{{ item.variant.product.title }}" loading="lazy" />{% endif %}
+                        <div class="flex-1">
+                          <div class="bbs-inc-name">{{ item.variant.product.title }}{% if item.variant.title %} &mdash; {{ item.variant.title }}{% endif %}</div>
+                          <div class="bbs-inc-meta">{{ 'bundle.qty' | t }}: {{ item.quantity }}</div>
+                        </div>
+                        <div class="bbs-inc-price">{{ item.variant.price_in_currency }}</div>
+                      </div>
+                    {%- endfor -%}
+                  {% endif %}
+
+                {%- elsif group.group_type == 'customizable' -%}
+                  <div class="bbs-grid">
+                    {%- for item in group.bundle_group_items -%}
+                      {% assign item_image = item.variant.primary_image | default: item.variant.product.image_url %}
+                      <div class="bbs-card"
+                        data-item-id="{{ item.id }}"
+                        data-variant-id="{{ item.variant.id }}"
+                        data-max-quantity="{{ item.config.max_quantity | default: '' }}"
+                        data-default-quantity="{{ item.config.quantity | default: 0 }}"
+                        data-group-id="{{ group.id }}"
+                        data-item-image="{{ item_image }}"
+                        data-item-name="{{ item.variant.product.title }}{% if item.variant.title %} - {{ item.variant.title }}{% endif %}"
+                        data-item-price="{{ item.variant.price_in_currency }}"
+                      >
+                        <div class="bbs-qty-badge" data-qty-badge="{{ item.id }}">0</div>
+                        <button type="button" class="bbs-card-add" data-add-item="{{ item.id }}" aria-label="{{ 'bundle.add_item' | t }}">+</button>
+                        <div class="bbs-card-img">
+                          {% if item_image %}<img src="{{ item_image }}" alt="{{ item.variant.product.title }}" loading="lazy" />{% endif %}
+                        </div>
+                        <div class="bbs-card-body">
+                          <div class="bbs-card-name">{{ item.variant.product.title }}{% if item.variant.title %} &mdash; {{ item.variant.title }}{% endif %}</div>
+                          <div class="bbs-card-price">{{ item.variant.price_in_currency }}</div>
+                          {% if show_variant_pills and item.variant.options.size > 0 %}
+                            <div class="bbs-pills">{%- for opt in item.variant.options -%}<span class="bbs-pill is-active">{{ opt.value | capitalize }}</span>{%- endfor -%}</div>
+                          {% endif %}
+                          <div class="bbs-stepper">
+                            <button type="button" class="bbs-qty-minus" data-item-id="{{ item.id }}">−</button>
+                            <span class="bbs-stepper-val" data-item-id="{{ item.id }}">0</span>
+                            <button type="button" class="bbs-qty-plus" data-item-id="{{ item.id }}">+</button>
+                          </div>
+                        </div>
+                      </div>
+                    {%- endfor -%}
+                  </div>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          {% endif %}
+        </div>
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <div class="bbs-sidebar">
+          <div class="bbs-panel">
+            {% if layout_mode == 'side-by-side' %}
+              <div class="bbs-panel-title" {% if heading_block %}{{ heading_block.fluid_attributes }}{% endif %}>{{ product.title }}</div>
+              {% if product.introduction != blank %}
+                <div class="bbs-panel-subtitle">{{ product.introduction }}</div>
+              {% endif %}
+            {% endif %}
+
+            {% if show_slot_preview %}
+              <div class="bbs-slots" data-slot-container>
+                {% assign total_max = 0 %}
+                {%- for group in product.product_bundle_groups -%}
+                  {%- if group.group_type == 'customizable' and group.max_selections -%}
+                    {% assign total_max = total_max | plus: group.max_selections %}
+                  {%- endif -%}
+                {%- endfor -%}
+                {% if total_max > 0 %}
+                  {% for i in (1..total_max) %}
+                    <div class="bbs-slot" data-slot-index="{{ forloop.index0 }}"></div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="bbs-progress-track"><div class="bbs-progress-fill" data-progress-fill></div></div>
+            <div class="bbs-progress-label" data-progress-text>{{ 'bundle.pick_more' | t: count: '0' }}</div>
+
+            <div class="bbs-panel-items" data-summary-details></div>
+
+            <div class="bbs-panel-divider"></div>
+
+            <div class="bbs-panel-total">
+              <span>{{ 'bundle.total' | t }}</span>
+            </div>
+            <div class="bbs-panel-total-price" data-bundle-total>{{ product.display_price }}</div>
+
+            {% if subscribe_block %}
+              <div class="bbs-sub-wrap" {{ subscribe_block.fluid_attributes }}>
+                {% assign has_subscription_plans = product.product_subscription_plans.size | default: 0 %}
+                {% if has_subscription_plans > 0 %}
+                  <div class="subscribe-item flex flex-col space-lg">
+                    <div class="subscribe-option flex space-xs align-center">
+                      <input type="radio" name="fluid-checkout-subscribe" value="subscription" id="bundle-subscribe-and-save" {% if request.query_parameters.subscribe %}checked{% endif %}>
+                      <label for="bundle-subscribe-and-save" class="flex-1 pt-xs {{ subscribe_block.settings.radio_label_font_weight | default: 'font-medium' }}">
+                        <div class="flex justify-between w-full align-center">
+                          <span>{{ 'product.subscribe' | t }}</span>
+                          <span class="subscription-price" style="font-weight:700;">{{ product.subscription_price }}</span>
+                        </div>
+                      </label>
+                    </div>
+                    <ul class="subscribe-features flex flex-col space-xs pl-xs" style="opacity:0.7; font-size:13px;">
+                      <li class="subscribe-offer-text flex align-center space-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12S0 18.63 0 12Z" fill="#DCFAE6"/><path fill-rule="evenodd" clip-rule="evenodd" d="m17.1 7.39-7.16 6.91-1.9-2.03c-.35-.33-.9-.35-1.3-.07-.39.29-.5.8-.26 1.21l2.25 3.66c.22.34.6.55 1.03.55.41 0 .8-.21 1.02-.55.36-.47 7.23-8.66 7.23-8.66.9-.92-.19-1.73-.91-1.03v.01Z" fill="#079455"/></svg>
+                        <span>{{ 'subscribe_feature.subscribe_to_get' | t }} <span class="subscribe-discount-value"></span> {{ 'subscribe_feature.off' | t }}</span>
+                      </li>
+                      <li class="flex align-center space-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M0 12C0 5.37 5.37 0 12 0s12 5.37 12 12-5.37 12-12 12S0 18.63 0 12Z" fill="#DCFAE6"/><path fill-rule="evenodd" clip-rule="evenodd" d="m17.1 7.39-7.16 6.91-1.9-2.03c-.35-.33-.9-.35-1.3-.07-.39.29-.5.8-.26 1.21l2.25 3.66c.22.34.6.55 1.03.55.41 0 .8-.21 1.02-.55.36-.47 7.23-8.66 7.23-8.66.9-.92-.19-1.73-.91-1.03v.01Z" fill="#079455"/></svg>
+                        <span>{{ 'subscribe_feature.update_subscription' | t }}</span>
+                      </li>
+                    </ul>
+                    {% if subscription_package_block and product.product_subscription_plans.size > 1 %}
+                      <div class="subscription-plans" {% if subscription_package_block %}{{ subscription_package_block.fluid_attributes }}{% endif %} {% unless request.query_parameters.subscribe %}style="display:none;"{% endunless %}>
+                        <div class="flex flex-col space-sm">
+                          <p class="text-xs" style="opacity:0.7;">{{ subscription_package_block.settings.label | default: 'Subscription Plan' }}</p>
+                          <select class="subscription-plans-dropdown option-value custom-select">
+                            {% for plan_entry in product.product_subscription_plans %}
+                              {% assign sp = plan_entry.subscription_plan %}
+                              <option {% if plan_entry.default %}selected{% endif %} value="{{ sp.id }}" data-subscription-price="{{ sp.subscription_price }}" data-price-adjustment-type="{{ sp.price_adjustment_type }}" data-price-adjustment-amount="{{ sp.price_adjustment_amount }}">{{ sp.name }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+                <div class="one-time-purchase-section subscribe-item" style="margin-top:12px;">
+                  <div class="subscribe-option flex space-sm align-center">
+                    <input type="radio" name="fluid-checkout-subscribe" value="regular" id="bundle-one-time-purchase" {% unless request.query_parameters.subscribe %}checked{% endunless %}>
+                    <label for="bundle-one-time-purchase" class="flex-1 cursor-pointer pt-xs {{ subscribe_block.settings.radio_label_font_weight | default: 'font-medium' }}">
+                      <div class="flex justify-between w-full align-center">
+                        <span>{{ 'product.one_time_purchase' | t }}</span>
+                        <span style="font-weight:700;">{{ product.display_price }}</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            {% unless not_purchasable %}
+              <div class="bundle-validation-error error-message hidden" style="display:none; margin-top:12px;">
+                {{ 'bundle.selection_required' | t }}
+              </div>
+
+              {%- assign cr = buttons_block.settings.button_border_radius -%}
+              {%- assign _cr_style = '' -%}
+              {%- if cr -%}
+                {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}
+                {%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
+                {%- capture _cr_style -%}border-radius: {% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %};{%- endcapture -%}
+              {%- endif -%}
+
+              <button
+                class="bbs-cta bundle-add-to-cart-btn"
+                {% if _cr_style != '' %}style="{{ _cr_style }}"{% endif %}
+                type="button"
+                data-fluid-add-to-cart="{{ product.variants.first.id }}"
+                data-fluid-quantity="1"
+                {% if request.query_parameters.subscribe and product.product_subscription_plans.size > 0 %}
+                  data-fluid-subscription-plan-id="{{ product.product_subscription_plans.first.subscription_plan.id }}"
+                {% endif %}
+                {% if buttons_block %}{{ buttons_block.fluid_attributes }}{% endif %}
+              >
+                <span class="bbs-cta-shimmer"></span>
+                <span class="bbs-cta-inner" data-cta-text>{{ 'product.add_to_cart' | t }}</span>
+              </button>
+
+              {% if buttons_block.settings.free_shipping_text != blank %}
+                <div class="bbs-shipping-note">{{ buttons_block.settings.free_shipping_text | default: ('product.free_shipping' | t: amount: '$50') }}</div>
+              {% endif %}
+            {% endunless %}
+          </div>
+
+          {% if product.out_of_stock %}
+            <div style="margin-top:12px;">
+              <div class="error-message">{{ section.settings.out_of_stock_message | default: 'This product is out of stock' }}</div>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="{{ 'product_bundle.js' | asset_url }}"></script>
+
+{% schema %}
+{
+  "name": "Bundle Product",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "select", "id": "layout_mode", "label": "Page Layout", "options": [{ "value": "side-by-side", "label": "Cards + Sticky Sidebar" },{ "value": "stacked", "label": "Stacked (full width)" }], "default": "side-by-side" },
+    { "type": "color_background", "id": "section_background_color", "label": "Section Background", "default": "#ffffff" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "header", "content": "Brand Colors" },
+    { "type": "color_background", "id": "accent_color", "label": "Accent Color", "default": "#2365ea" },
+    { "type": "color_background", "id": "accent_color_light", "label": "Accent Light", "default": "#eff6ff" },
+    { "type": "header", "content": "Summary Panel" },
+    { "type": "color_background", "id": "summary_panel_bg", "label": "Panel Background", "default": "#111827" },
+    { "type": "color_background", "id": "summary_panel_text_color", "label": "Panel Text", "default": "#ffffff" },
+    { "type": "header", "content": "Price" },
+    { "type": "select", "id": "price_font_size_mobile", "label": "Price Size (Mobile)", "options": [{ "value": "text-lg", "label": "LG" },{ "value": "text-xl", "label": "XL" },{ "value": "text-2xl", "label": "2XL" },{ "value": "text-3xl", "label": "3XL" }], "default": "text-2xl" },
+    { "type": "select", "id": "price_font_size_desktop", "label": "Price Size (Desktop)", "options": [{ "value": "lg:text-xl", "label": "XL" },{ "value": "lg:text-2xl", "label": "2XL" },{ "value": "lg:text-3xl", "label": "3XL" }], "default": "lg:text-3xl" },
+    { "type": "color_background", "id": "price_color", "label": "Price Color", "default": "#000000" },
+    { "type": "select", "id": "price_font_weight", "label": "Price Weight", "options": [{ "value": "font-medium", "label": "Medium" },{ "value": "font-semibold", "label": "Semi Bold" },{ "value": "font-bold", "label": "Bold" },{ "value": "font-extrabold", "label": "Extra Bold" }], "default": "font-bold" },
+    { "type": "header", "content": "Errors" },
+    { "type": "color_background", "id": "error_message_background_color", "label": "Error BG", "default": "#fee2e2" },
+    { "type": "color_background", "id": "error_message_text_color", "label": "Error Text", "default": "#dc2626" },
+    { "type": "select", "id": "error_message_font_size", "label": "Error Size", "options": [{ "value": "text-xs", "label": "XS" },{ "value": "text-sm", "label": "SM" },{ "value": "text-base", "label": "Base" }], "default": "text-sm" },
+    { "type": "select", "id": "error_message_font_weight", "label": "Error Weight", "options": [{ "value": "font-normal", "label": "Normal" },{ "value": "font-medium", "label": "Medium" }], "default": "font-medium" },
+    { "type": "text", "id": "out_of_stock_message", "label": "Out of Stock Message", "default": "This product is out of stock" },
+    { "type": "header", "content": "Inputs" },
+    { "type": "color_background", "id": "input_background_color", "label": "Input BG", "default": "#ffffff" },
+    { "type": "color_background", "id": "input_border_color", "label": "Input Border", "default": "#d1d5db" },
+    { "type": "color_background", "id": "input_text_color", "label": "Input Text", "default": "#374151" },
+    { "type": "color_background", "id": "input_focus_border_color", "label": "Focus Border", "default": "#3b82f6" }
+  ],
+  "blocks": [
+    {
+      "type": "breadcrumb", "name": "Breadcrumb", "limit": 1,
+      "settings": [
+        { "type": "select", "id": "font_size", "label": "Font Size", "options": [{ "value": "text-xs", "label": "XS" },{ "value": "text-sm", "label": "SM" },{ "value": "text-base", "label": "Base" }], "default": "text-sm" },
+        { "type": "color_background", "id": "color", "label": "Text Color", "default": "" },
+        { "type": "color_background", "id": "active_color", "label": "Active Color", "default": "" }
+      ]
+    },
+    {
+      "type": "heading", "name": "Bundle Title", "limit": 1,
+      "settings": [
+        { "type": "select", "id": "heading_tag", "label": "Tag", "options": [{ "value": "h1", "label": "h1" },{ "value": "h2", "label": "h2" },{ "value": "h3", "label": "h3" }], "default": "h1" },
+        { "type": "select", "id": "font_weight", "label": "Weight", "options": [{ "value": "font-semibold", "label": "Semi Bold" },{ "value": "font-bold", "label": "Bold" },{ "value": "font-extrabold", "label": "Extra Bold" }], "default": "font-extrabold" },
+        { "type": "color_background", "id": "color", "label": "Color", "default": "#000000" }
+      ]
+    },
+    {
+      "type": "description", "name": "Bundle Description", "limit": 1,
+      "settings": [
+        { "type": "select", "id": "font_size_mobile", "label": "Size (Mobile)", "options": [{ "value": "text-sm", "label": "SM" },{ "value": "text-base", "label": "Base" },{ "value": "text-lg", "label": "LG" }], "default": "text-base" },
+        { "type": "select", "id": "font_size_desktop", "label": "Size (Desktop)", "options": [{ "value": "lg:text-base", "label": "Base" },{ "value": "lg:text-lg", "label": "LG" },{ "value": "lg:text-xl", "label": "XL" }], "default": "lg:text-lg" },
+        { "type": "select", "id": "font_weight", "label": "Weight", "options": [{ "value": "font-light", "label": "Light" },{ "value": "font-normal", "label": "Normal" },{ "value": "font-medium", "label": "Medium" }], "default": "font-normal" },
+        { "type": "color_background", "id": "color", "label": "Color", "default": "#666666" }
+      ]
+    },
+    {
+      "type": "bundle_groups", "name": "Bundle Groups", "limit": 1,
+      "settings": [
+        { "type": "header", "content": "Included Items" },
+        { "type": "select", "id": "included_display_mode", "label": "Display", "options": [{ "value": "list", "label": "List" },{ "value": "grid", "label": "Card Grid" },{ "value": "accordion", "label": "Accordion" }], "default": "list" },
+        { "type": "header", "content": "Card Grid" },
+        { "type": "select", "id": "card_columns_mobile", "label": "Cols (Mobile)", "options": [{ "value": "1", "label": "1" },{ "value": "2", "label": "2" }], "default": "2" },
+        { "type": "select", "id": "card_columns_desktop", "label": "Cols (Desktop)", "options": [{ "value": "2", "label": "2" },{ "value": "3", "label": "3" },{ "value": "4", "label": "4" }], "default": "3" },
+        { "type": "select", "id": "card_image_ratio", "label": "Image Ratio", "options": [{ "value": "square", "label": "1:1" },{ "value": "portrait", "label": "3:4" },{ "value": "landscape", "label": "4:3" }], "default": "square" },
+        { "type": "select", "id": "card_style", "label": "Card Style", "options": [{ "value": "elevated", "label": "Elevated" },{ "value": "bordered", "label": "Bordered" },{ "value": "flat", "label": "Flat" }], "default": "elevated" },
+        { "type": "header", "content": "Card Colors" },
+        { "type": "color_background", "id": "card_background_color", "label": "Card BG", "default": "#ffffff" },
+        { "type": "color_background", "id": "card_border_color", "label": "Border", "default": "#e5e7eb" },
+        { "type": "color_background", "id": "card_selected_border_color", "label": "Selected", "default": "#2365ea" },
+        { "type": "range", "id": "card_border_radius", "label": "Radius", "min": 0, "max": 28, "step": 2, "default": 16, "unit": "px" },
+        { "type": "color_background", "id": "item_name_color", "label": "Name Color", "default": "#111827" },
+        { "type": "color_background", "id": "item_price_color", "label": "Price Color", "default": "#6b7280" },
+        { "type": "header", "content": "Variant Pills" },
+        { "type": "checkbox", "id": "show_variant_pills", "label": "Show Pills", "default": true },
+        { "type": "color_background", "id": "variant_pill_bg", "label": "Pill BG", "default": "#f3f4f6" },
+        { "type": "color_background", "id": "variant_pill_active_bg", "label": "Active BG", "default": "#111827" },
+        { "type": "color_background", "id": "variant_pill_color", "label": "Pill Text", "default": "#374151" },
+        { "type": "color_background", "id": "variant_pill_active_color", "label": "Active Text", "default": "#ffffff" },
+        { "type": "header", "content": "Slot Preview" },
+        { "type": "checkbox", "id": "show_slot_preview", "label": "Show Slots", "default": true, "info": "Visual placeholders that fill as items are picked" },
+        { "type": "color_background", "id": "slot_empty_border_color", "label": "Empty Border", "default": "#d1d5db" },
+        { "type": "color_background", "id": "slot_filled_bg", "label": "Filled BG", "default": "#eff6ff" },
+        { "type": "header", "content": "Counter Badge" },
+        { "type": "color_background", "id": "counter_bg_color", "label": "Badge BG", "default": "#2365ea" },
+        { "type": "color_background", "id": "counter_text_color", "label": "Badge Text", "default": "#ffffff" },
+        { "type": "header", "content": "Group Chrome" },
+        { "type": "color_background", "id": "group_background_color", "label": "Header BG", "default": "#f9fafb" },
+        { "type": "color_background", "id": "group_heading_color", "label": "Heading Color", "default": "#111827" },
+        { "type": "color_background", "id": "accordion_header_bg", "label": "Accordion BG", "default": "#f9fafb" },
+        { "type": "color_background", "id": "accordion_header_text_color", "label": "Accordion Text", "default": "#1f2937" }
+      ]
+    },
+    {
+      "type": "subscribe", "name": "Subscribe Options", "limit": 1,
+      "settings": [
+        { "type": "color_background", "id": "radio_button_checked_color", "label": "Radio Checked", "default": "#ffffff" },
+        { "type": "color_background", "id": "radio_label_color", "label": "Label Color", "default": "" },
+        { "type": "select", "id": "radio_label_font_weight", "label": "Label Weight", "options": [{ "value": "font-normal", "label": "Normal" },{ "value": "font-medium", "label": "Medium" },{ "value": "font-semibold", "label": "Semi Bold" }], "default": "font-medium" }
+      ]
+    },
+    {
+      "type": "subscription_package", "name": "Subscription Package", "limit": 1,
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "Subscription Plan" },
+        { "type": "color_background", "id": "label_color", "label": "Label Color", "default": "#ffffff" },
+        { "type": "select", "id": "label_font_size_mobile", "label": "Size (Mobile)", "options": [{ "value": "text-xs", "label": "XS" },{ "value": "text-sm", "label": "SM" }], "default": "text-sm" },
+        { "type": "select", "id": "label_font_size_desktop", "label": "Size (Desktop)", "options": [{ "value": "lg:text-sm", "label": "SM" },{ "value": "lg:text-base", "label": "Base" }], "default": "lg:text-sm" },
+        { "type": "select", "id": "label_font_weight", "label": "Weight", "options": [{ "value": "font-normal", "label": "Normal" },{ "value": "font-medium", "label": "Medium" }], "default": "font-medium" }
+      ]
+    },
+    {
+      "type": "buttons", "name": "Add to Cart", "limit": 1,
+      "settings": [
+        { "type": "select", "id": "button_style", "label": "Style", "options": [{ "value": "btn-bg-white", "label": "White" },{ "value": "btn-bg-primary", "label": "Primary" },{ "value": "btn-border-white", "label": "White Border" }], "default": "btn-bg-white" },
+        { "type": "corner_radius", "id": "button_border_radius", "label": "Radius" },
+        { "type": "select", "id": "button_font_weight", "label": "Weight", "options": [{ "value": "font-semibold", "label": "Semi Bold" },{ "value": "font-bold", "label": "Bold" },{ "value": "font-extrabold", "label": "Extra Bold" }], "default": "font-bold" },
+        { "type": "text", "id": "free_shipping_text", "label": "Shipping Note", "default": "Free shipping on orders over $50" },
+        { "type": "color_background", "id": "free_shipping_text_color", "label": "Note Color", "default": "#ffffff" },
+        { "type": "select", "id": "free_shipping_font_size", "label": "Note Size", "options": [{ "value": "text-xs", "label": "XS" },{ "value": "text-sm", "label": "SM" }], "default": "text-xs" },
+        { "type": "select", "id": "free_shipping_font_weight", "label": "Note Weight", "options": [{ "value": "font-light", "label": "Light" },{ "value": "font-normal", "label": "Normal" }], "default": "font-normal" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bundle Product",
+      "blocks": [
+        { "type": "breadcrumb" },
+        { "type": "heading", "settings": { "heading_tag": "h1" } },
+        { "type": "description" },
+        { "type": "bundle_groups" },
+        { "type": "subscribe" },
+        { "type": "subscription_package" },
+        { "type": "buttons" }
+      ]
+    }
+  ]
+}
+{% endschema %}

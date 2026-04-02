@@ -1,0 +1,335 @@
+{%- assign title_heading_tag             = section.settings.title_heading_tag | default: 'h3' -%}
+{%- assign title_font_weight             = section.settings.title_font_weight | default: 'font-bold' -%}
+{%- assign description_font_size         = section.settings.description_font_size | default: 'text-base' -%}
+{%- assign description_font_size_desktop = section.settings.description_font_size_desktop | default: 'sm-desktop-text-lg' -%}
+{%- assign description_font_weight       = section.settings.description_font_weight | default: 'font-medium' -%}
+
+{%- for block in section.blocks -%}
+  {%- if block.type == 'heading' -%}
+    {%- assign heading_block       = block -%}
+    {%- assign title_heading_tag   = block.settings.heading_tag | default: title_heading_tag -%}
+    {%- assign title_font_weight   = block.settings.font_weight | default: title_font_weight -%}
+  {%- elsif block.type == 'description' -%}
+    {%- assign description_block             = block -%}
+    {%- assign description_font_size         = block.settings.font_size | default: description_font_size -%}
+    {%- assign description_font_size_desktop = block.settings.font_size_desktop | default: description_font_size_desktop -%}
+    {%- assign description_font_weight       = block.settings.font_weight | default: description_font_weight -%}
+  {%- elsif block.type == 'product_list' -%}
+    {%- assign product_list_block = block -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+
+  .section-{{ section.id }} .section-title {
+    color: {{ section.settings.title_color | default: '' }};
+  }
+
+  .section-{{ section.id }} .section-description {
+    color: {{ section.settings.description_color | default: '' }};
+  }
+
+  .section-{{ section.id }} .product-title {
+    color: {{ product_list_block.settings.product_title_color | default: section.settings.product_title_color | default: '' }};
+  }
+
+  .section-{{ section.id }} .product-price {
+    color: {{ product_list_block.settings.product_price_color | default: section.settings.product_price_color | default: '' }};
+  }
+
+  .section-{{ section.id }} .product-card {
+    background-color: {{ section.settings.product_card_background_color }};
+  }
+{%- endstyle -%}
+
+<section class="section-{{ section.id }}">
+  <div class="container">
+    {%- if heading_block or description_block -%}
+      <div class="title-section">
+        <div class="title-wrapper flex-1 mb-6">
+          {%- if heading_block -%}
+            {%- if category.title != blank -%}
+              <{{ title_heading_tag }} class="section-title capitalize {{ title_font_weight }}" {{ heading_block.fluid_attributes }}>{{ category.title }}</{{ title_heading_tag }}>
+            {%- endif -%}
+          {%- endif -%}
+          {%- if description_block -%}
+            {%- if category.description != blank -%}
+              <p class="section-description mt-2 {{ description_font_size }} {{ description_font_size_desktop }} {{ description_font_weight }}" {{ description_block.fluid_attributes }}>{{ category.description }}</p>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if product_list_block -%}
+      {%- paginate category.products by 10 -%}
+        <div class="product-list-section" {{ product_list_block.fluid_attributes }}>
+          {% assign products = category.products | default: empty %}
+          {% if products != blank %}
+            <div class="grid grid-cols-1 xl-phone-grid-cols-2 lg-tab-grid-cols-3 sm-desktop-grid-cols-4 gap-x-8 sm-desktop-gap-x-12 gap-y-12 sm-desktop-gap-y-16">
+              {% for product in products %}
+                <a href="{{ product.url }}" class="block product-card product">
+                  <div class="image-section" style="height: {{ section.settings.image_max_height | default: '200' }}px;">
+                    {% assign image_url = '' %}
+                    {% if product.images.size > 0 %}
+                      {% assign image_url = product.images[0].src %}
+                    {% elsif product.image %}
+                      {% assign image_url = product.image | image_url %}
+                    {% endif %}
+                    {% if image_url != '' %}
+                      <img src="{{ image_url }}" alt="{{ product.title }}" class="image-cover" />
+                    {% else %}
+                      <div class="h-full w-full flex items-center justify-center bg-gray-100">
+                        <span class="text-gray-400">No image available</span>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="desc px-4 py-4">
+                    <{{ product_list_block.settings.product_title_tag | default: 'h5' }} class="product-title text-hover-effect line-clamp-2 {{ product_list_block.settings.product_title_font_weight | default: section.settings.product_title_font_weight | default: 'font-semibold' }}">
+                      {{ product.title }}
+                    </{{ product_list_block.settings.product_title_tag | default: 'h5' }}>
+                    <div class="product-price {{ product_list_block.settings.product_price_font_size | default: section.settings.product_price_font_size | default: 'text-base' }} {{ product_list_block.settings.product_price_font_size_desktop | default: section.settings.product_price_font_size_desktop | default: 'sm-desktop-text-xl' }} {{ product_list_block.settings.product_price_font_weight | default: section.settings.product_price_font_weight | default: 'font-bold' }} pt-2">
+                      {{ product.price | money }}
+                    </div>
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-12">
+              <p class="text-gray-500">{{ section.settings.empty_state_text | default: 'No products found' }}</p>
+            </div>
+          {% endif %}
+        </div>
+        {%- if paginate.pages > 1 -%}
+          <div class="mt-12">
+            {% render 'pagination', paginate: paginate, anchor: '' %}
+          </div>
+        {%- endif -%}
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Category Details",
+  "tag": "section",
+  "enabled_on": {
+    "templates": ["category"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content Settings"
+    },
+    {
+      "type": "select",
+      "id": "title_font_weight",
+      "label": "Title Font Weight",
+      "options": [
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" },
+        { "value": "font-bold", "label": "Bold" }
+      ],
+      "default": "font-bold"
+    },
+    {
+      "type": "color_background",
+      "id": "title_color",
+      "label": "Title Color",
+      "default": ""
+    },
+    {
+      "type": "select",
+      "id": "description_font_weight",
+      "label": "Description Font Weight",
+      "options": [
+        { "value": "font-normal", "label": "Normal" },
+        { "value": "font-medium", "label": "Medium" },
+        { "value": "font-semibold", "label": "Semi Bold" }
+      ],
+      "default": "font-medium"
+    },
+    {
+      "type": "color_background",
+      "id": "description_color",
+      "label": "Description Color",
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "empty_state_text",
+      "label": "Empty state text",
+      "default": "No products found"
+    },
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "header",
+      "content": "Product Card Settings"
+    },
+    {
+      "type": "color_background",
+      "id": "product_card_background_color",
+      "label": "Product Card Background Color"
+    },
+    {
+      "type": "select",
+      "id": "image_max_height",
+      "label": "Product Image Max Height",
+      "options": [
+        { "value": "200", "label": "Small (200px)" },
+        { "value": "250", "label": "Medium Small (250px)" },
+        { "value": "300", "label": "Medium (300px)" },
+        { "value": "320", "label": "Default (320px)" },
+        { "value": "400", "label": "Large (400px)" },
+        { "value": "500", "label": "Extra Large (500px)" }
+      ],
+      "default": "200"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Category title",
+      "limit": 1,
+      "settings": [
+        { "type": "select", "id": "heading_tag", "label": "Heading tag", "options": [{ "value": "h2", "label": "Heading 2" }, { "value": "h3", "label": "Heading 3" }, { "value": "h4", "label": "Heading 4" }], "default": "h3" },
+        { "type": "select", "id": "font_weight", "label": "Font weight", "options": [{ "value": "font-medium", "label": "Medium" }, { "value": "font-semibold", "label": "Semi Bold" }, { "value": "font-bold", "label": "Bold" }], "default": "font-bold" }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Category description",
+      "limit": 1,
+      "settings": [
+        { "type": "select", "id": "font_size", "label": "Font size (mobile)", "options": [{ "value": "text-sm", "label": "Small" }, { "value": "text-base", "label": "Base" }, { "value": "text-lg", "label": "Large" }], "default": "text-base" },
+        { "type": "select", "id": "font_size_desktop", "label": "Font size (desktop)", "options": [{ "value": "sm-desktop-text-base", "label": "Base" }, { "value": "sm-desktop-text-lg", "label": "Large" }, { "value": "sm-desktop-text-xl", "label": "XL" }], "default": "sm-desktop-text-lg" },
+        { "type": "select", "id": "font_weight", "label": "Font weight", "options": [{ "value": "font-normal", "label": "Normal" }, { "value": "font-medium", "label": "Medium" }, { "value": "font-semibold", "label": "Semi Bold" }], "default": "font-medium" }
+      ]
+    },
+    {
+      "type": "product_list",
+      "name": "Product list",
+      "limit": 1,
+      "settings": [
+        { "type": "select", "id": "product_title_tag", "label": "Product Title Heading Tag", "options": [{ "value": "h1", "label": "Heading 1" }, { "value": "h2", "label": "Heading 2" }, { "value": "h3", "label": "Heading 3" }, { "value": "h4", "label": "Heading 4" }, { "value": "h5", "label": "Heading 5" }, { "value": "h6", "label": "Heading 6" }], "default": "h5" },
+        {
+          "type": "select",
+          "id": "product_title_font_weight",
+          "label": "Product Title Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-semibold"
+        },
+        {
+          "type": "color_background",
+          "id": "product_title_color",
+          "label": "Product Title Color",
+          "default": ""
+        },
+        {
+          "type": "select",
+          "id": "product_price_font_size",
+          "label": "Product Price Font Size (Mobile)",
+          "options": [
+            { "value": "text-sm", "label": "Small" },
+            { "value": "text-base", "label": "Base" },
+            { "value": "text-lg", "label": "Large" },
+            { "value": "text-xl", "label": "Extra Large" }
+          ],
+          "default": "text-base"
+        },
+        {
+          "type": "select",
+          "id": "product_price_font_size_desktop",
+          "label": "Product Price Font Size (Desktop)",
+          "options": [
+            { "value": "sm-desktop-text-sm", "label": "Small" },
+            { "value": "sm-desktop-text-base", "label": "Base" },
+            { "value": "sm-desktop-text-lg", "label": "Large" },
+            { "value": "sm-desktop-text-xl", "label": "Extra Large" }
+          ],
+          "default": "sm-desktop-text-xl"
+        },
+        {
+          "type": "select",
+          "id": "product_price_font_weight",
+          "label": "Product Price Font Weight",
+          "options": [
+            { "value": "font-light", "label": "Light" },
+            { "value": "font-normal", "label": "Normal" },
+            { "value": "font-medium", "label": "Medium" },
+            { "value": "font-semibold", "label": "Semi Bold" },
+            { "value": "font-bold", "label": "Bold" }
+          ],
+          "default": "font-bold"
+        },
+        {
+          "type": "color_background",
+          "id": "product_price_color",
+          "label": "Product Price Color",
+          "default": ""
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Category Details",
+      "blocks": [
+        { "type": "heading" },
+        { "type": "description" },
+        { "type": "product_list" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="{{localization.language.iso_code}}">
+  <head>
+    {{ content_for_header }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css"/>
+    <link rel="stylesheet" href="{{ 'reset.css' | asset_url }}">
+    <link rel="stylesheet" href="{{ 'config.css' | asset_url }}">
+    <link rel="stylesheet" href="{{ 'utilities.css' | asset_url }}">
+    {% style %}
+      {{ settings.font_family_body | font_face: font_display: 'swap' }}
+      {{ settings.font_family_heading | font_face: font_display: 'swap' }}
+      {%- comment -%} §6a: Auto-calculate tablet (×0.80) and mobile (×0.65) font sizes {%- endcomment -%}
+      {%- assign h1_tablet = settings.font_size_h1 | times: 0.80 | round -%}
+      {%- assign h1_mobile = settings.font_size_h1 | times: 0.65 | round -%}
+      {%- assign h2_tablet = settings.font_size_h2 | times: 0.80 | round -%}
+      {%- assign h2_mobile = settings.font_size_h2 | times: 0.65 | round -%}
+      {%- assign h3_tablet = settings.font_size_h3 | times: 0.80 | round -%}
+      {%- assign h3_mobile = settings.font_size_h3 | times: 0.65 | round -%}
+      {%- assign h4_tablet = settings.font_size_h4 | times: 0.80 | round -%}
+      {%- assign h4_mobile = settings.font_size_h4 | times: 0.65 | round -%}
+      {%- assign h5_tablet = settings.font_size_h5 | times: 0.80 | round -%}
+      {%- assign h5_mobile = settings.font_size_h5 | times: 0.65 | round -%}
+      {%- assign h6_tablet = settings.font_size_h6 | times: 0.80 | round -%}
+      {%- assign h6_mobile = settings.font_size_h6 | times: 0.65 | round -%}
+      {%- assign body_tablet = settings.font_size_body | times: 0.80 | round -%}
+      {%- assign body_mobile = settings.font_size_body | times: 0.65 | round -%}
+      {%- assign caption_tablet = settings.font_size_caption | times: 0.80 | round -%}
+      {%- assign caption_mobile = settings.font_size_caption | times: 0.65 | round -%}
+
+      :root {
+        --ff-body: {{ settings.font_family_body | font_family | default: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }};
+        --ff-heading: {{ settings.font_family_heading | font_family | default: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }};
+        --fw-body: {{ settings.font_weight_400 }};
+
+        /* §6a: Desktop font sizes (base) */
+        --fs-h1-desktop: {{ settings.font_size_h1 | append: 'px' }};
+        --fs-h2-desktop: {{ settings.font_size_h2 | append: 'px' }};
+        --fs-h3-desktop: {{ settings.font_size_h3 | append: 'px' }};
+        --fs-h4-desktop: {{ settings.font_size_h4 | append: 'px' }};
+        --fs-h5-desktop: {{ settings.font_size_h5 | append: 'px' }};
+        --fs-h6-desktop: {{ settings.font_size_h6 | append: 'px' }};
+        --fs-body-desktop: {{ settings.font_size_body | append: 'px' }};
+        --fs-caption-desktop: {{ settings.font_size_caption | append: 'px' }};
+
+        /* §6a: Tablet font sizes (×0.80) */
+        --fs-h1-tablet: {{ h1_tablet | append: 'px' }};
+        --fs-h2-tablet: {{ h2_tablet | append: 'px' }};
+        --fs-h3-tablet: {{ h3_tablet | append: 'px' }};
+        --fs-h4-tablet: {{ h4_tablet | append: 'px' }};
+        --fs-h5-tablet: {{ h5_tablet | append: 'px' }};
+        --fs-h6-tablet: {{ h6_tablet | append: 'px' }};
+        --fs-body-tablet: {{ body_tablet | append: 'px' }};
+        --fs-caption-tablet: {{ caption_tablet | append: 'px' }};
+
+        /* §6a: Mobile font sizes (×0.65) */
+        --fs-h1-mobile: {{ h1_mobile | append: 'px' }};
+        --fs-h2-mobile: {{ h2_mobile | append: 'px' }};
+        --fs-h3-mobile: {{ h3_mobile | append: 'px' }};
+        --fs-h4-mobile: {{ h4_mobile | append: 'px' }};
+        --fs-h5-mobile: {{ h5_mobile | append: 'px' }};
+        --fs-h6-mobile: {{ h6_mobile | append: 'px' }};
+        --fs-body-mobile: {{ body_mobile | append: 'px' }};
+        --fs-caption-mobile: {{ caption_mobile | append: 'px' }};
+
+        /* Active font sizes — default to desktop, overridden by media queries */
+        --fs-h1: var(--fs-h1-desktop);
+        --fs-h2: var(--fs-h2-desktop);
+        --fs-h3: var(--fs-h3-desktop);
+        --fs-h4: var(--fs-h4-desktop);
+        --fs-h5: var(--fs-h5-desktop);
+        --fs-h6: var(--fs-h6-desktop);
+        --fs-body: var(--fs-body-desktop);
+        --fs-caption: var(--fs-caption-desktop);
+
+        --fs-sm: {{ settings.font_size_small | append: 'px' }};
+        --fs-md: {{ settings.font_size_medium | append: 'px' }};
+        --fs-lg: {{ settings.font_size_large | append: 'px' }};
+        --fs-3xl: {{ settings.font_size_3xl | append: 'px' }};
+
+        --text-xs: {{ settings.text_xs | append: 'px' }};
+        --text-sm: {{ settings.text_sm | append: 'px' }};
+        --text-base: {{ settings.text_base | append: 'px' }};
+        --text-lg: {{ settings.text_lg | append: 'px' }};
+        --text-xl: {{ settings.text_xl | append: 'px' }};
+        --text-2xl: {{ settings.text_2xl | append: 'px' }};
+        --text-3xl: {{ settings.text_3xl | append: 'px' }};
+        --text-4xl: {{ settings.text_4xl | append: 'px' }};
+        --text-5xl: {{ settings.text_5xl | append: 'px' }};
+
+        --clr-primary: {{ settings.color_primary }};
+        --clr-secondary: {{ settings.color_secondary }};
+        --clr-white: {{ settings.color_white | default: '#fff'}};
+        --clr-gray: {{ settings.color_gray }};
+        --clr-body: {{ settings.color_body }};
+        --clr-black: {{ settings.color_black | default: '#000000'}};
+
+        /* §4: Default page background */
+        --page-bg: {{ settings.default_page_background | default: '#ffffff' }};
+
+        /* Media container default radius §5 */
+        --media-radius: {{ settings.media_container_radius | default: 0 | append: 'px' }};
+
+        --padding-0: {{ settings.padding_0 | append: 'px' }};
+        --padding-xs: {{ settings.padding_xs | append: 'px' }};
+        --padding-sm: {{ settings.padding_sm | append: 'px' }};
+        --padding-md: {{ settings.padding_md | append: 'px' }};
+        --padding-lg: {{ settings.padding_lg | append: 'px' }};
+        --padding-xl: {{ settings.padding_xl | append: 'px' }};
+        --padding-2xl: {{ settings.padding_2xl | append: 'px' }};
+        --padding-3xl: {{ settings.padding_3xl | append: 'px' }};
+        --padding-4xl: {{ settings.padding_4xl | append: 'px' }};
+        --padding-5xl: {{ settings.padding_5xl | append: 'px' }};
+        --padding-6xl: {{ settings.padding_6xl | append: 'px' }};
+        --padding-7xl: {{ settings.padding_7xl | append: 'px' }};
+        --padding-8xl: {{ settings.padding_8xl | append: 'px' }};
+        --padding-9xl: {{ settings.padding_9xl | append: 'px' }};
+        --padding-10xl: {{ settings.padding_10xl | append: 'px' }};
+
+        --margin-0: {{ settings.margin_0 | append: 'px' }};
+        --margin-xs: {{ settings.margin_xs | append: 'px' }};
+        --margin-sm: {{ settings.margin_sm | append: 'px' }};
+        --margin-md: {{ settings.margin_md | append: 'px' }};
+        --margin-lg: {{ settings.margin_lg | append: 'px' }};
+        --margin-xl: {{ settings.margin_xl | append: 'px' }};
+        --margin-2xl: {{ settings.margin_2xl | append: 'px' }};
+        --margin-3xl: {{ settings.margin_3xl | append: 'px' }};
+        --margin-4xl: {{ settings.margin_4xl | append: 'px' }};
+        --margin-5xl: {{ settings.margin_5xl | append: 'px' }};
+        --margin-6xl: {{ settings.margin_6xl | append: 'px' }};
+        --margin-7xl: {{ settings.margin_7xl | append: 'px' }};
+        --margin-8xl: {{ settings.margin_8xl | append: 'px' }};
+        --margin-9xl: {{ settings.margin_9xl | append: 'px' }};
+        --margin-10xl: {{ settings.margin_10xl | append: 'px' }};
+
+        --space-0: {{ settings.space_0 | append: 'px' }};
+        --space-xs: {{ settings.space_xs | append: 'px' }};
+        --space-sm: {{ settings.space_sm | append: 'px' }};
+        --space-md: {{ settings.space_md | append: 'px' }};
+        --space-lg: {{ settings.space_lg | append: 'px' }};
+        --space-xl: {{ settings.space_xl | append: 'px' }};
+        --space-2xl: {{ settings.space_2xl | append: 'px' }};
+        --space-3xl: {{ settings.space_3xl | append: 'px' }};
+        --space-4xl: {{ settings.space_4xl | append: 'px' }};
+        --space-5xl: {{ settings.space_5xl | append: 'px' }};
+        --space-6xl: {{ settings.space_6xl | append: 'px' }};
+        --space-7xl: {{ settings.space_7xl | append: 'px' }};
+        --space-8xl: {{ settings.space_8xl | append: 'px' }};
+        --space-9xl: {{ settings.space_9xl | append: 'px' }};
+        --space-10xl: {{ settings.space_10xl | append: 'px' }};
+
+        --rounded: {{ settings.rounded | append: 'px' }};
+        --rounded-sm: {{ settings.rounded_sm | append: 'px' }};
+        --rounded-md: {{ settings.rounded_md | append: 'px' }};
+        --rounded-lg: {{ settings.rounded_lg | append: 'px' }};
+        --rounded-xl: {{ settings.rounded_xl | append: 'px' }};
+        --rounded-2xl: {{ settings.rounded_2xl | append: 'px' }};
+        --rounded-3xl: {{ settings.rounded_3xl | append: 'px' }};
+        --rounded-4xl: {{ settings.rounded_4xl | append: 'px' }};
+        --rounded-5xl: {{ settings.rounded_5xl | append: 'px' }};
+      }
+
+      /* §6a: Tablet breakpoint — 768px–1023px */
+      @media (max-width: 1023px) {
+        :root {
+          --fs-h1: var(--fs-h1-tablet);
+          --fs-h2: var(--fs-h2-tablet);
+          --fs-h3: var(--fs-h3-tablet);
+          --fs-h4: var(--fs-h4-tablet);
+          --fs-h5: var(--fs-h5-tablet);
+          --fs-h6: var(--fs-h6-tablet);
+          --fs-body: var(--fs-body-tablet);
+          --fs-caption: var(--fs-caption-tablet);
+        }
+      }
+
+      /* §6a: Mobile breakpoint — ≤767px */
+      @media (max-width: 767px) {
+        :root {
+          --fs-h1: var(--fs-h1-mobile);
+          --fs-h2: var(--fs-h2-mobile);
+          --fs-h3: var(--fs-h3-mobile);
+          --fs-h4: var(--fs-h4-mobile);
+          --fs-h5: var(--fs-h5-mobile);
+          --fs-h6: var(--fs-h6-mobile);
+          --fs-body: var(--fs-body-mobile);
+          --fs-caption: var(--fs-caption-mobile);
+        }
+      }
+    {% endstyle %}
+  </head>
+  <body>
+    {% section 'navbar' %}
+    {{ content_for_layout }}
+    {% section 'footer' %}
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+      ></script>
+      <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+
+    <script src="{{ 'global.js' | asset_url }}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Select all elements with the data-bg attribute
+        const elements = document.querySelectorAll("[data-bg]");
+
+        elements.forEach((element) => {
+          const bgImage = element.getAttribute("data-bg");
+          if (bgImage) {
+            element.style.backgroundImage = `url(${bgImage})`;
+          }
+        });
+      });
+      </script>
+  </body>
+</html>

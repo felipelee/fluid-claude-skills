@@ -1,0 +1,495 @@
+<!-- Multiple slider -->
+<div class="container" id="dummy-container"></div>
+{% assign carousel_id = section.id | append: '-carousel' %}
+
+{%- style -%}
+  .section-{{ section.id }} {
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+      {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+      {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+      {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+      padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+      padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+      padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+      padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+    {%- endif -%}
+    {%- assign sr = section.settings.section_border_radius -%}
+    {%- if sr -%}
+      {%- capture sr_tl -%}{{ sr.tl }}{%- endcapture -%}
+      {%- capture sr_tr -%}{{ sr.tr }}{%- endcapture -%}
+      {%- capture sr_br -%}{{ sr.br }}{%- endcapture -%}
+      {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
+      border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
+    {%- endif -%}
+  }
+
+  .section-{{ section.id }} .image-section.product-image-height .placeholder-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: #f3f4f6;
+  }
+  .section-{{ section.id }} .placeholder-svg svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+{%- endstyle -%}
+
+<section class="product-collection-section section-{{ section.id }}">
+  {%- assign tagline_block = section.blocks | where: 'type', 'tagline' | first -%}
+  {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+  {%- assign description_block = section.blocks | where: 'type', 'description' | first -%}
+  {%- assign buttons_block = section.blocks | where: 'type', 'buttons' | first -%}
+   <div class="header-section">
+     <div class="container">
+       <div class="wrapper flex flex-wrap items-center justify-between">
+         <div class="desc">
+           {% if tagline_block and tagline_block.settings.tagline != blank %}
+             <div class="rte" {{ tagline_block.fluid_attributes }}>{{ tagline_block.settings.tagline }}</div>
+           {% endif %}
+           {% if heading_block and heading_block.settings.heading != blank %}
+             <div class="rte {{ heading_block.settings.header_spacing_top_mobile | default: 'py-md' }} {{ heading_block.settings.header_spacing_top_desktop | default: 'lg:py-lg' }}" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.heading }}</div>
+           {% endif %}
+           {% if description_block and description_block.settings.description != blank %}
+             <div class="rte" {{ description_block.fluid_attributes }}>{{ description_block.settings.description }}</div>
+           {% endif %}
+         </div>
+         {% if buttons_block and buttons_block.settings.show_view_all_button != false %}
+         <div class="btn-section hidden sm-desktop-block" {{ buttons_block.fluid_attributes }}>
+           {%- assign cr = buttons_block.settings.view_all_button_border_radius -%}{%- assign _cr_attr = '' -%}{%- if cr -%}{%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}{%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}{%- assign _cr_attr = 'style="border-radius: ' | append: _br_val | append: ';"' -%}{%- endif -%}
+           {% render 'button', text: buttons_block.settings.view_all_text | default: 'View All', href: buttons_block.settings.view_all_url | default: '#', variant: buttons_block.settings.view_all_button_style | default: 'btn-bg-primary', attr: _cr_attr %}
+         </div>
+         {% endif %}
+       </div>
+     </div>
+   </div>
+    <!-- .header-section -->
+
+    {%- assign has_product_blocks = false -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'product_slide' -%}
+        {%- assign has_product_blocks = true -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    <div class="product-list-section carousel-container {{ section.settings.product_list_margin_top_mobile | default: 'mt-5xl' }}">
+      <div class="container">
+        <div class="product-carousel {{ carousel_id }} splide">
+          <div class="splide__track">
+            <ul class="splide__list">
+              {%- if has_product_blocks -%}
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'product_slide' -%}
+                    {%- assign _mode = block.settings.selection_mode | default: 'single' -%}
+                    {%- if _mode == 'single' and block.settings.product != blank -%}
+                      {%- assign product = block.settings.product -%}
+                      {%- assign _img_url = '' -%}
+                      {%- if product.images.size > 0 -%}
+                        {%- assign _img_url = product.images[0].src -%}
+                      {%- elsif product.image -%}
+                        {%- assign _img_url = product.image | image_url -%}
+                      {%- elsif product.featured_media -%}
+                        {%- assign _img_url = product.featured_media.url -%}
+                      {%- endif -%}
+                      <li class="splide__slide" {{ block.fluid_attributes }}>
+                        <a href="{{ product.url }}" class="carousel-product">
+                          <div class="image-section product-image-height">
+                            {% if _img_url != '' %}
+                              <img src="{{ _img_url }}" alt="{{ product.title | escape }}" class="image-cover" loading="lazy" width="" height="" />
+                            {% else %}
+                              <span class="image-cover placeholder-svg">{{ 'product-1' | placeholder_svg_tag: 'image-cover' }}</span>
+                            {% endif %}
+                          </div>
+                          <div class="desc pt-lg">
+                            <{{ section.settings.product_title_tag | default: 'h6'}}>{{ product.title }}</{{ section.settings.product_title_tag | default: 'h6'}}>
+                            {% unless product.price == 0 %}<{{ section.settings.product_price_tag | default: 'h5'}} class="pt-2">{{ product.price | money }}</{{ section.settings.product_price_tag | default: 'h5'}}>{% endunless %}
+                          </div>
+                        </a>
+                      </li>
+                    {%- elsif _mode == 'single' -%}
+                      <li class="splide__slide carousel-product-placeholder" {{ block.fluid_attributes }}>
+                        <div class="carousel-product">
+                          <div class="image-section product-image-height" style="background-color: #f3f4f6;">
+                            <span class="image-cover placeholder-svg">{{ 'product-1' | placeholder_svg_tag: 'image-cover' }}</span>
+                          </div>
+                          <div class="desc pt-lg">
+                            <{{ section.settings.product_title_tag | default: 'h6'}}>Select product</{{ section.settings.product_title_tag | default: 'h6'}}>
+                            <{{ section.settings.product_price_tag | default: 'h5'}} class="pt-2">Choose a product</{{ section.settings.product_price_tag | default: 'h5'}}>
+                          </div>
+                        </div>
+                      </li>
+                    {%- elsif _mode == 'multiple' and block.settings.product_list != blank -%}
+                      {%- for product in block.settings.product_list -%}
+                        {%- assign _img_url = '' -%}
+                        {%- if product.images.size > 0 -%}
+                          {%- assign _img_url = product.images[0].src -%}
+                        {%- elsif product.image -%}
+                          {%- assign _img_url = product.image | image_url -%}
+                        {%- elsif product.featured_media -%}
+                          {%- assign _img_url = product.featured_media.url -%}
+                        {%- endif -%}
+                        <li class="splide__slide" {{ block.fluid_attributes }}>
+                          <a href="{{ product.url }}" class="carousel-product">
+                            <div class="image-section product-image-height">
+                              {% if _img_url != '' %}
+                                <img src="{{ _img_url }}" alt="{{ product.title | escape }}" class="image-cover" loading="lazy" width="" height="" />
+                              {% else %}
+                                <span class="image-cover placeholder-svg">{{ 'product-1' | placeholder_svg_tag: 'image-cover' }}</span>
+                              {% endif %}
+                            </div>
+                            <div class="desc pt-lg">
+                              <{{ section.settings.product_title_tag | default: 'h6'}}>{{ product.title }}</{{ section.settings.product_title_tag | default: 'h6'}}>
+                              {% unless product.price == 0 %}<{{ section.settings.product_price_tag | default: 'h5'}} class="pt-2">{{ product.price | money }}</{{ section.settings.product_price_tag | default: 'h5'}}>{% endunless %}
+                            </div>
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    {%- else -%}
+                      {%- comment -%} Multiple mode with no products, or any other state: show placeholder {%- endcomment -%}
+                      <li class="splide__slide carousel-product-placeholder" {{ block.fluid_attributes }}>
+                        <div class="carousel-product">
+                          <div class="image-section product-image-height" style="background-color: #f3f4f6;">
+                            <span class="image-cover placeholder-svg">{{ 'product-2' | placeholder_svg_tag: 'image-cover' }}</span>
+                          </div>
+                          <div class="desc pt-lg">
+                            <{{ section.settings.product_title_tag | default: 'h6'}}>Select products</{{ section.settings.product_title_tag | default: 'h6'}}>
+                            <{{ section.settings.product_price_tag | default: 'h5'}} class="pt-2">Choose products in list</{{ section.settings.product_price_tag | default: 'h5'}}>
+                          </div>
+                        </div>
+                      </li>
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- else -%}
+                {%- for product in products limit: 10 -%}
+                  <li class="splide__slide">
+                    <a href="{{ product.url }}" class="carousel-product">
+                      <div class="image-section product-image-height">
+                        <img src="{{ product.image }}" alt="{{ product.title }}" class="image-cover" loading="lazy" width="" height="" />
+                      </div>
+                      <div class="desc pt-lg">
+                         <{{ section.settings.product_title_tag | default: 'h6'}}>{{ product.title }}</{{ section.settings.product_title_tag | default: 'h6'}}>
+                              {% unless product.price == 0 %}<{{ section.settings.product_price_tag | default: 'h5'}} class="pt-2">{{ product.price | money }}</{{ section.settings.product_price_tag | default: 'h5'}}>{% endunless %}
+                      </div>
+                    </a>
+                  </li>
+                {%- endfor -%}
+              {%- endif -%}
+            </ul>
+          </div>
+
+          {%- assign arrow_b = section.settings.arrow_border -%}
+          <div class="splide__arrows splide-arrow-section mt-7xl">
+            <button
+              class="slide-arrow splide__arrow splide__arrow--prev arrow-prev-btn"
+              style="
+                background-color: {{ section.settings.arrow_background_color | default: '#ffffff' }};
+                {%- if arrow_b -%}border: {{ arrow_b.width }} solid {{ arrow_b.color }};{%- endif -%}
+                width: {{ section.settings.arrow_width | default: 48 }}px;
+                height: {{ section.settings.arrow_height | default: 48 }}px;
+                color: {{ section.settings.arrow_icon_color | default: '#000000' }};
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <svg
+                width="24"
+                height="25"
+                viewBox="0 0 24 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 11.4004H7.83L13.42 5.81039L12 4.40039L4 12.4004L12 20.4004L13.41 18.9904L7.83 13.4004H20V11.4004Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+            <button
+              class="slide-arrow splide__arrow splide__arrow--next arrow-next-btn"
+              style="
+                background-color: {{ section.settings.arrow_background_color | default: '#ffffff' }};
+                {%- if arrow_b -%}border: {{ arrow_b.width }} solid {{ arrow_b.color }};{%- endif -%}
+                width: {{ section.settings.arrow_width | default: 48 }}px;
+                height: {{ section.settings.arrow_height | default: 48 }}px;
+                color: {{ section.settings.arrow_icon_color | default: '#000000' }};
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <svg
+                width="24"
+                height="25"
+                viewBox="0 0 24 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 11.4004H7.83L13.42 5.81039L12 4.40039L4 12.4004L12 20.4004L13.41 18.9904L7.83 13.4004H20V11.4004Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <!-- .product-carousel -->
+      </div>
+    </div>
+    <!-- .carousel-section -->
+  </section>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Initialize this specific carousel
+      const productCarousel = new Splide('.{{ carousel_id }}', {
+        perPage: 1,
+        perMove: 1,
+        speed: 500,
+        mediaQuery: "min",
+        interval: 5000,
+        padding: {
+          right: "64px",
+        },
+        gap: "24px",
+        breakpoints: {
+          576: {
+            perPage: 2,
+          },
+          768: {
+            perPage: 3,
+          },
+          1200: {
+            gap: "48px",
+            padding: {
+              right: "80px",
+            },
+          },
+        },
+      });
+      productCarousel.mount();
+
+      // Set spacing for carousel containers
+      function setCarsouselContainerSpacing() {
+        let paddingLeft = $("#dummy-container").offset().left;
+        $(".carousel-container").each(function () {
+          $(this).css("padding-left", paddingLeft + "px");
+        });
+      }
+      setCarsouselContainerSpacing();
+
+      $(window).resize(function () {
+        setCarsouselContainerSpacing();
+      });
+    });
+</script>
+
+{% schema %}
+{
+  "name": "Multiple Slider",
+  "tag": "section", 
+  "class": "product-collection-section",
+  "settings": [
+    
+    
+    {
+      "type": "header",
+      "content": "Arrow Styling"
+    },
+    {
+      "type": "color_background",
+      "id": "arrow_background_color",
+      "label": "Arrow Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "border",
+      "id": "arrow_border",
+      "label": "Arrow Border"
+    },
+    {
+      "type": "color_background",
+      "id": "arrow_icon_color",
+      "label": "Arrow Icon Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "arrow_width",
+      "min": 30,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow Width",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "arrow_height",
+      "min": 30,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow Height",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Layout & Colors"
+    },
+    {
+      "type": "select",
+      "id": "product_list_margin_top_mobile",
+      "label": "Product List Margin Top",
+      "options": [
+        { "value": "mt-0", "label": "0" },
+        { "value": "mt-xs", "label": "XS" },
+        { "value": "mt-sm", "label": "SM" },
+        { "value": "mt-md", "label": "MD" },
+        { "value": "mt-lg", "label": "LG" },
+        { "value": "mt-xl", "label": "XL" },
+        { "value": "mt-2xl", "label": "2XL" },
+        { "value": "mt-3xl", "label": "3XL" },
+        { "value": "mt-4xl", "label": "4XL" },
+        { "value": "mt-5xl", "label": "5XL" }
+      ],
+      "default": "mt-5xl"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tagline",
+      "name": "Tagline",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "tagline", "label": "Tagline", "default": "<p>Tagline</p>" }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Section heading",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "heading", "label": "Heading", "default": "<p>Products</p>" },
+        { "type": "select", "id": "header_spacing_top_mobile", "label": "Spacing top (mobile)", "options": [{"value": "py-0", "label": "0"}, {"value": "py-xs", "label": "XS"}, {"value": "py-sm", "label": "SM"}, {"value": "py-md", "label": "MD"}, {"value": "py-lg", "label": "LG"}, {"value": "py-xl", "label": "XL"}, {"value": "py-2xl", "label": "2XL"}, {"value": "py-3xl", "label": "3XL"}, {"value": "py-4xl", "label": "4XL"}, {"value": "py-5xl", "label": "5XL"}], "default": "py-md" },
+        { "type": "select", "id": "header_spacing_top_desktop", "label": "Spacing top (desktop)", "options": [{"value": "lg:py-0", "label": "0"}, {"value": "lg:py-xs", "label": "XS"}, {"value": "lg:py-sm", "label": "SM"}, {"value": "lg:py-md", "label": "MD"}, {"value": "lg:py-lg", "label": "LG"}, {"value": "lg:py-xl", "label": "XL"}, {"value": "lg:py-2xl", "label": "2XL"}, {"value": "lg:py-3xl", "label": "3XL"}, {"value": "lg:py-4xl", "label": "4XL"}, {"value": "lg:py-5xl", "label": "5XL"}], "default": "lg:py-lg" }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Description",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "description", "label": "Description", "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>" }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "View all button",
+      "limit": 1,
+      "settings": [
+        { "type": "checkbox", "id": "show_view_all_button", "label": "Show View All Button", "default": true },
+        { "type": "text", "id": "view_all_text", "label": "Button Text", "default": "View All" },
+        { "type": "url", "id": "view_all_url", "label": "Button URL", "default": "#" },
+        { "type": "select", "id": "view_all_button_style", "label": "Button Style", "options": [{"value": "btn-border-primary", "label": "Primary Border"}, {"value": "btn-bg-primary", "label": "Primary Background"}, {"value": "btn-border-black", "label": "Black Border"}, {"value": "btn-bg-white", "label": "White Background"}], "default": "btn-bg-primary" },
+        { "type": "corner_radius", "id": "view_all_button_border_radius", "label": "Border Radius" }
+      ]
+    },
+    {
+      "type": "product_slide",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "radio",
+          "id": "selection_mode",
+          "label": "mode",
+          "default": "single",
+          "options": [
+            { "value": "single", "label": "Single " },
+            { "value": "multiple", "label": "Multiple" }
+          ]
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product",
+          "visible_if":"{{ block.settings.selection_mode == 'single' }}"
+        },
+        {
+          "type": "product_list",
+          "id": "product_list",
+          "label": "Product list",
+          "limit": 24,
+          "visible_if":"{{ block.settings.selection_mode == 'multiple' }}"
+        },
+        {
+          "type": "select",
+          "id": "product_title_tag",
+          "label": "Product Title Tag",
+          "options": [
+            {"value": "h1", "label": "Heading 1"},
+            {"value": "h2", "label": "Heading 2"}, 
+            {"value": "h3", "label": "Heading 3"}, 
+            {"value": "h4", "label": "Heading 4"},
+            {"value": "h5", "label": "Heading 5"},
+            {"value": "h6", "label": "Heading 6"}
+          ],
+          "default": "h6"
+        },
+        {
+          "type": "select",
+          "id": "product_price_tag",
+          "label": "Product Price Tag",
+          "options": [
+            { "value": "h1", "label": "Heading 1" },
+            { "value": "h2", "label": "Heading 2" },
+            { "value": "h3", "label": "Heading 3" },
+            { "value": "h4", "label": "Heading 4" },
+            { "value": "h5", "label": "Heading 5" },
+            { "value": "h6", "label": "Heading 6" }
+          ],
+          "default": "h5"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Multiple Slider",
+      "blocks": [
+        { "type": "tagline" },
+        { "type": "heading" },
+        { "type": "description" },
+        { "type": "buttons" },
+        { "type": "product_slide", "settings": { "selection_mode": "single" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
