@@ -48,7 +48,7 @@ Then run `claude` in your terminal to authenticate with your Anthropic account. 
 npx skills add fluidcommerce/fluid-claude-skills
 ```
 
-This drops three skills into your project's `.claude/skills/` directory. Claude picks them up automatically.
+This drops four skills into your project's `.claude/skills/` directory. Claude picks them up automatically.
 
 Or clone manually:
 
@@ -100,11 +100,13 @@ Running migrations for multiple clients? Each run is stateless. Different source
 
 ## What's in the box
 
-Three skills that know the entire Fluid API:
+Four skills that know the entire Fluid API:
 
 **`/fluid-full-import`** — Full store migration. 25 steps: products, variants, categories, collections, images, brand, menus, pages, policies, checkout settings, tax, shipping zones, customers, inventory, state compliance rules, domains, discounts, redirects, blog posts, webhooks, compliance scanning.
 
 **`/fluid-product-import`** — Products only. Variant mapping, DAM image uploads, category/collection linking, metafields, SEO.
+
+**`/fluid-theme-clone`** — Pixel-perfect site cloning. Scrapes any website, audits visuals via screenshots, uploads images to DAM, builds Liquid sections with exact CSS, assembles page templates, and pushes the theme to Fluid. Ships with a base theme scaffolding and 7 reference files.
 
 **`/fluid-onboarding-prefill`** — Scrapes a company's site and pre-fills 15+ fields on the Fluid payments onboarding form:
 
@@ -164,6 +166,8 @@ Resumable. If something fails mid-import, re-run and it picks up where it left o
 **Have a Shopify admin token?** The full import can pull extra data (customers, inventory levels, shipping zones, discount codes) that aren't available from the public API. Mention it when Claude asks for credentials.
 
 **Running for a client?** The onboarding pre-fill skill saves real time. Run it before the client fills out their KYC form — it pre-populates business name, address, MCC code, policies, and operating countries from their existing site.
+
+**Want the full visual clone?** Run `/fluid-theme-clone` after the import. It scrapes the source site's design — colors, typography, layout, animations — and rebuilds it as Fluid theme sections. Pixel-perfect, editor-compatible.
 
 **Something break?** Re-run the same skill. It reads `id-mapping.json` and skips everything already imported. Only retries what failed.
 

@@ -1,0 +1,126 @@
+{
+  "skill_name": "fluid-theme-clone",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Clone this page into my Fluid theme: https://hiyahealth.com/pages/about. The site prefix is 'hiya', page type is 'page', slug is 'about'. My Firecrawl key is fc-xxx, Fluid token is PT-xxx, Fluid URL is https://p.fluid.app.",
+      "expected_output": "Should validate credentials first, then follow the 7-phase workflow: (1) scrape with Firecrawl, (2) visual audit with browser tools, (3) extract and upload images to DAM, (4) build sections with correct naming (exact-hiya-*), (5) assemble page/about/index.liquid, (6) run QA checklist, (7) upload theme to Fluid API.",
+      "assertions": [
+        "Validates all credentials before starting",
+        "Runs Firecrawl API call with provided credentials",
+        "Uses browser tools for visual audit and screenshots",
+        "Creates section inventory with descriptions and animation notes",
+        "Uploads all images to DAM via upload.fluid.app",
+        "Uses asset.default_variant_url from upload responses",
+        "Section names follow exact-hiya-* convention",
+        "Every section has {{ section.fluid_attributes }} on root element",
+        "Every block has {{ block.fluid_attributes }}",
+        "Images use type text settings with DAM URLs",
+        "Presets include all default content",
+        "Page template starts with {% layout 'theme' %}",
+        "Page template schema has sections and order",
+        "Runs QA checklist",
+        "Uploads theme files to Fluid via PUT /api/application_themes/:id/resources"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to clone a product page. Here's the URL: https://example.com/products/multivitamin. Prefix is 'haven', slug is 'multivitamin'. I have my tokens ready: fc-abc, PT-def, Fluid URL is https://test.fluid.app.",
+      "expected_output": "Should recognize PAGE_TYPE=product. Must include main_product section and NOT replace it. Must include product.js script tag. Should build custom sections for below-the-fold content while keeping main_product for the product form.",
+      "assertions": [
+        "Validates credentials first",
+        "Identifies PAGE_TYPE as product",
+        "Includes main_product section in template",
+        "Does NOT attempt to replace main_product",
+        "Includes product.js script tag",
+        "Template lives at product/multivitamin/index.liquid",
+        "Custom sections use exact-haven-* naming",
+        "Schema includes main_product in sections and order"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Clone https://example.com into my Fluid theme as the homepage. Prefix: mysite.",
+      "expected_output": "Should ask for missing inputs (FIRECRAWL_API_KEY, FLUID_TOKEN, FLUID_URL). Should identify PAGE_TYPE as home. Once inputs are provided, should proceed with the full workflow.",
+      "assertions": [
+        "Asks for missing FIRECRAWL_API_KEY",
+        "Asks for missing FLUID_TOKEN",
+        "Asks for missing FLUID_URL",
+        "Identifies PAGE_TYPE as home",
+        "Template targets home_page/default/index.liquid",
+        "Does not proceed until all inputs are collected"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Upload these images to the Fluid DAM for a page clone: https://cdn.example.com/hero.jpg, https://cdn.example.com/team.png, https://cdn.example.com/logo.svg. My token is PT-xxx.",
+      "expected_output": "Should use upload.fluid.app with external_asset_url for each image. Should report DAM URLs back. Should note SVGs can be inlined.",
+      "assertions": [
+        "Uses upload.fluid.app endpoint",
+        "Uses external_asset_url parameter",
+        "Includes Authorization Bearer header",
+        "Reports DAM URLs from asset.default_variant_url",
+        "Mentions SVG inline alternative for logo.svg"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Build a Fluid section for a testimonials grid. It should have a heading and 4 testimonial cards with photo, name, title, and quote. The site prefix is 'acme'. Make it responsive.",
+      "expected_output": "Should build sections/exact-acme-testimonials/index.liquid with section settings for heading, blocks for cards, fluid_attributes, BEM CSS, responsive grid, presets.",
+      "assertions": [
+        "Creates sections/exact-acme-testimonials/index.liquid",
+        "Uses section.settings for heading",
+        "Uses blocks for repeating testimonial cards",
+        "Includes {{ section.fluid_attributes }} on root",
+        "Includes {{ block.fluid_attributes }} on each block",
+        "CSS uses BEM naming with scoped style block",
+        "Responsive grid with mobile-first breakpoints",
+        "Presets include all 4 testimonial cards with content",
+        "Uses range instead of number for any numeric settings"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Clone the entire yellowbirdfoods.com site into my Fluid theme. Prefix is 'yb', Fluid token PT-xxx, Firecrawl key fc-xxx, Fluid URL https://test.fluid.app.",
+      "expected_output": "Should enter full site clone mode. Discover all pages via nav scrape. Build page manifest. Identify shared sections. Clone in order: nav/footer, homepage, products, collections, static pages. Upload everything to Fluid at the end.",
+      "assertions": [
+        "Validates all credentials first",
+        "Scrapes homepage for navigation structure",
+        "Builds a complete page manifest",
+        "Identifies shared sections across pages",
+        "Clones nav and footer first",
+        "Clones homepage before other pages",
+        "Handles product pages with main_product preserved",
+        "Reuses sections where possible",
+        "Uploads all theme files to Fluid API at the end"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I've finished building my theme locally at /tmp/fluid-theme-test/. Push it to my Fluid store at https://p.fluid.app. My token is PT-xxx.",
+      "expected_output": "Should create or find an application theme, then walk the directory and PUT each file as a theme resource. Text files uploaded directly, binary files via DAM first.",
+      "assertions": [
+        "Creates or finds application theme via POST /api/application_themes",
+        "Walks the theme directory recursively",
+        "Uploads .liquid/.css/.js/.json as text via PUT with content field",
+        "Uploads binary files (.png/.jpg/.woff2) to DAM first via upload.fluid.app",
+        "Uses dam_asset field for binary resources",
+        "Reports theme ID and upload results"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Initialize a new Fluid theme working directory for cloning example.com. Prefix: ex.",
+      "expected_output": "Should create /tmp/fluid-theme-example/ and copy the base theme scaffolding from the skill directory. If base-theme/ is empty, should create minimum scaffolding manually.",
+      "assertions": [
+        "Creates working directory at /tmp/fluid-theme-example/",
+        "Attempts to copy from ${CLAUDE_SKILL_DIR}/base-theme/",
+        "Falls back to creating scaffolding manually if base-theme is empty",
+        "Creates layouts/theme.liquid",
+        "Creates sections/main_navbar/ and sections/main_footer/",
+        "Creates config/settings_schema.json and settings_data.json",
+        "Does not modify sections/main_product/"
+      ]
+    }
+  ]
+}
