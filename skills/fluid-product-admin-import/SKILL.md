@@ -382,26 +382,69 @@ Returns a `BrandingProfile` with:
 }
 ```
 
-Not all sites expose complete branding — fill in missing values from Approach 2 below.
+Not all sites expose complete branding — Firecrawl often misses favicon and OG image. **Always run Approach 2 as well.**
 
-**Approach 2: Manual HTML scraping (fallback / supplement)**
+**Approach 2: HTML scraping (REQUIRED — always run this even if Firecrawl branding worked)**
 
-Scrape the source site's HTML `<head>` and header for:
+Firecrawl's branding format frequently misses the favicon and OG image. You MUST scrape these from the HTML directly. Run this script against the source site homepage:
 
-| Asset | Where to find it | HTML to check |
-|-------|------------------|---------------|
-| **Logo** | Site header/nav | `<img>` inside `<header>`, `<a>` with class containing "logo", or `<img>` with alt containing the brand name |
-| **Favicon** | `<head>` | `<link rel="icon">`, `<link rel="shortcut icon">`, `<link rel="apple-touch-icon">` |
-| **OG Image** | `<head>` | `<meta property="og:image">` |
-| **Brand colors** | CSS/theme config | CSS custom properties (`--color-primary`), Shopify `theme.json`, or dominant colors from logo |
-| **Fonts** | CSS | `font-family` on `body`/`h1`, Google Fonts `<link>` tags |
+```python
+import requests
+from html.parser import HTMLParser
+
+html = requests.get(source_url, timeout=15).text
+
+# Extract favicon, OG image, and apple-touch-icon from <head>
+favicon_url = None
+og_image_url = None
+apple_touch_icon = None
+
+class HeadParser(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        global favicon_url, og_image_url, apple_touch_icon
+        d = dict(attrs)
+        if tag == 'link':
+            rel = (d.get('rel') or '').lower()
+            href = d.get('href', '')
+            if 'icon' in rel and 'apple' not in rel and href:
+                favicon_url = href
+            if 'apple-touch-icon' in rel and href:
+                apple_touch_icon = href
+        if tag == 'meta':
+            prop = (d.get('property') or '').lower()
+            content = d.get('content', '')
+            if prop == 'og:image' and content:
+                og_image_url = content
+
+HeadParser().feed(html)
+
+print(f"Favicon: {favicon_url}")
+print(f"OG Image: {og_image_url}")
+print(f"Apple Touch Icon: {apple_touch_icon}")
+```
+
+**Resolve relative URLs** — if the extracted URL starts with `/`, prepend the source site origin.
+
+**Fallback chain for each asset:**
+
+| Asset | Priority 1 | Priority 2 | Priority 3 |
+|-------|-----------|-----------|-----------|
+| **Favicon (= App Icon)** | `<link rel="icon">` | `<link rel="apple-touch-icon">` | `/favicon.ico` (try fetching directly) |
+| **OG Image** | `<meta property="og:image">` | Logo URL (reuse) | Favicon URL (last resort) |
+| **Logo** | Firecrawl branding `images.logo` | `<img>` in header with "logo" in class/alt | JSON-LD `Organization.logo` |
+
+**The app icon in Fluid IS the favicon.** Use the same URL for both. Upload it once to DAM, use the DAM URL.
+
+**CRITICAL: Do not skip OG image.** If `<meta property="og:image">` is not found:
+1. Check `<meta property="og:image:secure_url">`
+2. Check `<meta name="twitter:image">`
+3. Fall back to the logo URL
 
 On Shopify, also check:
 - `/meta.json` for store name and description
-- `Shopify.theme.name` in page JS for theme info
 - `<script type="application/ld+json">` for `Organization` schema (has `logo`, `name`, `url`)
 
-**Upload all found brand assets to DAM first** via `POST /api/dam/assets`, then use the returned DAM URLs in the brand guidelines payload.
+**Upload all found brand assets to DAM first** via `POST /api/dam/assets`, then use the returned DAM URLs in the brand guidelines payload. You need 3 DAM URLs at the end of this step: one for logo, one for favicon/app icon, one for OG image.
 
 **Step B — Create application theme** — `POST /api/application_themes`
 Maps brand colors/fonts -> CSS variables (`--color-primary`, `--font-heading`, etc.) + a `:root` custom stylesheet.
@@ -425,6 +468,7 @@ Returns `{ application_theme: { id } }` — this `themeId` is needed for theme t
     "name": "Yellowbird Foods",
     "logo_url": "https://ik.imagekit.io/fluid/.../logo.png",
     "favicon_url": "https://ik.imagekit.io/fluid/.../favicon.png",
+    "app_icon_url": "https://ik.imagekit.io/fluid/.../favicon.png",
     "og_image_url": "https://ik.imagekit.io/fluid/.../og-image.jpg",
     "primary_color": "#FF6B35",
     "secondary_color": "#1A1A1A",
@@ -434,7 +478,10 @@ Returns `{ application_theme: { id } }` — this `themeId` is needed for theme t
 }
 ```
 
-**All three fields (`logo_url`, `favicon_url`, `og_image_url`) must be set.** If the OG image can't be found, reuse the logo URL. If the favicon can't be found, use a cropped/small version of the logo.
+**All four image fields MUST be set:** `logo_url`, `favicon_url`, `app_icon_url`, `og_image_url`.
+- `app_icon_url` = same as `favicon_url` (the favicon IS the app icon in Fluid)
+- `og_image_url` = the OG image, or fall back to logo if not found
+- Never leave any of these blank — always have a value, even if it's the logo as fallback
 
 Schema (`ImportBrand`): Required: `name`, `primary_color`. Optional: `secondary_color`, `accent_color`, `background_color`, `text_color`, `primary_font`, `heading_font`, `logo_url`, `favicon_url`, `og_image_url`, `brand_images`, `css_variables`.
 
