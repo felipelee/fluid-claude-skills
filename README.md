@@ -1,4 +1,4 @@
-# Move your entire store to Fluid Commerce. One sentence.
+# Move your entire store to Fluid Commerce.
 
 Setting up a new store on Fluid used to take days. Exporting products, re-uploading images, recreating menus, copying policies, configuring brand settings — all by hand.
 
