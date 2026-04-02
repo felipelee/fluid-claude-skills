@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+
+# Local Claude Code config (skills are distributed from skills/ directory)
+.claude/
+
+# Import working directories
+site-import-*/
+id-mapping.json
+
+# Editor
+*.swp
+*.swo
+*~
