@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 1.0.0
+  version: 2.0.0
 ---
 
 # Fluid Theme Clone
@@ -245,14 +245,154 @@ Use `asset.default_variant_url` from the response. For batch uploads, see [refer
 sections/exact-<SITE_PREFIX>-<section-name>/index.liquid
 ```
 
-### Critical rules
-- `{{ section.fluid_attributes }}` — **MUST** go on the outermost `<section>` element
-- `{{ block.fluid_attributes }}` — **MUST** go on each block's outermost element
-- **Section settings** for singular content (heading, background color, CTA)
-- **Blocks** for repeating content (cards, testimonials, FAQ items)
-- Images use `type: "text"` settings for direct DAM URL pasting
-- **Always** include `presets` with all default content pre-filled
-- All images **MUST** use DAM URLs
+### Gold Standard Section Architecture
+
+Every section MUST follow these rules. Violating any of them breaks the Fluid visual editor.
+
+#### Content = Blocks, Layout = Settings
+
+- **Section settings** are for layout ONLY: `padding` (native type), `corner_radius` (native type), `background_color` (select with `"options": "background_colors"`)
+- **Blocks** are for ALL content: headings, paragraphs, images, buttons, cards, etc.
+- Every piece of visible text is a block — never a section setting
+
+#### Text Blocks Use `richtext`
+
+ALL text content uses `richtext` type — the WYSIWYG handles font, size, weight, color, alignment. Defaults must be wrapped in HTML tags.
+
+```json
+{ "type": "richtext", "id": "text", "label": "Heading", "default": "<h2>Your heading here</h2>" }
+```
+
+**NEVER** use `text` or `textarea` for visible content — those create plain text that can't be styled in the editor.
+
+#### Block Attributes on `<div>` Wrappers
+
+`{{ block.fluid_attributes }}` goes on a `<div>` wrapper — NEVER directly on `<h1>`, `<h2>`, `<p>`, `<span>`, `<a>`, or other semantic elements.
+
+```liquid
+{% when 'heading' %}
+  <div class="rte heading-wrap" {{ block.fluid_attributes }}>
+    {{ block.settings.text }}
+  </div>
+```
+
+#### No Whitespace-Trimming Dashes in Block Loops
+
+`{%- -%}` dashes in block loops BREAK the Fluid editor parser. Always use `{% %}`:
+
+```liquid
+{% for block in section.blocks %}
+  {% case block.type %}
+    {% when 'heading' %}
+```
+
+Dashes ARE safe inside `{%- style -%}` blocks (CSS generation, not block rendering).
+
+#### Native Padding Type with Wiring
+
+```json
+{ "type": "padding", "id": "section_padding", "label": "Section Padding" }
+```
+
+Wire in the `{%- style -%}` block:
+```liquid
+{%- assign p = section.settings.section_padding -%}
+{%- if p -%}
+  {%- capture pt -%}{{ p.top }}{%- endcapture -%}
+  {%- capture pb -%}{{ p.bottom }}{%- endcapture -%}
+  {%- capture pl -%}{{ p.left }}{%- endcapture -%}
+  {%- capture pr -%}{{ p.right }}{%- endcapture -%}
+  padding-top: {% if pt contains 'var(' %}{{ pt }}{% else %}{{ pt }}px{% endif %};
+  padding-bottom: {% if pb contains 'var(' %}{{ pb }}{% else %}{{ pb }}px{% endif %};
+  padding-left: {% if pl contains 'var(' %}{{ pl }}{% else %}{{ pl }}px{% endif %};
+  padding-right: {% if pr contains 'var(' %}{{ pr }}{% else %}{{ pr }}px{% endif %};
+{%- endif -%}
+```
+
+#### Background Color — Select with Option Group
+
+Use `select` with `"options": "background_colors"` — NOT `color_background` (raw hex picker disconnected from theme):
+
+```json
+{ "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" }
+```
+
+**CRITICAL BUG:** Never write `background-color: var(--clr-{{ section.settings.background_color }})`. When the setting is empty, this renders `var(--clr-)` — invalid CSS that **silently breaks the entire rule block** including padding and border-radius. The correct pattern:
+
+```liquid
+background-color: {{ section.settings.background_color | default: 'transparent' }};
+```
+
+The `background_colors` option group values ARE already CSS values like `var(--clr-primary)` or `transparent`.
+
+#### CSS Uses Theme Variables — No Hardcoded Values
+
+```css
+/* WRONG */
+font-family: 'Spartan', sans-serif;
+color: #023026;
+padding: 0 64px;
+
+/* RIGHT */
+font-family: var(--ff-heading), sans-serif;
+color: var(--clr-heading, #023026);
+padding: 0 var(--space-9xl, 64px);
+```
+
+Every section needs RTE heading rules:
+```css
+.section-class .rte h1,
+.section-class .rte h2,
+.section-class .rte h3 {
+  font-family: var(--ff-heading), sans-serif;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+}
+```
+
+#### Root Element Pattern
+
+```html
+<section
+  class="section-name section-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  {{ section.fluid_attributes }}
+>
+```
+
+#### Consistent Container and Breakpoints
+
+All sections use 1280px max-width with theme variable horizontal padding:
+```css
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-9xl, 64px);
+}
+@media (max-width: 991px) { .container { padding: 0 var(--space-3xl, 24px); } }
+@media (max-width: 767px) { .container { padding: 0 var(--space-lg, 16px); } }
+```
+
+Standardized breakpoints: `991px` (tablet), `767px` (mobile). Never use 749px, 768px, or 1023px.
+
+#### Images — Dual Picker Pattern
+
+Use BOTH `image_picker` and `url` for backwards compatibility:
+```json
+{ "type": "image_picker", "id": "image", "label": "Image (Upload)" },
+{ "type": "url", "id": "image_url", "label": "Image URL", "info": "Alternative: paste URL directly" }
+```
+Render: `<img src="{{ block.settings.image_url | default: block.settings.image }}">`
+
+#### Dynamic Product Data — Never Static Blocks
+
+For product grids, use Fluid's data system instead of static blocks:
+- `product_list` setting type for curated product carousels
+- `products` global variable for automatic product loops
+- `collection.enrollment_packs | parse_json` for enrollment pack grids
+
+Static product blocks disappear on editor save. Dynamic data never does.
 
 ### Schema rules
 - Use `range` — NOT `number` (unsupported, breaks the editor)
@@ -292,11 +432,45 @@ Read [references/page-templates.md](references/page-templates.md) for the correc
 ### Key rules
 - `{% layout 'theme' %}` is always line 1
 - Each `{% section 'name', id: 'unique_id' %}` needs a unique `id`
-- The `{% schema %}` block maps each `id` to a section `type` with optional `settings`/`blocks` overrides
+- The `{% schema %}` block maps each `id` to a section `type` with optional `settings` overrides
 - The `order` array controls rendering order
 - **Product pages**: always include `{% section 'main_product', id: 'product_main' %}` first — never replace it
 - Read [references/fluid-rules.md](references/fluid-rules.md) for what NOT to touch
 - Read [references/template-variables.md](references/template-variables.md) for available variables per page type
+
+### CRITICAL: Template schemas must NOT contain blocks
+
+**NEVER** put block data in template schemas. Blocks come from section presets ONLY.
+
+```json
+/* WRONG — breaks fluid_attributes bindings */
+"sections": {
+  "hero": {
+    "type": "exact-rain-hero",
+    "blocks": { "heading_1": { "type": "heading", ... } }
+  }
+}
+
+/* RIGHT — section type + settings only */
+"sections": {
+  "hero": {
+    "type": "exact-rain-hero",
+    "settings": { "section_padding": { "top": 80, "bottom": 80, "left": 0, "right": 0 } }
+  }
+}
+```
+
+### Preset padding only applies on first add
+
+Section preset values (including `section_padding`) only take effect when a section is **first added** to a template. They do NOT retroactively update existing templates. The editor's saved data always takes precedence.
+
+### API push → editor Save workflow
+
+After pushing section code via `PUT /api/application_themes/{id}/resources`:
+1. Open the visual editor
+2. Click **Save** (even with no changes)
+3. This triggers Fluid's block registration system
+4. Blocks become clickable in both Layers panel and preview
 
 ---
 
@@ -367,6 +541,61 @@ print(f"Theme uploaded. ID: {theme_id}")
 ```
 
 See [references/theme-upload-api.md](references/theme-upload-api.md) for full API details.
+
+---
+
+## Phase 4b: Theme Config Setup
+
+Before building sections, set up the theme's design tokens so sections can reference them.
+
+### settings_data.json — Set the source site's design tokens
+
+Extract fonts and colors from the source site and set them as current values:
+
+```json
+{
+  "current": {
+    "color_primary": "#023026",
+    "color_secondary": "#023026",
+    "color_accent": "#fc6f39",
+    "color_cream": "#FAF8F1",
+    "font_family_body": "Inter",
+    "font_family_heading": "Spartan",
+    "font_size_h1": 60,
+    "font_size_h2": 48,
+    "font_size_h3": 32
+  }
+}
+```
+
+### settings_schema.json — Add option_groups for color dropdowns
+
+Every color setting needs an `option_group` so sections can reference them in select dropdowns:
+
+```json
+{
+  "type": "color_background",
+  "id": "color_primary",
+  "label": "Primary Color",
+  "default": "#023026",
+  "option_group": { "id": "background_colors", "label": "Primary", "value": "var(--clr-primary)" }
+}
+```
+
+Without the `option_group`, any section setting with `"options": "background_colors"` will show an empty dropdown.
+
+### theme.liquid — Wire CSS variables
+
+Add all color and spacing variables to `:root` in the `{% style %}` block:
+
+```liquid
+--clr-primary: {{ settings.color_primary | default: '#023026' }};
+--clr-accent: {{ settings.color_accent | default: '#fc6f39' }};
+--clr-cream: {{ settings.color_cream | default: '#FAF8F1' }};
+--clr-heading: {{ settings.color_primary | default: '#023026' }};
+```
+
+Sections reference these as `var(--clr-primary)` — the theme config is the single source of truth.
 
 ---
 
