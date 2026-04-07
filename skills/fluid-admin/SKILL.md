@@ -103,8 +103,8 @@ See [references/products-collections.md](references/products-collections.md)
 | List collections | GET | `/api/company/v1/collections` |
 | Update collection | PUT | `/api/company/v1/collections/:id` |
 | Delete collection | DELETE | `/api/company/v1/collections/:id` |
-| Add product to collection | POST | `/api/company/v1/collections/:id/add_product` |
-| Remove product from collection | POST | `/api/company/v1/collections/:id/remove_product` |
+| Add product to collection | POST | `/api/company/v1/products/:id/add_to_collection` |
+| Remove product from collection | DELETE | `/api/company/v1/products/:id/remove_from_collection` |
 
 ### Navigation & Menus
 See [references/navigation-content.md](references/navigation-content.md)
@@ -288,7 +288,7 @@ See [references/mlm-network.md](references/mlm-network.md)
 | Manage subscriptions | GET/POST/PUT | `/api/subscriptions` |
 | Pause/resume/cancel sub | POST | `/api/subscriptions/:token/pause\|resume\|cancel` |
 
-### CRM & Engagement (65 endpoints)
+### CRM & Engagement
 See [references/crm-engagement.md](references/crm-engagement.md)
 
 | Operation | Method | Endpoint |
@@ -296,28 +296,20 @@ See [references/crm-engagement.md](references/crm-engagement.md)
 | Manage contacts | GET/POST/PUT/DELETE | `/api/company/contacts` |
 | Customer notes | GET/POST | `/api/customer_notes` |
 | Conversations & messages | GET/POST | `/api/company/messaging/conversations` |
-| Manage forms | GET/POST/PUT/DELETE | `/api/forms` |
 | Manage events | GET/POST/PATCH/DELETE | `/api/company/events` |
 | Manage announcements | GET/POST/PUT/DELETE | `/api/company/announcements` |
 | Manage labels | GET/POST/PUT/DELETE | `/api/company/labels` |
 | Manage media content | GET/POST/PUT/DELETE | `/api/company/media` |
 | Manage libraries | GET/POST/PATCH/DELETE | `/api/company/libraries` |
 
-### Platform & Configuration (86 endpoints)
-See [references/platform-config.md](references/platform-config.md)
+### Integrations
+See [references/advanced.md](references/advanced.md) and [references/platform-config.md](references/platform-config.md)
 
 | Operation | Method | Endpoint |
 |-----------|--------|----------|
-| Manage admins | GET/POST/PATCH/DELETE | `/api/v2/admins` |
-| Manage roles | GET/POST/PUT/DELETE | `/api/company/roles` |
-| Display settings | GET/PATCH | `/api/settings/displays` |
-| Feature flags | GET/POST/PUT/DELETE | `/api/v202506/feature_flags` |
-| Global embeds | GET/POST/PUT/DELETE | `/api/global_embeds` |
-| Sitemap | GET/PATCH | `/api/v2025-06/sitemap` |
+| Global embeds (pixels, scripts) | GET/POST/PUT/DELETE | `/api/global_embeds` |
+| Sitemap visibility | GET/PATCH | `/api/v2025-06/sitemap` |
 | Droplets & installations | GET/POST/PUT/DELETE | `/api/droplets` |
-| Custom pages | GET/POST/PUT/DELETE | `/api/company/custom_pages` |
-| Trainings | GET/POST/PATCH/DELETE | `/api/v202506/trainings` |
-| Tiles & mobile widgets | GET/POST/PATCH/DELETE | `/api/company/tiles` |
 
 ### Payments & Carts (71 endpoints)
 See [references/payments-carts.md](references/payments-carts.md)
@@ -395,44 +387,18 @@ See [references/api-patterns.md](references/api-patterns.md) for the critical di
 
 ## 5. Multi-Step Workflows
 
-Many user requests require chaining operations. Common patterns:
+See [references/workflows.md](references/workflows.md) for the full catalog of multi-step workflows with exact API call sequences. Categories include:
 
-### "Create a collection of X products"
-1. GET `/api/company/v1/products` to find/filter products
-2. POST `/api/company/v1/collections` to create the collection
-3. POST `/api/company/v1/collections/:id/add_product` for each product
-
-### "Deactivate all products in category X"
-1. GET `/api/company/v1/products?category_id=X` to list products
-2. PUT `/api/company/v1/products/:id` with `"active": false` for each
-
-### "Update the main navigation"
-1. GET `/api/menus` to find the current main menu
-2. PUT `/api/menus/:id` with updated `menu_items_attributes`
-
-### "Set up shipping for a new country"
-1. POST `/api/settings/company_countries` to add the country
-2. POST `/api/settings/warehouses` (if needed)
-3. POST `/api/settings/warehouses/:id/assign_to_country`
-4. POST `/api/companies/set_shipping` to configure rates
-
-### "Fulfill and ship an order"
-1. GET `/api/v2/orders/:id` to get order details and line items
-2. POST `/api/order_fulfillments` with order items + tracking info
-3. Notification sent automatically if `send_fulfillment_notification: true`
-
-### "Set up a subscription plan with products"
-1. POST `/api/subscription_plans` to create the plan
-2. POST `/api/company/v1/products/:id/subscription_plans` to link products
-3. Customers can now subscribe at checkout
-
-### "Onboard a new rep"
-1. POST `/api/v2/reps` to create the rep account
-2. POST `/api/enrollment_packs` to create their starter pack (if needed)
-3. POST `/api/trees/:tree_id/tree_nodes` to place them in the downline
-
-### "Add a tracking pixel globally"
-1. POST `/api/global_embeds` with the script code and `placement: "head"`
+- **Catalog & Collections** — create collections, bulk price updates, sale pricing, reorganize categories, product bundles
+- **Navigation** — build menus with dropdowns, add nav items, create footer menus
+- **Orders & Fulfillment** — fulfill orders, process refunds, find/cancel orders
+- **Subscriptions** — create plans, link products, pause/cancel subs
+- **MLM / Network** — onboard reps, set up ranks, manage downlines
+- **Store Setup** — open new countries, configure shipping, complete brand setup
+- **Discounts & Promotions** — flash sales, promo codes, BOGO deals
+- **Content & Engagement** — create pages, post announcements, build media libraries
+- **Webhooks & Integrations** — set up notifications, add tracking pixels
+- **Cleanup & Maintenance** — end-of-season cleanup, audit collections
 
 ---
 

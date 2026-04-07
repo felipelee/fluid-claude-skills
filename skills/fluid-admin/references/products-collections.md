@@ -76,14 +76,26 @@ GET /api/company/v1/products?page=1&per_page=50
 Query parameters:
 - `page` — Page number (default: 1)
 - `per_page` — Items per page (default: 25, max: 50)
+- `collection_id` — Filter by collection (supports multiple)
 - `category_id` — Filter by category
-- `active` — Filter by active status (`true`/`false`)
+- `category_title` — Filter by category title (case-sensitive)
+- `status` — `active`, `draft`, `archived`
+- `availability` — Filter by availability (default: `all`)
+- `order_by` — Sort: `title`, `price`, `cv`, `created_at`
+- `country_code` — Get country-specific pricing
+- `lang` — Language code for translations
 - `q` — Search by title/SKU
 
 ### Get Single Product
 ```
 GET /api/company/v1/products/:id
 ```
+
+### Get Collection Details
+```
+GET /api/company/v1/collections/:id_or_slug
+```
+Accepts either numeric ID or slug string.
 
 ### Delete Product
 ```
@@ -145,23 +157,23 @@ POST /api/company/v1/collections
 
 ### Add Product to Collection
 ```
-POST /api/company/v1/collections/:collection_id/add_product
+POST /api/company/v1/products/:id/add_to_collection
 ```
 
 ```json
 {
-  "product_id": 789
+  "collection_id": 789
 }
 ```
 
 ### Remove Product from Collection
 ```
-POST /api/company/v1/collections/:collection_id/remove_product
+DELETE /api/company/v1/products/:id/remove_from_collection
 ```
 
 ```json
 {
-  "product_id": 789
+  "collection_id": 789
 }
 ```
 
