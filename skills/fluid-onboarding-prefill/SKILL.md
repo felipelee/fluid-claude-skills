@@ -56,6 +56,17 @@ Print results:
 [Preflight] Firecrawl:  OK
 ```
 
+**CRITICAL: Confirm company identity before proceeding.** Display the company name returned by the Fluid API and ask the user to confirm this is the correct store. This prevents accidentally writing onboarding data to the wrong Fluid account.
+
+```
+⚠️  This token resolves to: "Yellowbird Foods" (Company ID: 980243068)
+    Store URL: https://companyname.fluid.app
+
+Is this the correct store? (yes/no)
+```
+
+**Do NOT proceed until the user confirms.**
+
 ## Step 3: Scrape the website
 
 Use Firecrawl to extract structured data in parallel:

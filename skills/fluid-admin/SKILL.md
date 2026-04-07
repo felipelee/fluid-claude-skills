@@ -51,6 +51,19 @@ curl -s -w "\n%{http_code}" "${FLUID_URL}/api/settings/company_countries" \
 
 If either returns 401/403, the token is invalid. Stop and tell the user.
 
+### Confirm Company Identity (REQUIRED)
+
+**Before making ANY write operations**, display the company name returned by the API and ask the user to confirm it's the correct store. This prevents accidentally writing to the wrong Fluid account.
+
+```
+⚠️  This token resolves to: "Yellowbird Foods" (Company ID: 980243068)
+    Store URL: https://p.fluid.app
+
+Is this the correct store? (yes/no)
+```
+
+**Do NOT proceed with any write operations until the user confirms.** This is a critical safety check — tokens can belong to a different company than the URL suggests, and writing to the wrong store can overwrite brand settings, products, and configuration.
+
 From the countries response, extract and note:
 - **`id`** (top-level) = `company_country_id` — used in agreements, checkout, tax
 - **`country.id`** (nested) = `country_id` — used in menus, variants, regions

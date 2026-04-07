@@ -67,6 +67,20 @@ Print the results clearly:
 [Preflight] Source site: ✓ yellowbirdfoods.com is reachable
 [Preflight] Fluid API:  ✓ Connected to companyname.fluid.app (Company: "Acme Corp", Country: US/214)
 [Preflight] Firecrawl:  ✓ API key is valid
+```
+
+**CRITICAL: Confirm company identity before proceeding.** Display the company name returned by the Fluid API and ask the user to confirm it's the correct store. This prevents writing to the wrong Fluid account (e.g., using a token from Company A against Company B's URL will overwrite Company B's data).
+
+```
+⚠️  This token resolves to: "Acme Corp" (Company ID: 980243068)
+    Store URL: https://companyname.fluid.app
+
+Is this the correct store you want to import into? (yes/no)
+```
+
+**Do NOT proceed until the user confirms.** Only after confirmation:
+
+```
 [Preflight] All checks passed — starting import.
 ```
 

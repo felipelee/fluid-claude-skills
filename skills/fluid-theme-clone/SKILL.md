@@ -73,6 +73,20 @@ Print results:
 [Preflight] Source site: OK yellowbirdfoods.com
 [Preflight] Fluid API:  OK companyname.fluid.app (Company ID: 980243068)
 [Preflight] Firecrawl:  OK
+```
+
+**CRITICAL: Confirm company identity before proceeding.** Display the company name returned by the Fluid API and ask the user to confirm this is the correct store. This prevents accidentally writing theme data to the wrong Fluid account.
+
+```
+⚠️  This token resolves to: "Yellowbird Foods" (Company ID: 980243068)
+    Store URL: https://companyname.fluid.app
+
+Is this the correct store? (yes/no)
+```
+
+**Do NOT proceed until the user confirms.**
+
+```
 [Preflight] All checks passed — starting theme clone.
 ```
 

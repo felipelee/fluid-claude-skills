@@ -114,6 +114,21 @@ Print:
 ```
 [Refine] Source: OK yellowbirdfoods.com
 [Refine] Fluid:  OK companyname.fluid.app (Theme ID: 55697)
+```
+
+**CRITICAL: Confirm company identity before proceeding.** Also call `GET /api/settings/company` and display the company name to the user. This prevents accidentally overwriting theme files on the wrong Fluid account.
+
+```
+⚠️  This token resolves to: "Yellowbird Foods" (Company ID: 980243068)
+    Store URL: https://companyname.fluid.app
+    Theme: "Yellowbird Theme" (ID: 55697)
+
+Is this the correct store and theme? (yes/no)
+```
+
+**Do NOT proceed until the user confirms.**
+
+```
 [Refine] Starting refinement pass.
 ```
 
