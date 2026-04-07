@@ -142,10 +142,45 @@ It asks for your credentials, verifies everything works, then starts moving your
 
 ---
 
-## The five tools included
+## Manage your store with natural language
+
+Once your store is set up, keep running it the same way — by telling Claude what you want done.
+
+```
+> Create a "Summer Sale" collection with all products under $30
+> and add a 20% discount code SUMMER20 that expires July 31st
+```
+
+```
+[Collections] Created "Summer Sale" collection (ID: 4521)
+[Products]    Found 12 products under $30 — added all to collection
+[Discounts]   Created discount code SUMMER20 (20% off, expires 2025-07-31)
+
+Done. Want me to add this collection to your main navigation?
+```
+
+The **Fluid Admin** skill turns Claude into your store admin. Give it your Fluid URL and API token, then manage your entire store through conversation:
+
+| What you can say | What it does |
+|---|---|
+| "Raise all prices in my Best Sellers collection by 10%" | Fetches every product and variant in the collection, calculates new prices, bulk updates them |
+| "Deactivate all Winter products and remove them from the nav" | Finds products by category, deactivates them, updates the menu — all in one go |
+| "Set up a subscription plan for my top 5 products at 15% off monthly" | Creates the plan, links the products, configures the discount |
+| "Onboard a new rep and give them 500 welcome points" | Creates the rep account, places them in the downline, credits their points ledger |
+| "Build my main navigation with Shop, About, and Contact links" | Fetches your collections and pages, builds the menu with proper country IDs |
+| "Create a flash sale — new collection, 25% promo code, announce it to all reps" | Chains 5+ API calls: collection, products, discount, announcement, nav update |
+| "Fulfill order #1234 with UPS tracking number 1Z999AA1" | Creates the fulfillment with tracking and sends the customer notification |
+| "Open Canada as a new market with $7.99 flat rate shipping" | Adds the country, creates a warehouse, assigns it, configures shipping rates |
+
+It covers the full Fluid API — products, collections, orders, fulfillment, refunds, subscriptions, reps, points, discounts, navigation, pages, brand settings, webhooks, and more. See [the full workflow catalog](skills/fluid-admin/references/workflows.md) for 20+ multi-step recipes.
+
+---
+
+## The tools included
 
 | Tool | What it does |
 |------|-------------|
+| **Fluid Admin** | Manage your live store — products, collections, orders, subscriptions, reps, settings, and everything else through natural language |
 | **Product & Settings Import** | Moves your products, images, categories, collections, brand, menus, pages, policies, checkout settings, tax, shipping, customers, inventory, discounts, redirects, and blog posts |
 | **Theme Clone** | Rebuilds your current website's design inside Fluid — every section, every color, every font |
 | **Theme Refine** | Takes fresh screenshots and compares your Fluid site against the original, fixing differences until they're identical |
@@ -162,6 +197,8 @@ It asks for your credentials, verifies everything works, then starts moving your
 **Use Theme Refine** to polish the details. It compares screenshots side-by-side and fixes anything that's off.
 
 **Run Onboarding Pre-Fill** before your payments setup meeting. It saves time by pulling your business info from your existing site.
+
+**Use Fluid Admin for ongoing management.** After your store is set up, keep using Claude to create collections, run sales, manage subscriptions, onboard reps, and handle day-to-day operations.
 
 **Migrating multiple stores?** Each run is completely independent. Different source store, different Fluid account — just provide the new credentials each time.
 
