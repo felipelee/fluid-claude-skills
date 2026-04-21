@@ -21,6 +21,10 @@
       {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
       border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
     {%- endif -%}
+    {%- assign sb = section.settings.section_border -%}
+    {%- if sb.width -%}
+      border: {{ sb.width }} solid {{ sb.color }};
+    {%- endif -%}
   }
 {%- endstyle -%}
 {% comment %} Handle background_image - can be string URL or object with url/fluid_media_id {% endcomment %}
@@ -79,34 +83,26 @@
       {%- endfor -%}
       {%- if button_blocks.size > 0 -%}
         <div class="flex justify-{{ section.settings.text_alignment }} align-center {{ section.settings.button_gap | default: 'space-lg' }}">
-          {%- for button_block in button_blocks -%}
+          {% for button_block in button_blocks %}
             {% if button_block.settings.text != blank %}
-              {%- assign cr = button_block.settings.border_radius -%}
-              {%- assign _btn_attr = button_block.fluid_attributes -%}
-              {%- assign _btn_size = button_block.settings.size | default: 'btn-md' -%}
-              {%- assign _btn_fw = button_block.settings.font_weight | default: '600' -%}
-              {%- assign _btn_w = button_block.settings.width -%}
-              {%- assign _btn_h = button_block.settings.height -%}
-              {%- capture _btn_extra_style -%}font-weight: {{ _btn_fw }};{% if _btn_w != blank %} width: {{ _btn_w }}px;{% endif %}{% if _btn_h != blank %} height: {{ _btn_h }}px;{% endif %}{%- endcapture -%}
-              {%- if cr -%}
-                {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}
-                {%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}
-                {%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}
-                {%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
-                {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
-                {%- assign _btn_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn_extra_style | append: ';" ' | append: _btn_attr -%}
-              {%- else -%}
-                {%- assign _btn_attr = 'style="' | append: _btn_extra_style | append: ';" ' | append: _btn_attr -%}
-              {%- endif -%}
-              {% render 'button',
-                href: button_block.settings.link | default: '#',
-                text: button_block.settings.text,
-                variant: button_block.settings.style | default: 'btn-bg-white',
-                class: _btn_size,
-                attr: _btn_attr
-              %}
+              {% capture _btn_style %}
+                {% if button_block.settings.background_color != blank %}background-color: {{ button_block.settings.background_color }};{% endif %}
+                {% if button_block.settings.text_color != blank %}color: {{ button_block.settings.text_color }};{% endif %}
+                {% if button_block.settings.font_size != blank %}font-size: {{ button_block.settings.font_size }}px;{% endif %}
+                {% if button_block.settings.font_family != blank %}font-family: {{ button_block.settings.font_family | font_family }};{% endif %}
+                {% assign p = button_block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+                {% assign br = button_block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                {% assign bd = button_block.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+              {% endcapture %}
+              <a href="{{ button_block.settings.link | default: '#' }}"
+                 class="btn btn--{{ button_block.settings.style | default: 'filled' }}"
+                 style="{{ _btn_style | strip_newlines }}"
+                 {% if button_block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                 {{ button_block.fluid_attributes }}>
+                {{ button_block.settings.text | escape }}
+              </a>
             {% endif %}
-          {%- endfor -%}
+          {% endfor %}
         </div>
       {%- endif -%}
     </div>
@@ -134,9 +130,18 @@
       "id": "text_alignment",
       "label": "Text Alignment",
       "options": [
-        { "value": "start", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "end", "label": "Right" }
+        {
+          "value": "start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Right"
+        }
       ],
       "default": "start"
     },
@@ -149,15 +154,42 @@
       "id": "content_gap_mobile",
       "label": "Content Gap (Mobile)",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" },
-        { "value": "space-3xl", "label": "3XL" },
-        { "value": "space-4xl", "label": "4XL" },
-        { "value": "space-5xl", "label": "5XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "space-2xl"
     },
@@ -166,15 +198,42 @@
       "id": "content_gap_desktop",
       "label": "Content Gap (Desktop)",
       "options": [
-        { "value": "lg:space-xs", "label": "XS" },
-        { "value": "lg:space-sm", "label": "SM" },
-        { "value": "lg:space-md", "label": "MD" },
-        { "value": "lg:space-lg", "label": "LG" },
-        { "value": "lg:space-xl", "label": "XL" },
-        { "value": "lg:space-2xl", "label": "2XL" },
-        { "value": "lg:space-3xl", "label": "3XL" },
-        { "value": "lg:space-4xl", "label": "4XL" },
-        { "value": "lg:space-5xl", "label": "5XL" }
+        {
+          "value": "lg:space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "lg:space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "lg:space-md",
+          "label": "MD"
+        },
+        {
+          "value": "lg:space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "lg:space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "lg:space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "lg:space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "lg:space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "lg:space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "lg:space-3xl"
     },
@@ -183,15 +242,42 @@
       "id": "button_gap",
       "label": "Button Gap",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" },
-        { "value": "space-3xl", "label": "3XL" },
-        { "value": "space-4xl", "label": "4XL" },
-        { "value": "space-5xl", "label": "5XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "space-lg"
     },
@@ -200,10 +286,11 @@
       "content": "Layout & Colors"
     },
     {
-      "type": "color_background",
+      "type": "select",
       "id": "background_color",
       "label": "Background Color",
-      "default": "#000000"
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
     },
     {
       "type": "padding",
@@ -215,6 +302,11 @@
       "id": "section_border_radius",
       "label": "Section Border Radius",
       "info": "Default 0px. Four corners, link/unlink."
+    },
+    {
+      "type": "border",
+      "id": "section_border",
+      "label": "Section Border"
     }
   ],
   "blocks": [
@@ -226,7 +318,7 @@
           "type": "richtext",
           "id": "text",
           "label": "Text",
-          "default": "<p>Welcome</p>"
+          "default": "<h5 style=\"color: var(--clr-primary);\">Welcome</h5>"
         }
       ]
     },
@@ -238,7 +330,7 @@
           "type": "richtext",
           "id": "text",
           "label": "Text",
-          "default": "<p>Medium length hero headline goes here</p>"
+          "default": "<h1 style=\"color: var(--clr-primary);\">Medium length hero headline goes here</h1>"
         }
       ]
     },
@@ -250,7 +342,7 @@
           "type": "richtext",
           "id": "text",
           "label": "Text",
-          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>"
+          "default": "<p style=\"color: var(--clr-body);\">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.</p>"
         }
       ]
     },
@@ -260,10 +352,14 @@
       "limit": 4,
       "settings": [
         {
+          "type": "header",
+          "content": "Content"
+        },
+        {
           "type": "text",
           "id": "text",
           "label": "Text",
-          "default": "Button"
+          "default": "Shop now"
         },
         {
           "type": "url",
@@ -271,78 +367,78 @@
           "label": "Link"
         },
         {
-          "type": "select",
+          "type": "font_picker",
+          "id": "font_family",
+          "label": "Font Family",
+          "default": "Inter"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Style"
+        },
+        {
+          "type": "radio",
           "id": "style",
           "label": "Style",
+          "default": "filled",
           "options": [
-            { "value": "btn-bg-white", "label": "White" },
-            { "value": "btn-bg-primary", "label": "Primary" },
-            { "value": "btn-border-white", "label": "White Border" },
-            { "value": "btn-border-black", "label": "Black Border" },
-            { "value": "btn-border-primary", "label": "Primary Border" }
-          ],
-          "default": "btn-bg-white"
+            {
+              "value": "filled",
+              "label": "Filled"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "text",
+              "label": "Text only"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "id": "font_size",
+          "label": "Font Size",
+          "min": 10,
+          "max": 32,
+          "step": 1,
+          "default": 16,
+          "unit": "px"
+        },
+        {
+          "type": "padding",
+          "id": "padding",
+          "label": "Padding"
         },
         {
           "type": "select",
-          "id": "size",
-          "label": "Button Size",
-          "options": [
-            { "value": "btn-xs", "label": "Extra Small" },
-            { "value": "btn-sm", "label": "Small" },
-            { "value": "btn-md", "label": "Medium" },
-            { "value": "btn-lg", "label": "Large" },
-            { "value": "btn-xl", "label": "Extra Large" }
-          ],
-          "default": "btn-md"
+          "id": "background_color",
+          "label": "Background Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
         },
         {
           "type": "select",
-          "id": "font_weight",
-          "label": "Font Weight",
-          "options": [
-            { "value": "400", "label": "Normal" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" }
-          ],
-          "default": "600"
+          "id": "text_color",
+          "label": "Text Color",
+          "options": "background_colors",
+          "default": "var(--clr-white)"
         },
-
         {
-
-          "type": "range",
-
-          "id": "width",
-
-          "min": 0,
-
-          "max": 500,
-
-          "step": 1,
-
-          "label": "Button Width (px)",
-
-          "info": "Leave empty for auto width"
-
+          "type": "header",
+          "content": "Shape"
         },
-
         {
-
-          "type": "range",
-
-          "id": "height",
-
-          "min": 0,
-
-          "max": 500,
-
-          "step": 1,
-
-          "label": "Button Height (px)",
-
-          "info": "Leave empty for auto height"
-
+          "type": "border",
+          "id": "border",
+          "label": "Border"
         },
         {
           "type": "corner_radius",
@@ -371,9 +467,18 @@
           "id": "underline_style",
           "label": "Underline Style",
           "options": [
-            { "value": "always", "label": "Always" },
-            { "value": "hover", "label": "On Hover Only" },
-            { "value": "never", "label": "Never" }
+            {
+              "value": "always",
+              "label": "Always"
+            },
+            {
+              "value": "hover",
+              "label": "On Hover Only"
+            },
+            {
+              "value": "never",
+              "label": "Never"
+            }
           ],
           "default": "hover"
         },
@@ -382,26 +487,49 @@
           "id": "icon_position",
           "label": "Icon Position",
           "options": [
-            { "value": "none", "label": "None" },
-            { "value": "before", "label": "Before Text" },
-            { "value": "after", "label": "After Text" }
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "before",
+              "label": "Before Text"
+            },
+            {
+              "value": "after",
+              "label": "After Text"
+            }
           ],
           "default": "none"
         },
         {
-          "type": "color",
+          "type": "select",
+          "options": "background_colors",
           "id": "color",
-          "label": "Link Color"
+          "label": "Link Color",
+          "default": "var(--clr-primary)"
         },
         {
           "type": "select",
           "id": "font_weight",
           "label": "Font Weight",
           "options": [
-            { "value": "400", "label": "Normal" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" }
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
           ],
           "default": "400"
         }
@@ -412,10 +540,26 @@
     {
       "name": "Hero Section",
       "blocks": [
-        { "type": "heading" },
-        { "type": "description" },
-        { "type": "button", "settings": { "text": "Button 1", "style": "btn-bg-white" } },
-        { "type": "button", "settings": { "text": "Button 2", "style": "btn-border-white" } }
+        {
+          "type": "heading"
+        },
+        {
+          "type": "description"
+        },
+        {
+          "type": "button",
+          "settings": {
+            "text": "Button 1",
+            "style": "btn-bg-white"
+          }
+        },
+        {
+          "type": "button",
+          "settings": {
+            "text": "Button 2",
+            "style": "btn-border-white"
+          }
+        }
       ]
     }
   ]

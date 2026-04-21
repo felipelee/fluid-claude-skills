@@ -8,7 +8,7 @@ description: >-
   "compare and fix," "tighten up," "QA the theme," "visual diff," "side by side
   comparison," "it doesn't look right," "make it exact," or "closer to the original."
 metadata:
-  version: 1.0.0
+  version: 1.3.0
 ---
 
 # Fluid Theme Refine
@@ -452,3 +452,501 @@ If refining a full site clone, work through pages in this order:
 4. Static pages (about, FAQ, etc.)
 
 Between pages, check if fixes to shared sections (nav, footer, CTA banners) propagate correctly.
+
+---
+
+## Fluid Engine Quirks — Discovered Field Knowledge
+
+These are non-obvious behaviors discovered while refining themes. If you hit any of these symptoms, the fix is probably here.
+
+### Headings render at body-text size (no visual hierarchy)
+
+**Symptom:** Heading blocks look the same size as body text. All typography feels flat.
+
+**Root causes (check in order):**
+
+1. **CSS file with h1-h6 rules isn't being loaded.** Fluid does NOT auto-load CSS files at the theme root — only files in `assets/` are served via `| asset_url`. If there's a `global_styles.css` at the theme root, it's dead code.
+   - **Fix:** Move it to `assets/global.css` and add `<link rel="stylesheet" href="{{ 'global.css' | asset_url }}">` in `layouts/theme.liquid` after `reset.css` / `config.css` / `utilities.css`.
+   - Verify: the CSS variables `--fs-h1` … `--fs-h6` are defined in theme.liquid's `:root`, and h1-h6 selectors point at them.
+
+2. **Richtext block defaults use `<p>` instead of `<h1>`–`<h6>`.** A richtext default of `<p>Medium length hero headline</p>` renders as body text because there's no heading tag for h1-h6 CSS to apply to.
+   - **Fix:** Update the default in the block's schema:
+     ```json
+     "default": "<h1 style=\"color: var(--clr-primary);\">Medium length hero headline</h1>"
+     ```
+   - Include inline `color: var(--clr-primary);` so the heading picks up the theme color by default.
+   - Map heading levels to block semantic purpose: hero heading → `h1`, section heading → `h2`, subsection → `h3`, card title → `h4`, eyebrow → `h5`.
+   - **Caveat:** Schema `default` values only apply to **newly-added blocks**. Sections already on a page keep their previously-saved HTML. To update saved blocks, edit them manually in the editor OR patch the template's saved state via the API.
+
+### "Primary Color" and "Text Presets" dropdowns in the editor are empty
+
+The formatting toolbar on every `text` / `textarea` / `richtext` field has two dropdowns at the top: **Text Presets** and **Primary Color**. These draw from theme-level `option_group`s in `config/settings_schema.json`.
+
+**Fix — colors:** every color setting needs an `option_group` with a distinct `label` and a `value` that's a CSS value:
+```json
+{
+  "type": "color_background",
+  "id": "color_primary",
+  "label": "Primary Color",
+  "default": "#023026",
+  "option_group": { "id": "background_colors", "label": "Primary", "value": "var(--clr-primary)" }
+},
+{
+  "type": "color_background",
+  "id": "color_secondary",
+  "label": "Secondary Color",
+  "default": "#666",
+  "option_group": { "id": "background_colors", "label": "Secondary", "value": "var(--clr-secondary)" }
+}
+```
+
+**Fix — text presets:** every heading font-size range needs an `option_group` pointing at `text_presets`:
+```json
+{
+  "type": "range", "id": "font_size_h1", "label": "H1 Font Size",
+  "min": 32, "max": 72, "step": 1, "default": 42,
+  "option_group": { "id": "text_presets", "label": "H1 · Heading", "value": "text-h1" }
+}
+```
+
+Without these option_groups, the dropdowns render empty and editors have nothing to pick.
+
+### Section `select` with `"options": "background_colors"` is empty
+
+Same root cause as above. The `select + option_group` pattern is how Fluid gets a theme-aware color dropdown inside a section. If the dropdown is empty, the theme has no colors with `option_group: { id: "background_colors", ... }`.
+
+**Critical bug to avoid:** never write `background-color: var(--clr-{{ section.settings.background_color }});`. When the setting is empty this renders `var(--clr-)` — invalid CSS that silently breaks the entire rule block. The option_group's `value` is already a CSS value, so:
+```liquid
+background-color: {{ section.settings.background_color | default: 'transparent' }};
+```
+
+### Section preset blocks don't populate on an existing template
+
+**Symptom:** You define a section with 40 preset blocks. You push the theme. The section renders in the editor but has ZERO blocks — the preset didn't apply.
+
+**Root cause:** Fluid only applies section presets when a section is **first added** to a template. An existing template that already has the section (even with zero blocks) never retroactively gets the preset. API `PUT` on resources doesn't trigger preset expansion.
+
+**Fix:** delete the template via API, then re-push the page template. That forces Fluid to create a fresh template record, and fresh-creation runs preset expansion.
+```python
+# 1. Delete the resource (this deletes the template record)
+requests.delete(f"{FLUID_URL}/api/application_themes/{THEME_ID}/resources",
+    headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"},
+    json={"key": "page/<slug>/index.liquid"})
+
+# 2. Re-push the page template content
+with open(local_path) as f: content = f.read()
+requests.put(f"{FLUID_URL}/api/application_themes/{THEME_ID}/resources",
+    headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"},
+    json={"key": "page/<slug>/index.liquid", "content": content})
+# A new template ID is created. Find it via GET /api/application_themes/{THEME_ID}.
+```
+
+**Additional requirement for preset expansion to fire:** the section's `"blocks"` array in its schema must declare blocks with **inline settings**, not as a standalone reference:
+```json
+/* WRONG — Fluid won't run preset expansion on this shape */
+"blocks": [
+  { "type": "schema_entry" }
+]
+
+/* RIGHT — inline settings, matches main_navbar convention */
+"blocks": [
+  {
+    "type": "schema_entry",
+    "name": "Schema Entry",
+    "settings": [
+      { "type": "text", "id": "control_name", "label": "Control Name" },
+      { "type": "richtext", "id": "description", "label": "Description" }
+    ]
+  }
+]
+```
+
+Note: even if you have a standalone `blocks/schema_entry/index.liquid` file with its own schema, the section still needs the inline copy for preset expansion to work. Keep the block file for markup reuse OR delete it if you're rendering blocks inline in the section.
+
+### Blocks render in HTML but aren't clickable in the editor
+
+**Symptom:** Blocks appear on the canvas, but clicking them doesn't open settings. The Layers panel doesn't list them.
+
+**Diagnosis:** inspect any block element. If its HTML is missing `data-fluid-section-block-id`, `data-fluid-section-block-type`, and `data-fluid-block-attribute`, the block isn't registered with the editor.
+
+```javascript
+// In the preview iframe
+document.querySelector('.your-block-class').outerHTML.substring(0, 300)
+```
+
+A **registered** block has attributes like:
+```
+data-fluid-section-block-id="02b31fac"
+data-fluid-section-block-type="schema_entry"
+data-fluid-parent-section-type="your_section"
+data-fluid-section-id="5332901"
+data-fluid-block-attribute="{...}"
+```
+
+**Root cause:** the blocks were injected via inline template schema rather than via the section's preset. `{{ block.fluid_attributes }}` returns empty for pseudo-blocks.
+
+**Fix:** see "Section preset blocks don't populate" above — delete + recreate the template with the inline-blocks pattern in the section's schema.
+
+### `{% render block %}` and `{% include 'block_name' %}` don't emit markup
+
+**Symptom:** You have `blocks/my_block/index.liquid` with markup, and you call `{% render block %}` from a section's for-loop. Nothing renders.
+
+**Root cause:** Fluid doesn't auto-render standalone block templates via `render` or `include`. The convention in Fluid themes is to render block markup **inline in the section** via `case/when`:
+
+```liquid
+{% for block in section.blocks %}
+  {% case block.type %}
+    {% when 'heading' %}
+      <div class="heading" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+    {% when 'button' %}
+      <a class="btn" {{ block.fluid_attributes }} href="{{ block.settings.url }}">{{ block.settings.label }}</a>
+  {% endcase %}
+{% endfor %}
+```
+
+The `blocks/<name>/index.liquid` file's `{% schema %}` defines the block's settings (editor UI). Its markup body is ignored in the Fluid section-block rendering path — everything renders inline in the section.
+
+### Block loop whitespace dashes break the editor
+
+Per Fluid's editor requirements — no `{%- -%}` dashes on block-loop tags. Inside the for-loop use plain `{% %}`:
+
+```liquid
+{% for block in section.blocks %}
+  {% case block.type %}
+    {% when 'heading' %}
+```
+
+Dashes ARE safe inside `{%- style -%}` blocks (CSS generation), just not inside the block iteration / case-when.
+
+### Section root missing `{{ section.fluid_attributes }}` breaks section selection
+
+**Symptom:** You can't click the section itself in the editor to open its settings.
+
+**Fix:** the outermost element in the section's markup needs `{{ section.fluid_attributes }}`:
+```liquid
+<section class="my-section section-{{ section.id }}" {{ section.fluid_attributes }}>
+  …
+</section>
+```
+
+Without this, Fluid doesn't know where the section starts/ends in the DOM, so it can't bind selection handles.
+
+### Binary theme assets (images) fail to upload via API
+
+The old `dam_asset: "<https-url-string>"` shape on `PUT /api/application_themes/{id}/resources` now returns 422 ("must be a hash"). Tested shapes that still error:
+- `dam_asset: { id }` → 500 RecordInvalid
+- `dam_asset: { url }` → 500 RecordInvalid
+- `dam_asset: { id, url }` → 500 RecordInvalid
+- `dam_asset: { id, default_variant_id, default_variant_url }` → 500 UnknownAttributeError
+- Full asset hash → 500 UnknownAttributeError
+
+**Current workaround:** skip binary theme assets in API pushes. Images for sections belong in the DAM and should be referenced from Liquid with their DAM URLs in `settings_data.json` or block defaults, not pushed as theme resources. The 8-10 placeholder images in a base theme (logo, footer-logo, brand-*, placeholder-*) are rarely used — most themes override them via settings.
+
+### Saved block state does NOT update when you change section defaults
+
+Updating a block's `"default"` in the section schema and pushing does not retroactively change blocks that already exist on pages. The saved template state keeps the old content.
+
+To update live content after changing defaults:
+- **Quick:** edit each affected block manually in the editor.
+- **Bulk:** patch the template's saved JSON directly via API — GET the template content, find the `blocks` object under the section, update the settings there, PUT it back.
+- **Nuclear:** delete + recreate the template (see preset-expansion fix above). Loses any editor customizations.
+
+### API push → editor Save workflow
+
+After pushing section code via `PUT /api/application_themes/{id}/resources`:
+1. Open the visual editor for a template that uses the section
+2. Click **Save** (even with no visible changes)
+3. This triggers Fluid's block registration system for any blocks already on the canvas
+4. Blocks become clickable in both the Layers panel and the preview
+
+This is different from preset expansion — Save registers blocks that already exist. Preset expansion only happens on fresh template creation.
+
+### Required templates (18)
+
+Fluid expects 18 template folders. Missing any template type prevents that page type from rendering. The full list:
+
+`navbar`, `footer`, `home_page`, `category_page`, `category`, `collection`, `collection_page`, `shop_page`, `product`, `post`, `post_page`, `cart_page`, `page`, `enrollment_pack`, `join_page`, `library`, `library_navbar`, `medium`.
+
+Each lives at `{template}/default/index.liquid`. A commonly missed one is `library_navbar` — it pairs with `library` for media pages and wraps the navbar.
+
+---
+
+## Section Shell Pattern — enforce on every custom section
+
+Every custom (non-Fluid-built-in) section MUST ship with these four controls in its `{% schema %}` settings array:
+
+```json
+{ "type": "padding",        "id": "section_padding",       "label": "Section Padding" },
+{ "type": "corner_radius",  "id": "section_border_radius", "label": "Section Border Radius" },
+{ "type": "select",         "id": "background_color",      "label": "Background Color",
+  "options": "background_colors", "default": "transparent" },
+{ "type": "border",         "id": "section_border",        "label": "Section Border" }
+```
+
+Plus in the CSS `{%- style -%}` block, wire all four:
+
+```liquid
+{%- style -%}
+  .section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;
+    {%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}
+      border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;
+    {%- endif -%}
+    {%- assign sb = section.settings.section_border -%}
+    {%- if sb.width -%}
+      border: {{ sb.width }} solid {{ sb.color }};
+    {%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+  }
+{%- endstyle -%}
+
+<section class="section-{{ section.id }}" {{ section.fluid_attributes }}>
+  …
+</section>
+```
+
+Audit script (run before refinement to flag sections missing the pattern):
+```python
+import re, json, os
+BASE = "base-theme/sections"
+SKIP = {"main_product","main_cart","main_bundle_product","main_collection","main_category",
+        "main_shop","main_post","main_page","main_enrollment","main_post_list",
+        "main_collection_list","main_category_list","main_navbar","main_footer"}
+
+for name in sorted(os.listdir(BASE)):
+    if name in SKIP: continue
+    with open(f"{BASE}/{name}/index.liquid") as f: c = f.read()
+    s = re.sub(r"{%\s*raw\s*%}.*?{%\s*endraw\s*%}", "", c, flags=re.DOTALL)
+    m = re.search(r"{%\s*schema\s*%}(.*?){%\s*endschema\s*%}", s, re.DOTALL)
+    if not m: continue
+    settings = json.loads(m.group(1)).get("settings", [])
+    required = {"section_padding", "section_border_radius", "background_color", "section_border"}
+    ids = {x.get("id") for x in settings}
+    missing = required - ids
+    if missing:
+        print(f"{name}: missing {missing}")
+```
+
+---
+
+## Prefer theme color dropdowns over raw hex pickers
+
+**User principle:** *never* use raw hex color pickers in section/block settings. Always pull from the theme's named colors via a `select` + `options: "background_colors"` dropdown.
+
+**Bad:**
+```json
+{ "type": "color", "id": "text_color", "label": "Text Color", "default": "#000000" }
+{ "type": "color_background", "id": "bg", "label": "Background", "default": "#ffffff" }
+```
+
+**Good:**
+```json
+{ "type": "select", "id": "text_color", "label": "Text Color",
+  "options": "background_colors", "default": "var(--clr-primary)" }
+```
+
+Why: raw `color` / `color_background` let editors pick any random hex, disconnected from the theme palette. The `select + background_colors` pattern restricts choices to theme colors, so palette changes propagate site-wide.
+
+**Where raw `color_background` is still OK:**
+- `config/settings_schema.json` — theme-level color token DEFINITIONS (with `option_group: { id: "background_colors", ... }`)
+- **Nowhere else.** Section and block settings should always use the dropdown.
+
+Default value mapping when migrating:
+- `#000000` / `#000` → `var(--clr-primary)` (or `var(--clr-black)`)
+- `#ffffff` / `#fff` → `var(--clr-white)`
+- `#f8f8f8` / `#f2f2f2` / `#f5f5f5` → `var(--clr-gray)`
+- Any other hex → `transparent` (safe default, editor picks from dropdown)
+
+Audit script to find raw color pickers in section/block settings:
+```python
+import re, os
+BASE = "base-theme/sections"
+for name in sorted(os.listdir(BASE)):
+    with open(f"{BASE}/{name}/index.liquid") as f: c = f.read()
+    s = re.sub(r"{%\s*raw\s*%}.*?{%\s*endraw\s*%}", "", c, flags=re.DOTALL)
+    m = re.search(r"{%\s*schema\s*%}(.*?){%\s*endschema\s*%}", s, re.DOTALL)
+    if not m: continue
+    schema = m.group(1)
+    for match in re.finditer(r'"type":\s*"(color|color_background)"', schema):
+        print(f'{name}: line has "type": "{match.group(1)}" — consider converting to select')
+```
+
+---
+
+## Phantom block defaults — remove hardcoded fallbacks in section markup
+
+**The anti-pattern:**
+```liquid
+<p class="rte">{{ description_block.settings.text | default: "<p>Lorem ipsum dolor sit amet...</p>" }}</p>
+<h2>{{ heading_block.settings.text | default: "<h2>Medium length heading</h2>" }}</h2>
+<h6>{{ tagline_block.settings.text | default: "<p>Tagline</p>" }}</h6>
+```
+
+**Why it's bad:** when no block of that type is present, the Liquid still renders the hardcoded fallback text. The user sees "Lorem ipsum" on the page but can't click or edit it because there's no block bound. To remove the text they'd have to add the block and manually clear it — terrible UX.
+
+**The right pattern:** conditionally render the wrapping element only when the block exists. Never use a non-empty string `| default:` on a block's content field.
+```liquid
+{% if description_block %}
+  <p class="rte" {{ description_block.fluid_attributes }}>
+    {{ description_block.settings.text }}
+  </p>
+{% endif %}
+{% if heading_block %}
+  <div class="rte" {{ heading_block.fluid_attributes }}>
+    {{ heading_block.settings.text }}
+  </div>
+{% endif %}
+```
+
+The block's `"default"` in the schema is the right place for initial content — that only renders when the block is actually added.
+
+Audit:
+```python
+import re, os
+BASE = "base-theme/sections"
+for name in sorted(os.listdir(BASE)):
+    with open(f"{BASE}/{name}/index.liquid") as f: c = f.read()
+    # Only look outside the {% schema %} block
+    body = c.split("{% schema %}")[0]
+    for line_no, line in enumerate(body.split("\n"), 1):
+        m = re.search(r'\{\{\s*\w+_block\.settings\.\w+\s*\|\s*default:\s*"[^"]{2,}"', line)
+        if m:
+            print(f'{name}:{line_no}: {m.group(0)[:120]}')
+```
+
+---
+
+## Canonical block primacy — break composites into reusable blocks
+
+There are a small number of **canonical blocks** in `base-theme/blocks/`:
+- `blocks/image` — any time an image appears anywhere in the theme
+- `blocks/button` — any time a button appears
+- (add more as patterns are formalized — heading, text, video, icon, etc.)
+
+**Rule:** anywhere a section needs one of these things, it must accept the canonical block, not define its own local variant.
+
+### Bad pattern (composite block with embedded image_picker)
+
+```json
+{
+  "type": "author",
+  "name": "Author",
+  "settings": [
+    { "type": "image_picker", "id": "author_image", "label": "Photo" },
+    { "type": "range", "id": "author_image_margin_bottom", "label": "Image Margin" },
+    { "type": "text", "id": "author_name", "label": "Name" },
+    { "type": "text", "id": "author_position", "label": "Position" }
+  ]
+}
+```
+
+Why bad: the author block defines its own image handling — no aspect ratio, no overlay, no border, no canonical settings. Every composite re-invents images inconsistently.
+
+### Good pattern (flatten; canonical image block + text-only author block)
+
+```json
+{
+  "type": "author",
+  "name": "Author",
+  "settings": [
+    { "type": "text", "id": "author_name", "label": "Name" },
+    { "type": "text", "id": "author_position", "label": "Position" },
+    { "type": "text", "id": "company_name", "label": "Company" }
+  ]
+},
+{ "type": "image", "name": "Image", "settings": [ … canonical 11 image settings … ] }
+```
+
+Editor composes a testimonial card by adding blocks in order:
+1. `testimonial_item` (empty divider block — marks start of a card)
+2. `image` (company logo)
+3. `testimonial_text` (quote)
+4. `image` (author photo)
+5. `author` (name + position, no image)
+
+### The divider pattern for grouping
+
+When a section needs grouped cards (testimonials, features, case studies), use an **empty divider block**:
+
+```json
+{ "type": "testimonial_item", "name": "New Testimonial Card", "settings": [] }
+```
+
+The section Liquid walks blocks statelessly. At each divider it opens a new card `<div>`; at end-of-loop it closes the last one:
+
+```liquid
+{% assign in_card = false %}
+{% for block in section.blocks %}
+  {% case block.type %}
+    {% when 'testimonial_item' %}
+      {% if in_card %}</div>{% endif %}
+      <div class="testimonial-card" {{ block.fluid_attributes }}>
+      {% assign in_card = true %}
+    {% when 'image' %}
+      {% if in_card %}[canonical image markup]{% endif %}
+    {% when 'testimonial_text' %}
+      {% if in_card %}<div class="quote">{{ block.settings.text }}</div>{% endif %}
+    {% when 'author' %}
+      {% if in_card %}
+        <div class="author">
+          <div class="name">{{ block.settings.author_name }}</div>
+          <div class="position">{{ block.settings.author_position }}</div>
+        </div>
+      {% endif %}
+  {% endcase %}
+{% endfor %}
+{% if in_card %}</div>{% endif %}
+```
+
+Pros:
+- Every image renders through canonical image settings — aspect ratio, fit, object position, overlay, border, radius all consistent
+- Composition is explicit (editors see cards build up block-by-block)
+- Reorder/delete individual parts without complex wrapper state
+- Sections don't duplicate image handling logic
+
+Cons:
+- More blocks in the editor list per card
+- Editors must maintain correct order (divider → parts → divider → parts)
+
+Migration checklist when refactoring a composite block:
+1. Identify composite blocks that embed an `image_picker` — candidates for flatten
+2. If the image is a user upload (not data-driven like `post.image`), extract it
+3. Strip the image settings from the composite; keep only text/metadata
+4. Add `{ "type": "image" }` (full canonical settings inline) to the section's `"blocks"` array
+5. Update preset to include `image` block instances in the right positions
+6. Rewrite section Liquid to render blocks statelessly (use divider pattern if grouping)
+
+**When NOT to flatten:**
+- The image is DATA-DRIVEN (e.g., `post.image`, `product.featured_image`). Keep a legacy wrapper that styles the data-driven image — not an editor-uploaded image.
+- The composite's image is truly inseparable (no case-by-case variation needed). Rare.
+
+---
+
+## Quick Diagnostic Checklist
+
+When a theme looks broken in the editor, check:
+
+- [ ] `layouts/theme.liquid` has `{{ content_for_header }}` and `{{ content_for_layout }}` / `{% content_for_layout %}`
+- [ ] All CSS files are in `assets/` (not at theme root) and linked in `theme.liquid`
+- [ ] `config/settings_schema.json` has `option_group: { id: "background_colors", … }` on every color and `option_group: { id: "text_presets", … }` on every heading font-size
+- [ ] `config/settings_data.json` has current values for every setting referenced in `theme.liquid`'s `:root`
+- [ ] Every section's outermost element has `{{ section.fluid_attributes }}`
+- [ ] Every block's outermost element has `{{ block.fluid_attributes }}`
+- [ ] Block loops use `{% %}` not `{%- -%}`
+- [ ] Heading blocks default to `<h1>`-`<h6>` (not `<p>`), with inline `color: var(--clr-primary);`
+- [ ] All 18 required templates exist at `{template}/default/index.liquid`
+- [ ] No section schema uses unsupported types (`number`, `article`, `video`, `video_url`, `inline_richtext`)
+- [ ] **Every custom section has the Section Shell pattern** (padding + corner_radius + select(background_colors) + border + fluid_attributes)
+- [ ] **No raw `"type": "color"` or `"type": "color_background"` in section/block settings** — must be `select + options: "background_colors"`
+- [ ] **No phantom `{{ X_block.settings.text | default: "<p>..." }}` fallbacks** in section markup — use `{% if X_block %}...{% endif %}`
+- [ ] **Images come from canonical `blocks/image`** — no section-specific `image_picker` fields except on the canonical block itself
+- [ ] **Buttons come from canonical `blocks/button`** — 11-setting pattern (text, link, font_family, open_new_tab, style, font_size, padding, background_color, text_color, border, border_radius)
+
+For block/preset issues specifically:
+- [ ] Section's `"blocks"` array in schema has blocks with **inline settings** (not standalone references)
+- [ ] Section has a `"presets"` array with initial block instances if the page should ship pre-populated
+- [ ] To apply presets to a template: delete + re-push the template resource

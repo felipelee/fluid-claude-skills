@@ -20,6 +20,10 @@
       {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
       border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
     {%- endif -%}
+    {%- assign sb = section.settings.section_border -%}
+    {%- if sb.width -%}
+      border: {{ sb.width }} solid {{ sb.color }};
+    {%- endif -%}
   }
 {%- endstyle -%}
 
@@ -78,16 +82,22 @@
       "label": "Section Padding"
     },
     {
-      "type": "color_background",
+      "type": "select",
       "id": "background_color",
-      "default": "#444444",
-      "label": "Background Color"
+      "label": "Background Color",
+      "options": "background_colors",
+      "default": "transparent"
     },
     {
       "type": "corner_radius",
       "id": "section_border_radius",
       "label": "Section Border Radius",
       "info": "Default 0px. Four corners, link/unlink."
+    },
+    {
+      "type": "border",
+      "id": "section_border",
+      "label": "Section Border"
     }
   ],
   "blocks": [
@@ -99,7 +109,7 @@
           "type": "richtext",
           "id": "text",
           "label": "Text",
-          "default": "<p>Medium length heading goes here</p>"
+          "default": "<h2 style=\"color: var(--clr-primary);\">Medium length heading goes here</h2>"
         }
       ]
     },
@@ -142,11 +152,26 @@
           "id": "button_1_size",
           "label": "Button 1 Size",
           "options": [
-            { "value": "btn-xs", "label": "Extra Small" },
-            { "value": "btn-sm", "label": "Small" },
-            { "value": "btn-md", "label": "Medium" },
-            { "value": "btn-lg", "label": "Large" },
-            { "value": "btn-xl", "label": "Extra Large" }
+            {
+              "value": "btn-xs",
+              "label": "Extra Small"
+            },
+            {
+              "value": "btn-sm",
+              "label": "Small"
+            },
+            {
+              "value": "btn-md",
+              "label": "Medium"
+            },
+            {
+              "value": "btn-lg",
+              "label": "Large"
+            },
+            {
+              "value": "btn-xl",
+              "label": "Extra Large"
+            }
           ],
           "default": "btn-md"
         },
@@ -172,11 +197,26 @@
           "id": "button_2_size",
           "label": "Button 2 Size",
           "options": [
-            { "value": "btn-xs", "label": "Extra Small" },
-            { "value": "btn-sm", "label": "Small" },
-            { "value": "btn-md", "label": "Medium" },
-            { "value": "btn-lg", "label": "Large" },
-            { "value": "btn-xl", "label": "Extra Large" }
+            {
+              "value": "btn-xs",
+              "label": "Extra Small"
+            },
+            {
+              "value": "btn-sm",
+              "label": "Small"
+            },
+            {
+              "value": "btn-md",
+              "label": "Medium"
+            },
+            {
+              "value": "btn-lg",
+              "label": "Large"
+            },
+            {
+              "value": "btn-xl",
+              "label": "Extra Large"
+            }
           ],
           "default": "btn-md"
         }
@@ -186,25 +226,88 @@
       "type": "link",
       "name": "Link",
       "settings": [
-        { "type": "text", "id": "text", "label": "Link Text", "default": "Learn more" },
-        { "type": "url", "id": "url", "label": "Link URL" },
-        { "type": "select", "id": "underline_style", "label": "Underline Style", "options": [
-          { "value": "always", "label": "Always" },
-          { "value": "hover", "label": "On Hover Only" },
-          { "value": "never", "label": "Never" }
-        ], "default": "hover" },
-        { "type": "select", "id": "icon_position", "label": "Icon Position", "options": [
-          { "value": "none", "label": "None" },
-          { "value": "before", "label": "Before Text" },
-          { "value": "after", "label": "After Text" }
-        ], "default": "none" },
-        { "type": "color", "id": "color", "label": "Link Color" },
-        { "type": "select", "id": "font_weight", "label": "Font Weight", "options": [
-          { "value": "400", "label": "Normal" },
-          { "value": "500", "label": "Medium" },
-          { "value": "600", "label": "Semi Bold" },
-          { "value": "700", "label": "Bold" }
-        ], "default": "400" }
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Link Text",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link URL"
+        },
+        {
+          "type": "select",
+          "id": "underline_style",
+          "label": "Underline Style",
+          "options": [
+            {
+              "value": "always",
+              "label": "Always"
+            },
+            {
+              "value": "hover",
+              "label": "On Hover Only"
+            },
+            {
+              "value": "never",
+              "label": "Never"
+            }
+          ],
+          "default": "hover"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Icon Position",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "before",
+              "label": "Before Text"
+            },
+            {
+              "value": "after",
+              "label": "After Text"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "select",
+          "options": "background_colors",
+          "id": "color",
+          "label": "Link Color",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "400"
+        }
       ]
     }
   ],
@@ -212,9 +315,15 @@
     {
       "name": "CTA Banner",
       "blocks": [
-        { "type": "heading" },
-        { "type": "text" },
-        { "type": "buttons" }
+        {
+          "type": "heading"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "buttons"
+        }
       ]
     }
   ]

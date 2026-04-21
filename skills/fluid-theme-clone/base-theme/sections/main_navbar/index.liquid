@@ -153,13 +153,39 @@
           {% capture _cart_attr %}id="show-cart" {{ block.fluid_attributes }}{% endcapture %}
           {% render 'button', href: cart_url, text: _cart_inner, variant: 'outline-primary', class: 'button-with-border', attr: _cart_attr %}
         {% when 'secondary_button' %}
-          {% assign _secondary_text = block.settings.text | default: _btn2_label %}
-          {% assign _secondary_link = block.settings.link | default: '#' %}
-          {% render 'button', href: _secondary_link, text: _secondary_text, variant: 'outline-primary', class: 'button-with-border', attr: block.fluid_attributes %}
+          {% capture _sec_style %}
+            {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+            {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+            {% if block.settings.font_size != blank %}font-size: {{ block.settings.font_size }}px;{% endif %}
+            {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family | font_family }};{% endif %}
+            {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+            {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+            {% assign bd = block.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+          {% endcapture %}
+          <a href="{{ block.settings.link | default: '#' }}"
+             class="btn btn--{{ block.settings.style | default: 'outline' }}"
+             style="{{ _sec_style | strip_newlines }}"
+             {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+             {{ block.fluid_attributes }}>
+            {{ block.settings.text | default: _btn2_label | escape }}
+          </a>
         {% when 'primary_button' %}
-          {% assign _primary_text = block.settings.text | default: _btn1_label %}
-          {% assign _primary_link = block.settings.link | default: '#' %}
-          {% render 'button', href: _primary_link, text: _primary_text, variant: 'primary', class: 'button-with-bg', attr: block.fluid_attributes %}
+          {% capture _pri_style %}
+            {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+            {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+            {% if block.settings.font_size != blank %}font-size: {{ block.settings.font_size }}px;{% endif %}
+            {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family | font_family }};{% endif %}
+            {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+            {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+            {% assign bd = block.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+          {% endcapture %}
+          <a href="{{ block.settings.link | default: '#' }}"
+             class="btn btn--{{ block.settings.style | default: 'filled' }}"
+             style="{{ _pri_style | strip_newlines }}"
+             {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+             {{ block.fluid_attributes }}>
+            {{ block.settings.text | default: _btn1_label | escape }}
+          </a>
       {% endcase %}
     {% endfor %}
   {% else %}
@@ -180,7 +206,7 @@
 <div class='body-overlay' id='body-overlay'></div>
 <div class="transparent-overlay" id="transparent-overlay"></div>
 
-<header class="site-header section-{{ section.id }} {{ header_class }}">
+<header class="site-header section-{{ section.id }} {{ header_class }}" {{ section.fluid_attributes }}>
   <div class="container">
     <div class="site-header-wrap">
       {% if request.page_type == 'medium' or request.page_type == 'library' %}
@@ -305,12 +331,30 @@
       "id": "navbar_font_weight",
       "label": "Navbar Font Weight",
       "options": [
-        { "value": "300", "label": "Light" },
-        { "value": "400", "label": "Regular" },
-        { "value": "500", "label": "Medium" },
-        { "value": "600", "label": "Semi Bold" },
-        { "value": "700", "label": "Bold" },
-        { "value": "800", "label": "Extra Bold" }
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        },
+        {
+          "value": "800",
+          "label": "Extra Bold"
+        }
       ],
       "default": "400"
     },
@@ -380,12 +424,30 @@
           "id": "sub_menu_font_weight",
           "label": "Font Weight",
           "options": [
-            { "value": "300", "label": "Light" },
-            { "value": "400", "label": "Regular" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" },
-            { "value": "800", "label": "Extra Bold" }
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Regular"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
           ],
           "default": "300"
         }
@@ -443,12 +505,30 @@
           "id": "save_and_close_font_weight",
           "label": "Font Weight",
           "options": [
-            { "value": "300", "label": "Light" },
-            { "value": "400", "label": "Regular" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" },
-            { "value": "800", "label": "Extra Bold" }
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Regular"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
           ],
           "default": "500"
         }
@@ -506,12 +586,30 @@
           "id": "save_and_close_font_weight",
           "label": "Font Weight",
           "options": [
-            { "value": "300", "label": "Light" },
-            { "value": "400", "label": "Regular" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" },
-            { "value": "800", "label": "Extra Bold" }
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Regular"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
           ],
           "default": "500"
         }
@@ -529,15 +627,98 @@
       "limit": 1,
       "settings": [
         {
+          "type": "header",
+          "content": "Content"
+        },
+        {
           "type": "text",
           "id": "text",
-          "label": "Label",
+          "label": "Text",
           "default": "Button 2"
         },
         {
           "type": "url",
           "id": "link",
           "label": "Link"
+        },
+        {
+          "type": "font_picker",
+          "id": "font_family",
+          "label": "Font Family",
+          "default": "Inter"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Style"
+        },
+        {
+          "type": "radio",
+          "id": "style",
+          "label": "Style",
+          "default": "outline",
+          "options": [
+            {
+              "value": "filled",
+              "label": "Filled"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "text",
+              "label": "Text only"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "id": "font_size",
+          "label": "Font Size",
+          "min": 10,
+          "max": 32,
+          "step": 1,
+          "default": 16,
+          "unit": "px"
+        },
+        {
+          "type": "padding",
+          "id": "padding",
+          "label": "Padding"
+        },
+        {
+          "type": "select",
+          "id": "background_color",
+          "label": "Background Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "select",
+          "id": "text_color",
+          "label": "Text Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "header",
+          "content": "Shape"
+        },
+        {
+          "type": "border",
+          "id": "border",
+          "label": "Border"
+        },
+        {
+          "type": "corner_radius",
+          "id": "border_radius",
+          "label": "Border Radius"
         }
       ]
     },
@@ -547,15 +728,98 @@
       "limit": 1,
       "settings": [
         {
+          "type": "header",
+          "content": "Content"
+        },
+        {
           "type": "text",
           "id": "text",
-          "label": "Label",
+          "label": "Text",
           "default": "Button 1"
         },
         {
           "type": "url",
           "id": "link",
           "label": "Link"
+        },
+        {
+          "type": "font_picker",
+          "id": "font_family",
+          "label": "Font Family",
+          "default": "Inter"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Style"
+        },
+        {
+          "type": "radio",
+          "id": "style",
+          "label": "Style",
+          "default": "filled",
+          "options": [
+            {
+              "value": "filled",
+              "label": "Filled"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "text",
+              "label": "Text only"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "id": "font_size",
+          "label": "Font Size",
+          "min": 10,
+          "max": 32,
+          "step": 1,
+          "default": 16,
+          "unit": "px"
+        },
+        {
+          "type": "padding",
+          "id": "padding",
+          "label": "Padding"
+        },
+        {
+          "type": "select",
+          "id": "background_color",
+          "label": "Background Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "select",
+          "id": "text_color",
+          "label": "Text Color",
+          "options": "background_colors",
+          "default": "var(--clr-white)"
+        },
+        {
+          "type": "header",
+          "content": "Shape"
+        },
+        {
+          "type": "border",
+          "id": "border",
+          "label": "Border"
+        },
+        {
+          "type": "corner_radius",
+          "id": "border_radius",
+          "label": "Border Radius"
         }
       ]
     },
@@ -576,14 +840,33 @@
     {
       "name": "Navbar",
       "blocks": [
-        { "type": "logo" },
-        { "type": "nav", "settings": { "menu": "main-menu" } },
-        { "type": "locale_dropdown" },
-        { "type": "cart_button" },
-        { "type": "secondary_button" },
-        { "type": "primary_button" },
-        { "type": "mobile_menu" },
-        { "type": "mobile_locale" }
+        {
+          "type": "logo"
+        },
+        {
+          "type": "nav",
+          "settings": {
+            "menu": "main-menu"
+          }
+        },
+        {
+          "type": "locale_dropdown"
+        },
+        {
+          "type": "cart_button"
+        },
+        {
+          "type": "secondary_button"
+        },
+        {
+          "type": "primary_button"
+        },
+        {
+          "type": "mobile_menu"
+        },
+        {
+          "type": "mobile_locale"
+        }
       ]
     }
   ]

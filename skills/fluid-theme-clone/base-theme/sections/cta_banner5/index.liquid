@@ -46,6 +46,10 @@
       {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
       border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
     {%- endif -%}
+    {%- assign sb = section.settings.section_border -%}
+    {%- if sb.width -%}
+      border: {{ sb.width }} solid {{ sb.color }};
+    {%- endif -%}
   }
 {%- endstyle -%}
 <!-- Cta section -->
@@ -103,7 +107,6 @@
   "tag": "section",
   "class": "cta-section",
   "settings": [
-    
     {
       "type": "header",
       "content": "Layout Settings"
@@ -115,10 +118,11 @@
       "info": "Recommended size: 1920x1080px or larger"
     },
     {
-      "type": "color_background",
+      "type": "select",
       "id": "background_color",
       "label": "Background Color",
-      "default": "#444444"
+      "options": "background_colors",
+      "default": "transparent"
     },
     {
       "type": "padding",
@@ -134,15 +138,42 @@
       "id": "content_gap_mobile",
       "label": "Grid Gap (Mobile)",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" },
-        { "value": "space-3xl", "label": "3XL" },
-        { "value": "space-4xl", "label": "4XL" },
-        { "value": "space-5xl", "label": "5XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "space-5xl"
     },
@@ -151,20 +182,62 @@
       "id": "content_gap_desktop",
       "label": "Grid Gap (Desktop)",
       "options": [
-        { "value": "lg:space-xs", "label": "XS" },
-        { "value": "lg:space-sm", "label": "SM" },
-        { "value": "lg:space-md", "label": "MD" },
-        { "value": "lg:space-lg", "label": "LG" },
-        { "value": "lg:space-xl", "label": "XL" },
-        { "value": "lg:space-2xl", "label": "2XL" },
-        { "value": "lg:space-3xl", "label": "3XL" },
-        { "value": "lg:space-4xl", "label": "4XL" },
-        { "value": "lg:space-5xl", "label": "5XL" },
-        { "value": "lg:space-6xl", "label": "6XL" },
-        { "value": "lg:space-7xl", "label": "7XL" },
-        { "value": "lg:space-8xl", "label": "8XL" },
-        { "value": "lg:space-9xl", "label": "9XL" },
-        { "value": "lg:space-10xl", "label": "10XL" }
+        {
+          "value": "lg:space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "lg:space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "lg:space-md",
+          "label": "MD"
+        },
+        {
+          "value": "lg:space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "lg:space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "lg:space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "lg:space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "lg:space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "lg:space-5xl",
+          "label": "5XL"
+        },
+        {
+          "value": "lg:space-6xl",
+          "label": "6XL"
+        },
+        {
+          "value": "lg:space-7xl",
+          "label": "7XL"
+        },
+        {
+          "value": "lg:space-8xl",
+          "label": "8XL"
+        },
+        {
+          "value": "lg:space-9xl",
+          "label": "9XL"
+        },
+        {
+          "value": "lg:space-10xl",
+          "label": "10XL"
+        }
       ],
       "default": "lg:space-7xl"
     },
@@ -173,16 +246,46 @@
       "id": "content_spacing_mobile",
       "label": "Margin Top For Input and Button(Mobile)",
       "options": [
-        { "value": "mt-0", "label": "0" },
-        { "value": "mt-xs", "label": "XS" },
-        { "value": "mt-sm", "label": "SM" },
-        { "value": "mt-md", "label": "MD" },
-        { "value": "mt-lg", "label": "LG" },
-        { "value": "mt-xl", "label": "XL" },
-        { "value": "mt-2xl", "label": "2XL" },
-        { "value": "mt-3xl", "label": "3XL" },
-        { "value": "mt-4xl", "label": "4XL" },
-        { "value": "mt-5xl", "label": "5XL" }
+        {
+          "value": "mt-0",
+          "label": "0"
+        },
+        {
+          "value": "mt-xs",
+          "label": "XS"
+        },
+        {
+          "value": "mt-sm",
+          "label": "SM"
+        },
+        {
+          "value": "mt-md",
+          "label": "MD"
+        },
+        {
+          "value": "mt-lg",
+          "label": "LG"
+        },
+        {
+          "value": "mt-xl",
+          "label": "XL"
+        },
+        {
+          "value": "mt-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "mt-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "mt-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "mt-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "mt-md"
     },
@@ -191,16 +294,46 @@
       "id": "content_spacing_desktop",
       "label": "Margin Top For Input and Button(Desktop)",
       "options": [
-        { "value": "lg:mt-0", "label": "0" },
-        { "value": "lg:mt-xs", "label": "XS" },
-        { "value": "lg:mt-sm", "label": "SM" },
-        { "value": "lg:mt-md", "label": "MD" },
-        { "value": "lg:mt-lg", "label": "LG" },
-        { "value": "lg:mt-xl", "label": "XL" },
-        { "value": "lg:mt-2xl", "label": "2XL" },
-        { "value": "lg:mt-3xl", "label": "3XL" },
-        { "value": "lg:mt-4xl", "label": "4XL" },
-        { "value": "lg:mt-5xl", "label": "5XL" }
+        {
+          "value": "lg:mt-0",
+          "label": "0"
+        },
+        {
+          "value": "lg:mt-xs",
+          "label": "XS"
+        },
+        {
+          "value": "lg:mt-sm",
+          "label": "SM"
+        },
+        {
+          "value": "lg:mt-md",
+          "label": "MD"
+        },
+        {
+          "value": "lg:mt-lg",
+          "label": "LG"
+        },
+        {
+          "value": "lg:mt-xl",
+          "label": "XL"
+        },
+        {
+          "value": "lg:mt-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "lg:mt-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "lg:mt-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "lg:mt-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "lg:mt-2xl"
     },
@@ -209,12 +342,30 @@
       "id": "form_gap_mobile",
       "label": "Form Gap (Mobile)",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        }
       ],
       "default": "space-md"
     },
@@ -223,12 +374,30 @@
       "id": "form_gap_desktop",
       "label": "Form Gap (Desktop)",
       "options": [
-        { "value": "lg:space-xs", "label": "XS" },
-        { "value": "lg:space-sm", "label": "SM" },
-        { "value": "lg:space-md", "label": "MD" },
-        { "value": "lg:space-lg", "label": "LG" },
-        { "value": "lg:space-xl", "label": "XL" },
-        { "value": "lg:space-2xl", "label": "2XL" }
+        {
+          "value": "lg:space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "lg:space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "lg:space-md",
+          "label": "MD"
+        },
+        {
+          "value": "lg:space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "lg:space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "lg:space-2xl",
+          "label": "2XL"
+        }
       ],
       "default": "lg:space-md"
     },
@@ -237,6 +406,11 @@
       "id": "section_border_radius",
       "label": "Section Border Radius",
       "info": "Default 0px. Four corners, link/unlink."
+    },
+    {
+      "type": "border",
+      "id": "section_border",
+      "label": "Section Border"
     }
   ],
   "blocks": [
@@ -244,14 +418,24 @@
       "type": "heading",
       "name": "Heading",
       "settings": [
-        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Medium length heading goes here</p>" }
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">Medium length heading goes here</h2>"
+        }
       ]
     },
     {
       "type": "description",
       "name": "Description",
       "settings": [
-        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>" }
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>"
+        }
       ]
     },
     {
@@ -259,13 +443,45 @@
       "name": "Signup Form",
       "limit": 1,
       "settings": [
-        { "type": "checkbox", "id": "show_form", "label": "Show Form", "default": true },
-        { "type": "text", "id": "placeholder", "label": "Input Placeholder", "default": "Enter your email" },
-        { "type": "url", "id": "form_action", "label": "Form Action URL" },
-        { "type": "text", "id": "button_text", "label": "Button Text", "default": "sign up" },
-        { "type": "select", "id": "button_style", "label": "Button Style", "options": [
-          { "value": "btn-bg-white", "label": "White" }, { "value": "btn-bg-primary", "label": "Primary" }
-        ], "default": "btn-bg-white" }
+        {
+          "type": "checkbox",
+          "id": "show_form",
+          "label": "Show Form",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Input Placeholder",
+          "default": "Enter your email"
+        },
+        {
+          "type": "url",
+          "id": "form_action",
+          "label": "Form Action URL"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text",
+          "default": "sign up"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button Style",
+          "options": [
+            {
+              "value": "btn-bg-white",
+              "label": "White"
+            },
+            {
+              "value": "btn-bg-primary",
+              "label": "Primary"
+            }
+          ],
+          "default": "btn-bg-white"
+        }
       ]
     },
     {
@@ -273,15 +489,51 @@
       "name": "Terms",
       "limit": 1,
       "settings": [
-        { "type": "textarea", "id": "text", "label": "Text", "default": "By clicking Sign Up you're confirming that you agree with our" },
-        { "type": "text", "id": "link_text", "label": "Link Text", "default": "Terms and Conditions" },
-        { "type": "url", "id": "link_url", "label": "Link URL" },
-        { "type": "select", "id": "terms_font_size", "label": "Font Size", "options": [
-          { "value": "text-xs", "label": "XS" }, { "value": "text-sm", "label": "SM" }
-        ], "default": "text-xs" },
-        { "type": "select", "id": "terms_font_weight", "label": "Font Weight", "options": [
-          { "value": "font-normal", "label": "Normal" }
-        ], "default": "font-normal" }
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "By clicking Sign Up you're confirming that you agree with our"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link Text",
+          "default": "Terms and Conditions"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Link URL"
+        },
+        {
+          "type": "select",
+          "id": "terms_font_size",
+          "label": "Font Size",
+          "options": [
+            {
+              "value": "text-xs",
+              "label": "XS"
+            },
+            {
+              "value": "text-sm",
+              "label": "SM"
+            }
+          ],
+          "default": "text-xs"
+        },
+        {
+          "type": "select",
+          "id": "terms_font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            }
+          ],
+          "default": "font-normal"
+        }
       ]
     }
   ],
@@ -289,10 +541,18 @@
     {
       "name": "CTA Banner",
       "blocks": [
-        { "type": "heading" },
-        { "type": "description" },
-        { "type": "form" },
-        { "type": "terms" }
+        {
+          "type": "heading"
+        },
+        {
+          "type": "description"
+        },
+        {
+          "type": "form"
+        },
+        {
+          "type": "terms"
+        }
       ],
       "settings": {
         "content_gap_mobile": "space-5xl",

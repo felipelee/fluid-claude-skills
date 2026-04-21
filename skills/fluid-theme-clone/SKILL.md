@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 2.0.0
+  version: 2.1.0
 ---
 
 # Fluid Theme Clone
@@ -620,19 +620,60 @@ Sections reference these as `var(--clr-primary)` — the theme config is the sin
 your-theme/
 ├── layouts/theme.liquid              # Global wrapper (nav + content + footer)
 ├── home_page/default/index.liquid    # Homepage template
+├── navbar/default/index.liquid       # Navbar template
+├── footer/default/index.liquid       # Footer template
+├── library_navbar/default/index.liquid # Library navbar template
 ├── page/<slug>/index.liquid          # Static page templates
+├── page/schema-reference/index.liquid # Live reference for all schema controls
 ├── product/<slug>/index.liquid       # Product page templates
 ├── collection/<slug>/index.liquid    # Collection page templates
+├── category/<slug>/index.liquid      # Category page templates
+├── post/<slug>/index.liquid          # Blog post listing templates
+├── post_page/<slug>/index.liquid     # Blog post detail templates
+├── cart_page/default/index.liquid    # Cart page
+├── shop_page/default/index.liquid    # Shop page
+├── enrollment_pack/default/index.liquid # Enrollment pack page
+├── join_page/default/index.liquid    # Join page
+├── library/default/index.liquid      # Media library page
+├── medium/default/index.liquid       # Single media page
 ├── sections/
 │   ├── main_navbar/index.liquid      # Global navigation
 │   ├── main_footer/index.liquid      # Global footer
 │   ├── main_product/index.liquid     # DO NOT MODIFY — Fluid's built-in
+│   ├── schema_reference/index.liquid # Live schema controls reference
 │   └── exact-<prefix>-*/index.liquid # Your cloned sections
+├── components/                       # Developer partials (no schema)
+├── blocks/                           # Standalone reusable blocks (optional)
+├── locales/                          # Translation files
 ├── config/
 │   ├── settings_schema.json          # Theme setting definitions
 │   └── settings_data.json            # Current setting values
-└── assets/product.js
+└── assets/                           # CSS + JS served via | asset_url
 ```
+
+18 required templates: `navbar`, `footer`, `home_page`, `category_page`, `category`, `collection`, `collection_page`, `shop_page`, `product`, `post`, `post_page`, `cart_page`, `page`, `enrollment_pack`, `join_page`, `library`, `library_navbar`, `medium`.
+
+### Schema Controls Reference page — canonical control vocabulary
+
+A live, browsable reference of every schema control lives at `page/schema-reference/index.liquid` + `sections/schema_reference/index.liquid`. After pushing the theme, visit `/pages/schema-reference` on your Fluid store.
+
+**Agents: this page is the single source of truth for control types.** Before writing or modifying a section schema:
+
+1. Decide what kind of value you need (text / number / color / media / resource / layout).
+2. Open `base-theme/sections/schema_reference/index.liquid` and find the card for that control type. Each card has:
+   - How it renders in the Fluid builder (so you can match editor expectations)
+   - The exact schema snippet to copy
+   - The exact Liquid accessor snippet to copy
+3. If unsure — especially around `color` vs theme-color dropdowns, or resource pickers — stop and ask the user. Do **not** guess control names. Unsupported types (`number`, `article`, `video_url`, `inline_richtext`, etc.) break the editor silently.
+
+**Key patterns this page encodes:**
+- `richtext` for all visible copy (never `text`/`textarea`)
+- `range` for numeric inputs (never `number`)
+- `select + "options": "background_colors"` for theme-aware colors (never raw `color`)
+- Singular resource pickers return an OBJECT in Fluid (not an ID) — access via `.title`/`.url`/etc.
+- List resource pickers cap at 24 items
+
+When you update [references/schema-settings-reference.md](references/schema-settings-reference.md), also update the corresponding card in the live reference page so the two stay in sync.
 
 ### layouts/theme.liquid
 ```liquid

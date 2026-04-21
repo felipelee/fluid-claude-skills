@@ -1,0 +1,308 @@
+{% comment %}
+  schema_entry — one control or pattern in the Schema Controls Reference.
+
+  Rendering strategy:
+    - Description + schema/liquid code are author-provided via settings.
+    - The "Fluid builder renders" preview is generated from `preview_type`.
+      This lets editors add a new entry by picking the matching preview shape.
+    - `preview_type: "custom"` lets authors inject arbitrary HTML (for patterns).
+
+  This block lives in base-theme/blocks/ and is invoked from sections that
+  declare `{"type": "schema_entry"}` (or `{"type": "@theme"}`) in their schema.
+{% endcomment %}
+
+{%- assign pt = block.settings.preview_type | default: 'text' -%}
+{%- assign pl = block.settings.preview_label | default: block.settings.control_name -%}
+{%- assign pv = block.settings.preview_value | default: 'Welcome' -%}
+{%- assign feat = block.settings.is_featured -%}
+
+<article class="sr-entry{% if feat %} sr-entry--feature{% endif %}"
+         id="{{ block.settings.anchor_id | default: block.id }}"
+         data-category="{{ block.settings.category | default: 'input' }}"
+         {{ block.fluid_attributes }}>
+
+  <div class="sr-entry-head">
+    <h3><code>{{ block.settings.control_name | default: 'control' }}</code></h3>
+    {%- if block.settings.returns_label != blank -%}
+      <span class="sr-returns-pill">{{ block.settings.returns_label }}</span>
+    {%- endif -%}
+  </div>
+
+  <div class="sr-entry-desc rte">
+    {{ block.settings.description }}
+  </div>
+
+  <div class="sr-preview-label">Fluid builder renders</div>
+  <div class="sr-builder">
+    {%- case pt -%}
+
+      {%- when 'text' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <span class="sr-db-var">Database Variable</span>
+        <div class="sr-preset-row"><div class="sr-preset">Text Presets</div><div class="sr-preset">Primary Color</div></div>
+        <div class="sr-toolbar">
+          <span class="sr-tb-btn">B</span><span class="sr-tb-btn sr-i">I</span><span class="sr-tb-btn sr-u">U</span><span class="sr-tb-btn sr-s">S</span>
+          <span class="sr-tb-sep"></span>
+          <span class="sr-tb-btn">🔗</span><span class="sr-tb-btn">x²</span>
+        </div>
+        <div class="sr-input">{{ pv }}</div>
+        <span class="sr-helper">Use the toolbar to format text. Add variables with the database icon.</span>
+
+      {%- when 'textarea' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <span class="sr-db-var">Database Variable</span>
+        <div class="sr-preset-row"><div class="sr-preset">Text Presets</div><div class="sr-preset">Primary Color</div></div>
+        <div class="sr-toolbar">
+          <span class="sr-tb-btn">B</span><span class="sr-tb-btn sr-i">I</span><span class="sr-tb-btn sr-u">U</span><span class="sr-tb-btn sr-s">S</span>
+          <span class="sr-tb-sep"></span>
+          <span class="sr-tb-btn">🔗</span><span class="sr-tb-btn">•</span><span class="sr-tb-btn">1.</span>
+        </div>
+        <div class="sr-input sr-input--multi">{{ pv }}</div>
+
+      {%- when 'richtext' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <span class="sr-db-var">Database Variable</span>
+        <div class="sr-preset-row"><div class="sr-preset">Text Presets</div><div class="sr-preset">Primary Color</div></div>
+        <div class="sr-toolbar">
+          <span class="sr-tb-btn">B</span><span class="sr-tb-btn sr-i">I</span><span class="sr-tb-btn sr-u">U</span><span class="sr-tb-btn sr-s">S</span>
+          <span class="sr-tb-sep"></span>
+          <span class="sr-tb-btn">🔗</span><span class="sr-tb-btn">•</span><span class="sr-tb-btn">1.</span><span class="sr-tb-btn">&lt;/&gt;</span><span class="sr-tb-btn">🖼</span>
+        </div>
+        <div class="sr-input sr-input--multi">{{ pv }}</div>
+
+      {%- when 'html' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-input sr-input--code">{{ pv | escape }}</div>
+
+      {%- when 'url' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-input">{{ pv }}</div>
+
+      {%- when 'range' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-range-wrap">
+          <div class="sr-range"><div class="sr-range-fill"></div><div class="sr-range-knob"></div></div>
+          <div class="sr-range-val">{{ pv }}</div>
+        </div>
+
+      {%- when 'select' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-select">{{ pv }}</div>
+
+      {%- when 'radio' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-radio">
+          <span class="sr-radio-opt">Small</span>
+          <span class="sr-radio-opt is-selected">Medium</span>
+          <span class="sr-radio-opt">Large</span>
+        </div>
+
+      {%- when 'checkbox', 'toggle' -%}
+        <div class="sr-toggle-row"><div class="sr-field-label">{{ pl }}</div><div class="sr-toggle{% if pv == 'off' %} sr-toggle--off{% endif %}"></div></div>
+
+      {%- when 'color' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-color-row"><div class="sr-swatch" style="background:{{ pv }};"></div><div class="sr-hex">{{ pv }}</div></div>
+
+      {%- when 'color_background' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-gradient">
+          <div class="sr-bg-tabs"><span class="sr-bg-tab">Solid</span><span class="sr-bg-tab is-selected">Gradient</span></div>
+          <div class="sr-gr-row"><div class="sr-gr-label">Angle (deg)</div><div class="sr-input" style="padding:6px 10px;font-size:12px;">135</div></div>
+          <div class="sr-gr-row"><div class="sr-gr-label">Color 1</div><div class="sr-color-row"><div class="sr-swatch" style="background:#6366f1"></div><div class="sr-hex">#6366f1</div></div></div>
+          <div class="sr-gr-row"><div class="sr-gr-label">Color 2</div><div class="sr-color-row"><div class="sr-swatch" style="background:#ec4899"></div><div class="sr-hex">#ec4899</div></div></div>
+          <div class="sr-add-color">+ Add Color</div>
+        </div>
+
+      {%- when 'font_picker' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-select">{{ pv }}</div>
+
+      {%- when 'image_picker' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-upload">
+          <div class="sr-upload-icon">📁</div>
+          <div class="sr-upload-title">Select or Upload image</div>
+          <div class="sr-upload-sub">Click to browse your library or upload a file</div>
+        </div>
+        <div class="sr-input" style="padding:6px 10px;font-size:12px;color:#9aa4b3;">Alternate text for accessibility &amp; SEO…</div>
+
+      {%- when 'video_picker' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-upload">
+          <div class="sr-upload-icon">📁</div>
+          <div class="sr-upload-title">Select or Upload video</div>
+          <div class="sr-upload-sub">Click to browse your library or upload a file</div>
+        </div>
+        <div class="sr-input" style="padding:6px 10px;font-size:12px;color:#9aa4b3;">Alternate text for accessibility &amp; SEO…</div>
+
+      {%- when 'media_picker' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-media-link">Select media</div>
+        <div class="sr-input" style="padding:6px 10px;font-size:12px;color:#9aa4b3;">Alternate text for accessibility &amp; SEO…</div>
+
+      {%- when 'text_alignment' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-align">
+          <span class="sr-align-opt"><span class="sr-align-ico sr-align--l"><i></i></span>Left</span>
+          <span class="sr-align-opt is-selected"><span class="sr-align-ico sr-align--c"><i></i></span>Center</span>
+          <span class="sr-align-opt"><span class="sr-align-ico sr-align--r"><i></i></span>Right</span>
+        </div>
+
+      {%- when 'padding' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-box4">
+          <div class="sr-box4-icon sr-pi-t"></div><div class="sr-box4-input">0</div>
+          <div class="sr-box4-icon sr-pi-r"></div><div class="sr-box4-input">0</div>
+          <div class="sr-box4-icon sr-pi-b"></div><div class="sr-box4-input">0</div>
+          <div class="sr-box4-icon sr-pi-l"></div><div class="sr-box4-input">0</div>
+        </div>
+
+      {%- when 'corner_radius' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-box4">
+          <div class="sr-box4-icon sr-cr-tl"></div><div class="sr-box4-input">0</div>
+          <div class="sr-box4-icon sr-cr-tr"></div><div class="sr-box4-input">0</div>
+          <div class="sr-box4-icon sr-cr-bl"></div><div class="sr-box4-input">0</div>
+          <div class="sr-box4-icon sr-cr-br"></div><div class="sr-box4-input">0</div>
+        </div>
+
+      {%- when 'border' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-border-row">
+          <div class="sr-box4-input">0</div>
+          <div class="sr-select">Color Presets</div>
+          <div class="sr-swatch" style="background:#000"></div>
+          <div class="sr-hex">#000000</div>
+        </div>
+
+      {%- when 'resource_chip' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-chip"><div class="sr-chip-icon"></div>{{ pv }}</div>
+
+      {%- when 'resource_chip_list' -%}
+        <div class="sr-field-label">{{ pl }}</div>
+        <div class="sr-chip-list">
+          <span class="sr-chip"><span class="sr-chip-icon"></span>{{ pv }} #0</span>
+          <span class="sr-chip"><span class="sr-chip-icon"></span>{{ pv }} #1</span>
+          <span class="sr-chip"><span class="sr-chip-icon"></span>{{ pv }} #2</span>
+        </div>
+        <span class="sr-add-color">+ Add {{ pv | downcase }}</span>
+
+      {%- when 'header_group' -%}
+        <div class="sr-collapsible">{{ pv }}</div>
+        <div class="sr-field-label" style="padding-left:8px;">Heading Font</div>
+        <div class="sr-select" style="margin-left:8px;">System UI</div>
+
+      {%- when 'custom' -%}
+        {{ block.settings.preview_custom_html }}
+
+    {%- endcase -%}
+  </div>
+
+  <div class="sr-disclosures">
+    {%- if block.settings.schema_snippet != blank -%}
+      <details class="sr-disclose"{% if feat %} open{% endif %}>
+        <summary>{{ block.settings.schema_label | default: 'Schema' }} <span class="sr-dk">json</span></summary>
+        <div class="sr-dc"><pre><code>{{ block.settings.schema_snippet }}</code></pre></div>
+      </details>
+    {%- endif -%}
+
+    {%- if block.settings.schema_snippet_2 != blank -%}
+      <details class="sr-disclose"{% if feat %} open{% endif %}>
+        <summary>{{ block.settings.schema_snippet_2_label | default: 'Schema (part 2)' }} <span class="sr-dk">json</span></summary>
+        <div class="sr-dc"><pre><code>{{ block.settings.schema_snippet_2 }}</code></pre></div>
+      </details>
+    {%- endif -%}
+
+    {%- if block.settings.liquid_snippet != blank -%}
+      <details class="sr-disclose">
+        <summary>{{ block.settings.liquid_label | default: 'Liquid' }} <span class="sr-dk">liquid</span></summary>
+        <div class="sr-dc"><pre><code>{{ block.settings.liquid_snippet }}</code></pre></div>
+      </details>
+    {%- endif -%}
+
+    {%- if block.settings.tip != blank -%}
+      <details class="sr-disclose sr-disclose--tip">
+        <summary>{{ block.settings.tip_label | default: 'Tip' }} <span class="sr-dk">{{ block.settings.tip_kind | default: 'tip' }}</span></summary>
+        <div class="sr-dc"><div class="sr-tip-body">{{ block.settings.tip }}</div></div>
+      </details>
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Schema Entry",
+  "settings": [
+    { "type": "header", "content": "Taxonomy" },
+    {
+      "type": "select", "id": "category", "label": "Category", "default": "input",
+      "options": [
+        { "value": "patterns",        "label": "Patterns (recipe)" },
+        { "value": "input",           "label": "Input" },
+        { "value": "number",          "label": "Number & Selection" },
+        { "value": "visual",          "label": "Visual & Media" },
+        { "value": "layout",          "label": "Layout" },
+        { "value": "organization",    "label": "Organization" },
+        { "value": "resource_single", "label": "Resource (Single)" },
+        { "value": "resource_list",   "label": "Resource (List)" }
+      ]
+    },
+    { "type": "text", "id": "anchor_id", "label": "Anchor ID", "info": "Used in the URL hash. e.g. 'text', 'theme-color-dropdown'." },
+    { "type": "checkbox", "id": "is_featured", "label": "Feature this entry (purple border, auto-open code)", "default": false },
+
+    { "type": "header", "content": "Header" },
+    { "type": "text", "id": "control_name", "label": "Control name", "info": "Shown in the entry heading. e.g. 'text' or 'select + option_group'." },
+    { "type": "text", "id": "returns_label", "label": "Returns pill", "info": "Short label — e.g. 'String', 'Hex string', '{ top, bottom, left, right }'." },
+    { "type": "richtext", "id": "description", "label": "Description", "default": "<p>What this control does and when to use it.</p>" },
+
+    { "type": "header", "content": "Fluid builder preview" },
+    {
+      "type": "select", "id": "preview_type", "label": "Preview shape", "default": "text",
+      "info": "Pick the builder control this entry demonstrates. For multi-control patterns, use 'custom' and supply markup below.",
+      "options": [
+        { "value": "text", "label": "text (single line + toolbar)" },
+        { "value": "textarea", "label": "textarea (multi line + toolbar)" },
+        { "value": "richtext", "label": "richtext (WYSIWYG)" },
+        { "value": "html", "label": "html (raw monospace)" },
+        { "value": "url", "label": "url (plain input)" },
+        { "value": "range", "label": "range (slider)" },
+        { "value": "select", "label": "select (dropdown)" },
+        { "value": "radio", "label": "radio (pill buttons)" },
+        { "value": "checkbox", "label": "checkbox / toggle (switch)" },
+        { "value": "color", "label": "color (swatch + hex)" },
+        { "value": "color_background", "label": "color_background (gradient UI)" },
+        { "value": "font_picker", "label": "font_picker (dropdown)" },
+        { "value": "image_picker", "label": "image_picker (upload card)" },
+        { "value": "video_picker", "label": "video_picker (upload card)" },
+        { "value": "media_picker", "label": "media_picker (select-media link)" },
+        { "value": "text_alignment", "label": "text_alignment (align pills)" },
+        { "value": "padding", "label": "padding (4-side grid)" },
+        { "value": "corner_radius", "label": "corner_radius (4-corner grid)" },
+        { "value": "border", "label": "border (width + color)" },
+        { "value": "resource_chip", "label": "resource chip (single)" },
+        { "value": "resource_chip_list", "label": "resource chip list" },
+        { "value": "header_group", "label": "header (collapsible group)" },
+        { "value": "custom", "label": "custom (inject your own HTML)" }
+      ]
+    },
+    { "type": "text", "id": "preview_label", "label": "Field label", "info": "Label shown above the mock control. Defaults to the control name." },
+    { "type": "text", "id": "preview_value", "label": "Sample value", "info": "What's shown inside the control (value of the mock input, swatch hex, radio selection, etc.)." },
+    { "type": "html", "id": "preview_custom_html", "label": "Custom preview HTML", "info": "Used only when Preview shape is 'custom'. Compose multiple sr-* building blocks." },
+
+    { "type": "header", "content": "Code snippets" },
+    { "type": "text", "id": "schema_label", "label": "Schema disclosure label", "default": "Schema" },
+    { "type": "html", "id": "schema_snippet", "label": "Schema snippet", "info": "JSON, no surrounding raw/code tags. This is shown verbatim inside a <pre><code> block." },
+    { "type": "text", "id": "schema_snippet_2_label", "label": "Second schema disclosure label", "info": "Optional. For patterns that need two JSON snippets (e.g. section schema + theme option_group)." },
+    { "type": "html", "id": "schema_snippet_2", "label": "Second schema snippet", "info": "Optional." },
+    { "type": "text", "id": "liquid_label", "label": "Liquid disclosure label", "default": "Liquid" },
+    { "type": "html", "id": "liquid_snippet", "label": "Liquid snippet", "info": "Liquid, shown verbatim inside a <pre><code> block." },
+
+    { "type": "header", "content": "Tip / warning" },
+    { "type": "text", "id": "tip_label", "label": "Tip disclosure label", "default": "Tip" },
+    { "type": "text", "id": "tip_kind", "label": "Tip tag", "info": "Short label shown on the disclosure button — e.g. 'tip', 'warning'." },
+    { "type": "richtext", "id": "tip", "label": "Tip / warning body", "info": "Optional callout. Appears in yellow disclosure." }
+  ]
+}
+{% endschema %}

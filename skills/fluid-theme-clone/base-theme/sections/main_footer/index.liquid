@@ -43,7 +43,7 @@
 {%- endstyle -%}
 {% unless request.page_type == 'medium' or request.page_type == 'library' %}   
   <!-- site footer -->
-  <footer class="site-footer section-{{ section.id }}">
+  <footer class="site-footer section-{{ section.id }}" {{ section.fluid_attributes }}>
     <div class="container">
       {%- assign footer_logo_block = section.blocks | where: 'type', 'footer_logo' | first -%}
       {%- assign footer_menu_block = section.blocks | where: 'type', 'footer_menu' | first -%}

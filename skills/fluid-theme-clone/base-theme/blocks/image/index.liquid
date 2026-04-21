@@ -1,0 +1,135 @@
+{% comment %}
+  Canonical Image block — Fluid base theme pattern.
+
+  Eleven settings, 4 groups:
+    Content:
+      1. image           — image_picker
+      2. alt             — text (overrides the picker's implicit alt when set)
+      3. link            — optional URL, makes the image clickable
+      4. open_new_tab    — checkbox
+    Sizing:
+      5. aspect_ratio    — select (auto, 1/1, 4/3, 16/9, 3/4, 9/16, 21/9)
+      6. fit             — radio (cover | contain | fill)
+      7. object_position — select (center, top, bottom, left, right)
+    Overlay:
+      8. overlay_color   — select → background_colors (theme-aware)
+      9. overlay_opacity — range 0–100 (0 = no overlay)
+    Shape:
+     10. border          — border control
+     11. border_radius   — corner_radius control
+
+  The CSS class .media-wrap handles position/overflow and the overlay layer.
+  Inline styles on img set aspect-ratio, object-fit, object-position.
+  Border + Border Radius apply to the wrapper (so the overlay clips too).
+{% endcomment %}
+
+{%- assign _img = block.settings.image -%}
+{%- assign _link = block.settings.link -%}
+{%- assign _ar = block.settings.aspect_ratio | default: 'auto' -%}
+{%- assign _fit = block.settings.fit | default: 'cover' -%}
+{%- assign _pos = block.settings.object_position | default: 'center' -%}
+{%- assign _ov_color = block.settings.overlay_color -%}
+{%- assign _ov_opacity = block.settings.overlay_opacity | default: 0 -%}
+
+{%- capture _wrap_style -%}
+  {%- if _ar != 'auto' -%}aspect-ratio: {{ _ar }};{%- endif -%}
+  {%- assign br = block.settings.border_radius -%}
+  {%- if br -%}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{%- endif -%}
+  {%- assign bd = block.settings.border -%}
+  {%- if bd.width -%}border: {{ bd.width }} solid {{ bd.color }};{%- endif -%}
+{%- endcapture -%}
+
+{%- capture _img_style -%}
+  {%- if _ar != 'auto' -%}width: 100%; height: 100%;{%- endif -%}
+  object-fit: {{ _fit }};
+  object-position: {{ _pos }};
+{%- endcapture -%}
+
+{%- assign _alt = block.settings.alt | default: _img.alt | default: '' -%}
+
+{%- capture _media -%}
+  <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ block.fluid_attributes }}>
+    {%- if _img -%}
+      <img src="{{ _img | img_url: '1600x' }}"
+           alt="{{ _alt | escape }}"
+           loading="lazy"
+           style="{{ _img_style | strip_newlines }}">
+    {%- endif -%}
+    {%- if _ov_color != blank and _ov_opacity > 0 -%}
+      {%- assign _ov_alpha = _ov_opacity | divided_by: 100.0 -%}
+      <div class="media-wrap__overlay" style="background: {{ _ov_color }}; opacity: {{ _ov_alpha }};"></div>
+    {%- endif -%}
+  </div>
+{%- endcapture -%}
+
+{%- if _link != blank -%}
+  <a href="{{ _link }}"
+     class="media-link"
+     {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}>
+    {{ _media }}
+  </a>
+{%- else -%}
+  {{ _media }}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Image",
+  "settings": [
+    { "type": "header", "content": "Content" },
+    { "type": "image_picker", "id": "image",        "label": "Image" },
+    { "type": "text",         "id": "alt",          "label": "Alt Text",
+      "info": "Leave blank to use the image's own alt. Required for accessibility — describe what's in the image." },
+    { "type": "url",          "id": "link",         "label": "Link" },
+    { "type": "checkbox",     "id": "open_new_tab", "label": "Open in new tab", "default": false },
+
+    { "type": "header", "content": "Sizing" },
+    {
+      "type": "select", "id": "aspect_ratio", "label": "Aspect Ratio", "default": "auto",
+      "options": [
+        { "value": "auto",  "label": "Auto (natural)" },
+        { "value": "1/1",   "label": "Square (1:1)" },
+        { "value": "4/3",   "label": "Standard (4:3)" },
+        { "value": "16/9",  "label": "Widescreen (16:9)" },
+        { "value": "3/2",   "label": "Classic (3:2)" },
+        { "value": "3/4",   "label": "Portrait (3:4)" },
+        { "value": "9/16",  "label": "Portrait mobile (9:16)" },
+        { "value": "21/9",  "label": "Ultrawide (21:9)" }
+      ]
+    },
+    {
+      "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+      "options": [
+        { "value": "cover",   "label": "Cover" },
+        { "value": "contain", "label": "Contain" },
+        { "value": "fill",    "label": "Fill" }
+      ]
+    },
+    {
+      "type": "select", "id": "object_position", "label": "Object Position", "default": "center",
+      "info": "Only affects images with Fit = Cover.",
+      "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "top",    "label": "Top" },
+        { "value": "bottom", "label": "Bottom" },
+        { "value": "left",   "label": "Left" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Overlay" },
+    {
+      "type": "select", "id": "overlay_color", "label": "Overlay Color",
+      "options": "background_colors", "default": "transparent"
+    },
+    {
+      "type": "range", "id": "overlay_opacity", "label": "Overlay Opacity",
+      "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%"
+    },
+
+    { "type": "header", "content": "Shape" },
+    { "type": "border",        "id": "border",        "label": "Border" },
+    { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" }
+  ]
+}
+{% endschema %}

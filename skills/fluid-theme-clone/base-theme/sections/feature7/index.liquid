@@ -19,6 +19,10 @@
       {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
       border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
     {%- endif -%}
+    {%- assign sb = section.settings.section_border -%}
+    {%- if sb.width -%}
+      border: {{ sb.width }} solid {{ sb.color }};
+    {%- endif -%}
   }
 {%- endstyle -%}
 
@@ -155,7 +159,7 @@
     {
       "type": "richtext",
       "id": "heading",
-      "default": "<p>Long heading is what you see here in this feature section</p>",
+      "default": "<h2 style=\"color: var(--clr-primary);\">Long heading is what you see here in this feature section</h2>",
       "label": "Heading"
     },
     {
@@ -203,10 +207,11 @@
       "label": "Secondary Button Link"
     },
     {
-      "type": "color_background",
+      "type": "select",
       "id": "background_color",
-      "default": "#ffffff",
-      "label": "Background Color"
+      "label": "Background Color",
+      "options": "background_colors",
+      "default": "var(--clr-white)"
     },
     {
       "type": "image_picker",
@@ -233,11 +238,26 @@
       "id": "button_style",
       "label": "Button Style",
       "options": [
-        { "value": "btn-bg-white", "label": "White" },
-        { "value": "btn-bg-primary", "label": "Primary" },
-        { "value": "btn-border-white", "label": "White Border" },
-        { "value": "btn-border-black", "label": "Black Border" },
-        { "value": "btn-border-primary", "label": "Primary Border" }
+        {
+          "value": "btn-bg-white",
+          "label": "White"
+        },
+        {
+          "value": "btn-bg-primary",
+          "label": "Primary"
+        },
+        {
+          "value": "btn-border-white",
+          "label": "White Border"
+        },
+        {
+          "value": "btn-border-black",
+          "label": "Black Border"
+        },
+        {
+          "value": "btn-border-primary",
+          "label": "Primary Border"
+        }
       ],
       "default": "btn-bg-primary"
     },
@@ -251,11 +271,26 @@
       "id": "button_secondary_style",
       "label": "Secondary Button Style",
       "options": [
-        { "value": "btn-bg-white", "label": "White" },
-        { "value": "btn-bg-primary", "label": "Primary" },
-        { "value": "btn-border-white", "label": "White Border" },
-        { "value": "btn-border-black", "label": "Black Border" },
-        { "value": "btn-border-primary", "label": "Primary Border" }
+        {
+          "value": "btn-bg-white",
+          "label": "White"
+        },
+        {
+          "value": "btn-bg-primary",
+          "label": "Primary"
+        },
+        {
+          "value": "btn-border-white",
+          "label": "White Border"
+        },
+        {
+          "value": "btn-border-black",
+          "label": "Black Border"
+        },
+        {
+          "value": "btn-border-primary",
+          "label": "Primary Border"
+        }
       ],
       "default": "btn-border-black"
     },
@@ -269,6 +304,11 @@
       "id": "section_border_radius",
       "label": "Section Border Radius",
       "info": "Default 0px. Four corners, link/unlink."
+    },
+    {
+      "type": "border",
+      "id": "section_border",
+      "label": "Section Border"
     }
   ]
 }

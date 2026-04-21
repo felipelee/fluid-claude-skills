@@ -46,6 +46,10 @@
       {%- capture sr_bl -%}{{ sr.bl }}{%- endcapture -%}
       border-radius: {% if sr_tl contains 'var(' %}{{ sr_tl }}{% else %}{{ sr_tl }}px{% endif %} {% if sr_tr contains 'var(' %}{{ sr_tr }}{% else %}{{ sr_tr }}px{% endif %} {% if sr_br contains 'var(' %}{{ sr_br }}{% else %}{{ sr_br }}px{% endif %} {% if sr_bl contains 'var(' %}{{ sr_bl }}{% else %}{{ sr_bl }}px{% endif %};
     {%- endif -%}
+    {%- assign sb = section.settings.section_border -%}
+    {%- if sb.width -%}
+      border: {{ sb.width }} solid {{ sb.color }};
+    {%- endif -%}
   }
 {%- endstyle -%}
 
@@ -79,38 +83,40 @@
                   {% if current_button_1 or current_button_2 %}
                     <div class="flex justify-start align-center {{ section.settings.button_gap | default: 'space-lg' }}">
                       {% if current_button_1 %}
-                        {%- assign cr = current_button_1.settings.border_radius -%}
-                        {%- assign _btn1_attr = current_button_1.fluid_attributes -%}
-                        {%- assign _btn1_size = current_button_1.settings.size | default: 'btn-md' -%}
-                        {%- assign _btn1_fw = current_button_1.settings.font_weight | default: '600' -%}
-                        {%- assign _btn1_w = current_button_1.settings.width -%}
-                        {%- assign _btn1_h = current_button_1.settings.height -%}
-                        {%- capture _btn1_extra_style -%}font-weight: {{ _btn1_fw }};{% if _btn1_w != blank %} width: {{ _btn1_w }}px;{% endif %}{% if _btn1_h != blank %} height: {{ _btn1_h }}px;{% endif %}{%- endcapture -%}
-                        {%- if cr -%}
-                          {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
-                          {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
-                          {%- assign _btn1_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
-                        {%- else -%}
-                          {%- assign _btn1_attr = 'style="' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
-                        {%- endif -%}
-                        {% render 'button', href: current_button_1.settings.url | default: '#', text: current_button_1.settings.text | default: 'Button', variant: current_button_1.settings.button_style | default: 'btn-bg-primary', class: _btn1_size, attr: _btn1_attr %}
+                        {% capture _btn1_style %}
+                          {% if current_button_1.settings.background_color != blank %}background-color: {{ current_button_1.settings.background_color }};{% endif %}
+                          {% if current_button_1.settings.text_color != blank %}color: {{ current_button_1.settings.text_color }};{% endif %}
+                          {% if current_button_1.settings.font_size != blank %}font-size: {{ current_button_1.settings.font_size }}px;{% endif %}
+                          {% if current_button_1.settings.font_family != blank %}font-family: {{ current_button_1.settings.font_family | font_family }};{% endif %}
+                          {% assign p = current_button_1.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+                          {% assign br = current_button_1.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                          {% assign bd = current_button_1.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+                        {% endcapture %}
+                        <a href="{{ current_button_1.settings.link | default: '#' }}"
+                           class="btn btn--{{ current_button_1.settings.style | default: 'filled' }}"
+                           style="{{ _btn1_style | strip_newlines }}"
+                           {% if current_button_1.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                           {{ current_button_1.fluid_attributes }}>
+                          {{ current_button_1.settings.text | default: 'Button' | escape }}
+                        </a>
                       {% endif %}
                       {% if current_button_2 %}
-                        {%- assign cr = current_button_2.settings.border_radius -%}
-                        {%- assign _btn2_attr = current_button_2.fluid_attributes -%}
-                        {%- assign _btn2_size = current_button_2.settings.size | default: 'btn-md' -%}
-                        {%- assign _btn2_fw = current_button_2.settings.font_weight | default: '600' -%}
-                        {%- assign _btn2_w = current_button_2.settings.width -%}
-                        {%- assign _btn2_h = current_button_2.settings.height -%}
-                        {%- capture _btn2_extra_style -%}font-weight: {{ _btn2_fw }};{% if _btn2_w != blank %} width: {{ _btn2_w }}px;{% endif %}{% if _btn2_h != blank %} height: {{ _btn2_h }}px;{% endif %}{%- endcapture -%}
-                        {%- if cr -%}
-                          {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
-                          {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
-                          {%- assign _btn2_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
-                        {%- else -%}
-                          {%- assign _btn2_attr = 'style="' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
-                        {%- endif -%}
-                        {% render 'button', href: current_button_2.settings.url | default: '#', text: current_button_2.settings.text | default: 'Button', variant: current_button_2.settings.button_style | default: 'btn-border-primary', class: _btn2_size, attr: _btn2_attr %}
+                        {% capture _btn2_style %}
+                          {% if current_button_2.settings.background_color != blank %}background-color: {{ current_button_2.settings.background_color }};{% endif %}
+                          {% if current_button_2.settings.text_color != blank %}color: {{ current_button_2.settings.text_color }};{% endif %}
+                          {% if current_button_2.settings.font_size != blank %}font-size: {{ current_button_2.settings.font_size }}px;{% endif %}
+                          {% if current_button_2.settings.font_family != blank %}font-family: {{ current_button_2.settings.font_family | font_family }};{% endif %}
+                          {% assign p = current_button_2.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+                          {% assign br = current_button_2.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                          {% assign bd = current_button_2.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+                        {% endcapture %}
+                        <a href="{{ current_button_2.settings.link | default: '#' }}"
+                           class="btn btn--{{ current_button_2.settings.style | default: 'filled' }}"
+                           style="{{ _btn2_style | strip_newlines }}"
+                           {% if current_button_2.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                           {{ current_button_2.fluid_attributes }}>
+                          {{ current_button_2.settings.text | default: 'Button' | escape }}
+                        </a>
                       {% endif %}
                     </div>
                   {% endif %}
@@ -131,37 +137,32 @@
                 <div class="feature-image-wrapper">
                   <div class="feature-image feature-image-right">
                     {% if current_feature_image %}
-                      {% assign img_input = current_feature_image.settings.image %}
-                      {% assign img_fluid_media_id = '' %}
-                      {% if current_feature_image.settings.image.fluid_media_id %}
-                        {% assign img_fluid_media_id = img_input.fluid_media_id %}
-                        {% assign img_embed_type = img_input.embed_type %}
-                      {% endif %}
-                      {% assign use_fluid_image_widget = false %}
-                      {% if img_fluid_media_id != blank %}
-                        {% assign use_fluid_image_widget = true %}
-                      {% endif %}
-                      {%- assign _fit_class = 'image-cover' -%}
-                      {%- case current_feature_image.settings.media_fit -%}
-                        {%- when 'contain' -%}{%- assign _fit_class = 'image-contain' -%}
-                        {%- when 'fit-width' -%}{%- assign _fit_class = 'image-cover' -%}
-                        {%- when 'fit-height' -%}{%- assign _fit_class = 'image-contain' -%}
-                      {%- endcase -%}
-                      {%- capture _media_style -%}
-                        {% if current_feature_image.settings.max_width != blank %}max-width: {{ current_feature_image.settings.max_width }}px;{% endif %}
-                        {% if current_feature_image.settings.max_height != blank %}max-height: {{ current_feature_image.settings.max_height }}px;{% endif %}
-                      {%- endcapture -%}
-                      {% if use_fluid_image_widget %}
-                        <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true" {{ current_feature_image.fluid_attributes }}></fluid-media-widget>
-                      {% else %}
-                        <div class="media-container" style="{{ _media_style }}">
-                        {% if current_feature_image.settings.image != blank %}
-                          <img src="{{ current_feature_image.settings.image | image_url }}" alt="{{ current_feature_image.settings.image_alt | default: 'feature' }}" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
-                        {% else %}
-                          <img src="{{ 'feature-placeholder.png' | asset_url }}" alt="feature" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
+                      {% assign _img = current_feature_image.settings.image %}
+                      {% assign _alt = current_feature_image.settings.alt | default: _img.alt | default: 'feature' %}
+                      {% assign _ar = current_feature_image.settings.aspect_ratio | default: 'auto' %}
+                      {% assign _fit = current_feature_image.settings.fit | default: 'cover' %}
+                      {% capture _wrap_style %}
+                        {% if _ar != 'auto' %}aspect-ratio: {{ _ar }};{% endif %}
+                        {% assign br = current_feature_image.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                        {% assign bd = current_feature_image.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+                      {% endcapture %}
+                      {% capture _img_style %}
+                        {% if _ar != 'auto' %}width: 100%; height: 100%;{% endif %}
+                        object-fit: {{ _fit }};
+                        object-position: {{ current_feature_image.settings.object_position | default: 'center' }};
+                      {% endcapture %}
+                      {% capture _link %}{{ current_feature_image.settings.link }}{% endcapture %}
+                      {% if _link != blank %}<a href="{{ _link }}" class="media-link" {% if current_feature_image.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}>{% endif %}
+                      <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ current_feature_image.fluid_attributes }}>
+                        {% if _img %}
+                          <img src="{{ _img | img_url: '1600x' }}" alt="{{ _alt | escape }}" loading="lazy" style="{{ _img_style | strip_newlines }}" />
                         {% endif %}
-                        </div>
-                      {% endif %}
+                        {% if current_feature_image.settings.overlay_color != blank and current_feature_image.settings.overlay_opacity > 0 %}
+                          {% assign _a = current_feature_image.settings.overlay_opacity | divided_by: 100.0 %}
+                          <div class="media-wrap__overlay" style="background: {{ current_feature_image.settings.overlay_color }}; opacity: {{ _a }};"></div>
+                        {% endif %}
+                      </div>
+                      {% if _link != blank %}</a>{% endif %}
                     {% endif %}
                   </div>
                 </div>
@@ -184,7 +185,7 @@
         {% if current_feature_item %}
           {% assign current_description = block %}
         {% endif %}
-      {% when 'feature_image' %}
+      {% when 'image' %}
         {% if current_feature_item %}
           {% assign current_feature_image = block %}
         {% endif %}
@@ -217,38 +218,40 @@
             {% if current_button_1 or current_button_2 %}
               <div class="flex justify-start align-center {{ section.settings.button_gap | default: 'space-lg' }}">
                 {% if current_button_1 %}
-                  {%- assign cr = current_button_1.settings.border_radius -%}
-                  {%- assign _btn1_attr = current_button_1.fluid_attributes -%}
-                  {%- assign _btn1_size = current_button_1.settings.size | default: 'btn-md' -%}
-                  {%- assign _btn1_fw = current_button_1.settings.font_weight | default: '600' -%}
-                  {%- assign _btn1_w = current_button_1.settings.width -%}
-                  {%- assign _btn1_h = current_button_1.settings.height -%}
-                  {%- capture _btn1_extra_style -%}font-weight: {{ _btn1_fw }};{% if _btn1_w != blank %} width: {{ _btn1_w }}px;{% endif %}{% if _btn1_h != blank %} height: {{ _btn1_h }}px;{% endif %}{%- endcapture -%}
-                  {%- if cr -%}
-                    {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
-                    {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
-                    {%- assign _btn1_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
-                  {%- else -%}
-                    {%- assign _btn1_attr = 'style="' | append: _btn1_extra_style | append: ';" ' | append: _btn1_attr -%}
-                  {%- endif -%}
-                  {% render 'button', href: current_button_1.settings.url | default: '#', text: current_button_1.settings.text | default: 'Button', variant: current_button_1.settings.button_style | default: 'btn-bg-primary', class: _btn1_size, attr: _btn1_attr %}
+                  {% capture _btn1_style %}
+                          {% if current_button_1.settings.background_color != blank %}background-color: {{ current_button_1.settings.background_color }};{% endif %}
+                          {% if current_button_1.settings.text_color != blank %}color: {{ current_button_1.settings.text_color }};{% endif %}
+                          {% if current_button_1.settings.font_size != blank %}font-size: {{ current_button_1.settings.font_size }}px;{% endif %}
+                          {% if current_button_1.settings.font_family != blank %}font-family: {{ current_button_1.settings.font_family | font_family }};{% endif %}
+                          {% assign p = current_button_1.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+                          {% assign br = current_button_1.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                          {% assign bd = current_button_1.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+                        {% endcapture %}
+                        <a href="{{ current_button_1.settings.link | default: '#' }}"
+                           class="btn btn--{{ current_button_1.settings.style | default: 'filled' }}"
+                           style="{{ _btn1_style | strip_newlines }}"
+                           {% if current_button_1.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                           {{ current_button_1.fluid_attributes }}>
+                          {{ current_button_1.settings.text | default: 'Button' | escape }}
+                        </a>
                 {% endif %}
                 {% if current_button_2 %}
-                  {%- assign cr = current_button_2.settings.border_radius -%}
-                  {%- assign _btn2_attr = current_button_2.fluid_attributes -%}
-                  {%- assign _btn2_size = current_button_2.settings.size | default: 'btn-md' -%}
-                  {%- assign _btn2_fw = current_button_2.settings.font_weight | default: '600' -%}
-                  {%- assign _btn2_w = current_button_2.settings.width -%}
-                  {%- assign _btn2_h = current_button_2.settings.height -%}
-                  {%- capture _btn2_extra_style -%}font-weight: {{ _btn2_fw }};{% if _btn2_w != blank %} width: {{ _btn2_w }}px;{% endif %}{% if _btn2_h != blank %} height: {{ _btn2_h }}px;{% endif %}{%- endcapture -%}
-                  {%- if cr -%}
-                    {%- capture cr_tl -%}{{ cr.tl }}{%- endcapture -%}{%- capture cr_tr -%}{{ cr.tr }}{%- endcapture -%}{%- capture cr_br -%}{{ cr.br }}{%- endcapture -%}{%- capture cr_bl -%}{{ cr.bl }}{%- endcapture -%}
-                    {%- capture _br_val -%}{% if cr_tl contains 'var(' %}{{ cr_tl }}{% else %}{{ cr_tl }}px{% endif %} {% if cr_tr contains 'var(' %}{{ cr_tr }}{% else %}{{ cr_tr }}px{% endif %} {% if cr_br contains 'var(' %}{{ cr_br }}{% else %}{{ cr_br }}px{% endif %} {% if cr_bl contains 'var(' %}{{ cr_bl }}{% else %}{{ cr_bl }}px{% endif %}{%- endcapture -%}
-                    {%- assign _btn2_attr = 'style="border-radius: ' | append: _br_val | append: ' ' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
-                  {%- else -%}
-                    {%- assign _btn2_attr = 'style="' | append: _btn2_extra_style | append: ';" ' | append: _btn2_attr -%}
-                  {%- endif -%}
-                  {% render 'button', href: current_button_2.settings.url | default: '#', text: current_button_2.settings.text | default: 'Button', variant: current_button_2.settings.button_style | default: 'btn-border-primary', class: _btn2_size, attr: _btn2_attr %}
+                  {% capture _btn2_style %}
+                          {% if current_button_2.settings.background_color != blank %}background-color: {{ current_button_2.settings.background_color }};{% endif %}
+                          {% if current_button_2.settings.text_color != blank %}color: {{ current_button_2.settings.text_color }};{% endif %}
+                          {% if current_button_2.settings.font_size != blank %}font-size: {{ current_button_2.settings.font_size }}px;{% endif %}
+                          {% if current_button_2.settings.font_family != blank %}font-family: {{ current_button_2.settings.font_family | font_family }};{% endif %}
+                          {% assign p = current_button_2.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+                          {% assign br = current_button_2.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                          {% assign bd = current_button_2.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+                        {% endcapture %}
+                        <a href="{{ current_button_2.settings.link | default: '#' }}"
+                           class="btn btn--{{ current_button_2.settings.style | default: 'filled' }}"
+                           style="{{ _btn2_style | strip_newlines }}"
+                           {% if current_button_2.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                           {{ current_button_2.fluid_attributes }}>
+                          {{ current_button_2.settings.text | default: 'Button' | escape }}
+                        </a>
                 {% endif %}
               </div>
             {% endif %}
@@ -269,38 +272,33 @@
           <div class="feature-image-wrapper">
             <div class="feature-image feature-image-right">
               {% if current_feature_image %}
-                {% assign img_input = current_feature_image.settings.image %}
-                {% assign img_fluid_media_id = '' %}
-                {% if current_feature_image.settings.image.fluid_media_id %}
-                  {% assign img_fluid_media_id = img_input.fluid_media_id %}
-                  {% assign img_embed_type = img_input.embed_type %}
-                {% endif %}
-                {% assign use_fluid_image_widget = false %}
-                {% if img_fluid_media_id != blank %}
-                  {% assign use_fluid_image_widget = true %}
-                {% endif %}
-                {%- assign _fit_class = 'image-cover' -%}
-                {%- case current_feature_image.settings.media_fit -%}
-                  {%- when 'contain' -%}{%- assign _fit_class = 'image-contain' -%}
-                  {%- when 'fit-width' -%}{%- assign _fit_class = 'image-cover' -%}
-                  {%- when 'fit-height' -%}{%- assign _fit_class = 'image-contain' -%}
-                {%- endcase -%}
-                {%- capture _media_style -%}
-                  {% if current_feature_image.settings.max_width != blank %}max-width: {{ current_feature_image.settings.max_width }}px;{% endif %}
-                  {% if current_feature_image.settings.max_height != blank %}max-height: {{ current_feature_image.settings.max_height }}px;{% endif %}
-                {%- endcapture -%}
-                {% if use_fluid_image_widget %}
-                  <fluid-media-widget class="fluid-media-widget-image" media-id="{{ img_fluid_media_id }}" responsive="true" embed-type="{{ img_embed_type | default: 'inline' }}" data-fluid-widget="true" {{ current_feature_image.fluid_attributes }}></fluid-media-widget>
-                {% else %}
-                  <div class="media-container" style="{{ _media_style }}">
-                  {% if current_feature_image.settings.image != blank %}
-                    <img src="{{ current_feature_image.settings.image | image_url }}" alt="{{ current_feature_image.settings.image_alt | default: 'feature' }}" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
-                  {% else %}
-                    <img src="{{ 'feature-placeholder.png' | asset_url }}" alt="feature" class="{{ _fit_class }} media-container" style="{{ _media_style }}" loading="lazy" width="" height="" {{ current_feature_image.fluid_attributes }} />
-                  {% endif %}
-                  </div>
-                {% endif %}
-              {% endif %}
+                      {% assign _img = current_feature_image.settings.image %}
+                      {% assign _alt = current_feature_image.settings.alt | default: _img.alt | default: 'feature' %}
+                      {% assign _ar = current_feature_image.settings.aspect_ratio | default: 'auto' %}
+                      {% assign _fit = current_feature_image.settings.fit | default: 'cover' %}
+                      {% capture _wrap_style %}
+                        {% if _ar != 'auto' %}aspect-ratio: {{ _ar }};{% endif %}
+                        {% assign br = current_feature_image.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                        {% assign bd = current_feature_image.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}
+                      {% endcapture %}
+                      {% capture _img_style %}
+                        {% if _ar != 'auto' %}width: 100%; height: 100%;{% endif %}
+                        object-fit: {{ _fit }};
+                        object-position: {{ current_feature_image.settings.object_position | default: 'center' }};
+                      {% endcapture %}
+                      {% capture _link %}{{ current_feature_image.settings.link }}{% endcapture %}
+                      {% if _link != blank %}<a href="{{ _link }}" class="media-link" {% if current_feature_image.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}>{% endif %}
+                      <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ current_feature_image.fluid_attributes }}>
+                        {% if _img %}
+                          <img src="{{ _img | img_url: '1600x' }}" alt="{{ _alt | escape }}" loading="lazy" style="{{ _img_style | strip_newlines }}" />
+                        {% endif %}
+                        {% if current_feature_image.settings.overlay_color != blank and current_feature_image.settings.overlay_opacity > 0 %}
+                          {% assign _a = current_feature_image.settings.overlay_opacity | divided_by: 100.0 %}
+                          <div class="media-wrap__overlay" style="background: {{ current_feature_image.settings.overlay_color }}; opacity: {{ _a }};"></div>
+                        {% endif %}
+                      </div>
+                      {% if _link != blank %}</a>{% endif %}
+                    {% endif %}
             </div>
           </div>
         </div>
@@ -326,10 +324,11 @@
       "info": "Recommended size: 1920x1080px or larger"
     },
     {
-      "type": "color_background",
+      "type": "select",
       "id": "background_color",
       "label": "Background Color",
-      "default": "#ffffff"
+      "options": "background_colors",
+      "default": "var(--clr-white)"
     },
     {
       "type": "padding",
@@ -345,15 +344,42 @@
       "id": "content_gap_mobile",
       "label": "Content Gap (Mobile)",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" },
-        { "value": "space-3xl", "label": "3XL" },
-        { "value": "space-4xl", "label": "4XL" },
-        { "value": "space-5xl", "label": "5XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "space-4xl"
     },
@@ -362,15 +388,42 @@
       "id": "content_gap_desktop",
       "label": "Content Gap (Desktop)",
       "options": [
-        { "value": "lg:space-xs", "label": "XS" },
-        { "value": "lg:space-sm", "label": "SM" },
-        { "value": "lg:space-md", "label": "MD" },
-        { "value": "lg:space-lg", "label": "LG" },
-        { "value": "lg:space-xl", "label": "XL" },
-        { "value": "lg:space-2xl", "label": "2XL" },
-        { "value": "lg:space-3xl", "label": "3XL" },
-        { "value": "lg:space-4xl", "label": "4XL" },
-        { "value": "lg:space-5xl", "label": "5XL" }
+        {
+          "value": "lg:space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "lg:space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "lg:space-md",
+          "label": "MD"
+        },
+        {
+          "value": "lg:space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "lg:space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "lg:space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "lg:space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "lg:space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "lg:space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "lg:space-5xl"
     },
@@ -379,15 +432,42 @@
       "id": "content_spacing_mobile",
       "label": "Content Spacing (Mobile)",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" },
-        { "value": "space-3xl", "label": "3XL" },
-        { "value": "space-4xl", "label": "4XL" },
-        { "value": "space-5xl", "label": "5XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "space-lg"
     },
@@ -396,15 +476,42 @@
       "id": "content_spacing_desktop",
       "label": "Content Spacing (Desktop)",
       "options": [
-        { "value": "lg:space-xs", "label": "XS" },
-        { "value": "lg:space-sm", "label": "SM" },
-        { "value": "lg:space-md", "label": "MD" },
-        { "value": "lg:space-lg", "label": "LG" },
-        { "value": "lg:space-xl", "label": "XL" },
-        { "value": "lg:space-2xl", "label": "2XL" },
-        { "value": "lg:space-3xl", "label": "3XL" },
-        { "value": "lg:space-4xl", "label": "4XL" },
-        { "value": "lg:space-5xl", "label": "5XL" }
+        {
+          "value": "lg:space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "lg:space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "lg:space-md",
+          "label": "MD"
+        },
+        {
+          "value": "lg:space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "lg:space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "lg:space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "lg:space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "lg:space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "lg:space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "lg:space-2xl"
     },
@@ -413,15 +520,42 @@
       "id": "button_gap",
       "label": "Button Gap",
       "options": [
-        { "value": "space-xs", "label": "XS" },
-        { "value": "space-sm", "label": "SM" },
-        { "value": "space-md", "label": "MD" },
-        { "value": "space-lg", "label": "LG" },
-        { "value": "space-xl", "label": "XL" },
-        { "value": "space-2xl", "label": "2XL" },
-        { "value": "space-3xl", "label": "3XL" },
-        { "value": "space-4xl", "label": "4XL" },
-        { "value": "space-5xl", "label": "5XL" }
+        {
+          "value": "space-xs",
+          "label": "XS"
+        },
+        {
+          "value": "space-sm",
+          "label": "SM"
+        },
+        {
+          "value": "space-md",
+          "label": "MD"
+        },
+        {
+          "value": "space-lg",
+          "label": "LG"
+        },
+        {
+          "value": "space-xl",
+          "label": "XL"
+        },
+        {
+          "value": "space-2xl",
+          "label": "2XL"
+        },
+        {
+          "value": "space-3xl",
+          "label": "3XL"
+        },
+        {
+          "value": "space-4xl",
+          "label": "4XL"
+        },
+        {
+          "value": "space-5xl",
+          "label": "5XL"
+        }
       ],
       "default": "space-lg"
     },
@@ -430,6 +564,11 @@
       "id": "section_border_radius",
       "label": "Section Border Radius",
       "info": "Default 0px. Four corners, link/unlink."
+    },
+    {
+      "type": "border",
+      "id": "section_border",
+      "label": "Section Border"
     }
   ],
   "blocks": [
@@ -463,56 +602,162 @@
       ]
     },
     {
-      "type": "feature_image",
-      "name": "Feature Image",
+      "type": "image",
+      "name": "Image",
       "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
         {
           "type": "image_picker",
           "id": "image",
-          "label": "Feature Image",
-          "info": "Recommended size: 600x400px or larger"
+          "label": "Image"
         },
         {
           "type": "text",
-          "id": "image_alt",
-          "label": "Image Alt Text",
-          "default": "feature"
+          "id": "alt",
+          "label": "Alt Text",
+          "info": "Leave blank to use the image's own alt. Required for accessibility."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Sizing"
         },
         {
           "type": "select",
-          "id": "media_fit",
-          "label": "Image Fit",
+          "id": "aspect_ratio",
+          "label": "Aspect Ratio",
+          "default": "auto",
           "options": [
-            { "value": "cover", "label": "Cover (Fill Container)" },
-            { "value": "contain", "label": "Contain (Fit Inside)" },
-            { "value": "fit-width", "label": "Fit to Width" },
-            { "value": "fit-height", "label": "Fit to Height" }
-          ],
-          "default": "cover"
+            {
+              "value": "auto",
+              "label": "Auto (natural)"
+            },
+            {
+              "value": "1/1",
+              "label": "Square (1:1)"
+            },
+            {
+              "value": "4/3",
+              "label": "Standard (4:3)"
+            },
+            {
+              "value": "16/9",
+              "label": "Widescreen (16:9)"
+            },
+            {
+              "value": "3/2",
+              "label": "Classic (3:2)"
+            },
+            {
+              "value": "3/4",
+              "label": "Portrait (3:4)"
+            },
+            {
+              "value": "9/16",
+              "label": "Portrait mobile (9:16)"
+            },
+            {
+              "value": "21/9",
+              "label": "Ultrawide (21:9)"
+            }
+          ]
+        },
+        {
+          "type": "radio",
+          "id": "fit",
+          "label": "Fit",
+          "default": "cover",
+          "options": [
+            {
+              "value": "cover",
+              "label": "Cover"
+            },
+            {
+              "value": "contain",
+              "label": "Contain"
+            },
+            {
+              "value": "fill",
+              "label": "Fill"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "object_position",
+          "label": "Object Position",
+          "default": "center",
+          "info": "Only affects Fit = Cover.",
+          "options": [
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "type": "select",
+          "id": "overlay_color",
+          "label": "Overlay Color",
+          "options": "background_colors",
+          "default": "transparent"
         },
         {
           "type": "range",
-          "id": "max_width",
+          "id": "overlay_opacity",
+          "label": "Overlay Opacity",
           "min": 0,
-          "max": 2000,
-          "step": 1,
-          "label": "Max Width (px)",
-          "info": "Leave empty for no limit"
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "%"
         },
         {
-          "type": "range",
-          "id": "max_height",
-          "min": 0,
-          "max": 2000,
-          "step": 1,
-          "label": "Max Height (px)",
-          "info": "Leave empty for no limit"
+          "type": "header",
+          "content": "Shape"
+        },
+        {
+          "type": "border",
+          "id": "border",
+          "label": "Border"
         },
         {
           "type": "corner_radius",
-          "id": "media_border_radius",
-          "label": "Image Border Radius",
-          "info": "Override theme default media radius"
+          "id": "border_radius",
+          "label": "Border Radius"
         }
       ]
     },
@@ -521,72 +766,93 @@
       "name": "Button",
       "settings": [
         {
+          "type": "header",
+          "content": "Content"
+        },
+        {
           "type": "text",
           "id": "text",
-          "label": "Button Text",
-          "default": "Button"
+          "label": "Text",
+          "default": "Shop now"
         },
         {
           "type": "url",
-          "id": "url",
-          "label": "Button URL",
-          "default": "#"
+          "id": "link",
+          "label": "Link"
         },
         {
-          "type": "select",
-          "id": "button_style",
-          "label": "Button Style",
-          "options": [
-            { "value": "btn-bg-white", "label": "White" },
-            { "value": "btn-bg-primary", "label": "Primary" },
-            { "value": "btn-border-white", "label": "White Border" },
-            { "value": "btn-border-black", "label": "Black Border" },
-            { "value": "btn-border-primary", "label": "Primary Border" }
-          ],
-          "default": "btn-bg-primary"
+          "type": "font_picker",
+          "id": "font_family",
+          "label": "Font Family",
+          "default": "Inter"
         },
         {
-          "type": "select",
-          "id": "size",
-          "label": "Button Size",
-          "options": [
-            { "value": "btn-xs", "label": "Extra Small" },
-            { "value": "btn-sm", "label": "Small" },
-            { "value": "btn-md", "label": "Medium" },
-            { "value": "btn-lg", "label": "Large" },
-            { "value": "btn-xl", "label": "Extra Large" }
-          ],
-          "default": "btn-md"
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
         },
         {
-          "type": "select",
-          "id": "font_weight",
-          "label": "Font Weight",
+          "type": "header",
+          "content": "Style"
+        },
+        {
+          "type": "radio",
+          "id": "style",
+          "label": "Style",
+          "default": "filled",
           "options": [
-            { "value": "400", "label": "Normal" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" }
-          ],
-          "default": "600"
+            {
+              "value": "filled",
+              "label": "Filled"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "text",
+              "label": "Text only"
+            }
+          ]
         },
         {
           "type": "range",
-          "id": "width",
-          "min": 0,
-          "max": 500,
+          "id": "font_size",
+          "label": "Font Size",
+          "min": 10,
+          "max": 32,
           "step": 1,
-          "label": "Button Width (px)",
-          "info": "Leave empty for auto width"
+          "default": 16,
+          "unit": "px"
         },
         {
-          "type": "range",
-          "id": "height",
-          "min": 0,
-          "max": 500,
-          "step": 1,
-          "label": "Button Height (px)",
-          "info": "Leave empty for auto height"
+          "type": "padding",
+          "id": "padding",
+          "label": "Padding"
+        },
+        {
+          "type": "select",
+          "id": "background_color",
+          "label": "Background Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "select",
+          "id": "text_color",
+          "label": "Text Color",
+          "options": "background_colors",
+          "default": "var(--clr-white)"
+        },
+        {
+          "type": "header",
+          "content": "Shape"
+        },
+        {
+          "type": "border",
+          "id": "border",
+          "label": "Border"
         },
         {
           "type": "corner_radius",
@@ -615,9 +881,18 @@
           "id": "underline_style",
           "label": "Underline Style",
           "options": [
-            { "value": "always", "label": "Always" },
-            { "value": "hover", "label": "On Hover Only" },
-            { "value": "never", "label": "Never" }
+            {
+              "value": "always",
+              "label": "Always"
+            },
+            {
+              "value": "hover",
+              "label": "On Hover Only"
+            },
+            {
+              "value": "never",
+              "label": "Never"
+            }
           ],
           "default": "hover"
         },
@@ -626,26 +901,49 @@
           "id": "icon_position",
           "label": "Icon Position",
           "options": [
-            { "value": "none", "label": "None" },
-            { "value": "before", "label": "Before Text" },
-            { "value": "after", "label": "After Text" }
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "before",
+              "label": "Before Text"
+            },
+            {
+              "value": "after",
+              "label": "After Text"
+            }
           ],
           "default": "none"
         },
         {
-          "type": "color",
+          "type": "select",
+          "options": "background_colors",
           "id": "color",
-          "label": "Link Color"
+          "label": "Link Color",
+          "default": "var(--clr-primary)"
         },
         {
           "type": "select",
           "id": "font_weight",
           "label": "Font Weight",
           "options": [
-            { "value": "400", "label": "Normal" },
-            { "value": "500", "label": "Medium" },
-            { "value": "600", "label": "Semi Bold" },
-            { "value": "700", "label": "Bold" }
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
           ],
           "default": "400"
         }
@@ -688,7 +986,7 @@
           }
         },
         {
-          "type": "feature_image",
+          "type": "image",
           "settings": {
             "image": "https://cdn.filestackcontent.com/ZwL4w01GQTK1F8vPLXzA",
             "image_alt": "feature"
@@ -726,7 +1024,7 @@
           }
         },
         {
-          "type": "feature_image",
+          "type": "image",
           "settings": {
             "image": "https://cdn.filestackcontent.com/ZwL4w01GQTK1F8vPLXzA",
             "image_alt": "feature"

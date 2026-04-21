@@ -208,7 +208,8 @@
         "max": 72,
         "step": 1,
         "label": "H1 Font Size",
-        "default": 42
+        "default": 42,
+        "option_group": { "id": "text_presets", "label": "H1 · Heading", "value": "text-h1" }
       },
       {
         "type": "range",
@@ -217,7 +218,8 @@
         "max": 56,
         "step": 1,
         "label": "H2 Font Size",
-        "default": 32
+        "default": 32,
+        "option_group": { "id": "text_presets", "label": "H2 · Subheading", "value": "text-h2" }
       },
       {
         "type": "range",
@@ -226,7 +228,8 @@
         "max": 40,
         "step": 1,
         "label": "H3 Font Size",
-        "default": 24
+        "default": 24,
+        "option_group": { "id": "text_presets", "label": "H3 · Section title", "value": "text-h3" }
       },
       {
         "type": "range",
@@ -235,7 +238,8 @@
         "max": 32,
         "step": 1,
         "label": "H4 Font Size",
-        "default": 20
+        "default": 20,
+        "option_group": { "id": "text_presets", "label": "H4 · Card title", "value": "text-h4" }
       },
       {
         "type": "range",
@@ -244,7 +248,8 @@
         "max": 24,
         "step": 1,
         "label": "H5 Font Size",
-        "default": 16
+        "default": 16,
+        "option_group": { "id": "text_presets", "label": "H5 · Eyebrow", "value": "text-h5" }
       },
       {
         "type": "range",
@@ -253,7 +258,8 @@
         "max": 20,
         "step": 1,
         "label": "H6 Font Size",
-        "default": 14
+        "default": 14,
+        "option_group": { "id": "text_presets", "label": "H6 · Small label", "value": "text-h6" }
       },
       {
         "type": "header",
@@ -282,42 +288,48 @@
   {
     "name": "color_schema",
     "settings": [
-          {
-            "type": "color_background",
-            "id": "color_primary",
-            "label": "Primary Color",
-            "default": "#000000"
-          },
-          {
-            "type": "color_background",
-            "id": "color_secondary",
-            "label": "Secondary Color",
-            "default": "#000000"
-          },
-          {
-            "type": "color_background",
-            "id": "color_white",
-            "label": "White Color",
-            "default": "#ffffff"
-          },
-          {
-            "type": "color_background",
-            "id": "color_gray",
-            "label": "Gray Color",
-            "default": "#f2f2f2"
-          },
-          {
-            "type": "color_background",
-            "id": "color_black",
-            "label": "Color Black",
-            "default": "#000000"
-          },
-          {
-            "type": "color_background",
-            "id": "color_body",
-            "label": "Body Color",
-            "default": "#000000"
-          }
+      {
+        "type": "color_background",
+        "id": "color_primary",
+        "label": "Primary Color",
+        "default": "#000000",
+        "option_group": { "id": "background_colors", "label": "Primary",   "value": "var(--clr-primary)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_secondary",
+        "label": "Secondary Color",
+        "default": "#000000",
+        "option_group": { "id": "background_colors", "label": "Secondary", "value": "var(--clr-secondary)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_white",
+        "label": "White Color",
+        "default": "#ffffff",
+        "option_group": { "id": "background_colors", "label": "White",     "value": "var(--clr-white)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_gray",
+        "label": "Gray Color",
+        "default": "#f2f2f2",
+        "option_group": { "id": "background_colors", "label": "Gray",      "value": "var(--clr-gray)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_black",
+        "label": "Color Black",
+        "default": "#000000",
+        "option_group": { "id": "background_colors", "label": "Black",     "value": "var(--clr-black)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_body",
+        "label": "Body Color",
+        "default": "#000000",
+        "option_group": { "id": "background_colors", "label": "Body",      "value": "var(--clr-body)" }
+      }
     ]
   },
   {

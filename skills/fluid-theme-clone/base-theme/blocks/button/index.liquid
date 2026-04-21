@@ -1,0 +1,150 @@
+{% comment %}
+  Canonical Button block — Fluid base theme pattern.
+
+  Eleven settings:
+    1. text             — button label (text)
+    2. link             — destination URL (url)
+    3. open_new_tab     — checkbox → target="_blank" rel="noopener"
+    4. style            — radio: filled | outline | text (drives CSS class .btn--<style>)
+    5. font_size        — range 10–32 px (inline font-size)
+    6. padding          — padding control (4 sides)
+    7. background_color — select → background_colors (theme-aware)
+    8. text_color       — select → background_colors (theme-aware)
+    9. border           — border control (width + color)
+   10. border_radius    — corner_radius control
+   11. font_family      — font_picker
+
+  Style sets the base CSS class (.btn--filled / outline / text).
+  Font Size + Padding together determine the visual size (no t-shirt preset).
+  Background/Text/Border/Radius/Font override via inline styles.
+{% endcomment %}
+
+{%- assign _tgt = '' -%}
+{%- if block.settings.open_new_tab -%}
+  {%- assign _tgt = 'target="_blank" rel="noopener"' -%}
+{%- endif -%}
+
+{%- assign _style = block.settings.style | default: 'filled' -%}
+
+{%- capture _inline_style -%}
+  {%- if block.settings.background_color != blank -%}background-color: {{ block.settings.background_color }};{%- endif -%}
+  {%- if block.settings.text_color != blank -%}color: {{ block.settings.text_color }};{%- endif -%}
+  {%- if block.settings.font_size != blank -%}font-size: {{ block.settings.font_size }}px;{%- endif -%}
+  {%- if block.settings.font_family != blank -%}font-family: {{ block.settings.font_family | font_family }};{%- endif -%}
+  {%- assign p = block.settings.padding -%}
+  {%- if p -%}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{%- endif -%}
+  {%- assign br = block.settings.border_radius -%}
+  {%- if br -%}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{%- endif -%}
+  {%- assign bd = block.settings.border -%}
+  {%- if bd.width -%}border: {{ bd.width }} solid {{ bd.color }};{%- endif -%}
+{%- endcapture -%}
+
+<a href="{{ block.settings.link | default: '#' }}"
+   class="btn btn--{{ _style }}"
+   style="{{ _inline_style | strip_newlines }}"
+   {{ _tgt }}
+   {{ block.fluid_attributes }}>
+  {{ block.settings.text | default: 'Button' | escape }}
+</a>
+
+{% schema %}
+{
+  "name": "Button",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link"
+    },
+    {
+      "type": "font_picker",
+      "id": "font_family",
+      "label": "Font Family",
+      "default": "Inter"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_new_tab",
+      "label": "Open in new tab",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "radio",
+      "id": "style",
+      "label": "Style",
+      "default": "filled",
+      "options": [
+        {
+          "value": "filled",
+          "label": "Filled"
+        },
+        {
+          "value": "outline",
+          "label": "Outline"
+        },
+        {
+          "value": "text",
+          "label": "Text only"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font Size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "padding",
+      "id": "padding",
+      "label": "Padding"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "Background Color",
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
+    },
+    {
+      "type": "select",
+      "id": "text_color",
+      "label": "Text Color",
+      "options": "background_colors",
+      "default": "var(--clr-white)"
+    },
+    {
+      "type": "header",
+      "content": "Shape"
+    },
+    {
+      "type": "border",
+      "id": "border",
+      "label": "Border"
+    },
+    {
+      "type": "corner_radius",
+      "id": "border_radius",
+      "label": "Border Radius"
+    }
+  ]
+}
+{% endschema %}
