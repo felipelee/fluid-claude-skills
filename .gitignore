@@ -12,6 +12,10 @@ id-mapping.json
 # Source base theme (already copied into skills/fluid-theme-clone/base-theme/)
 base theme */
 
+# Secrets
+.env
+.env.*
+
 # Editor
 *.swp
 *.swo
