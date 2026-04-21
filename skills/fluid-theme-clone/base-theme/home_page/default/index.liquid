@@ -1,95 +1,23 @@
-<div class="flex flex-col gap-28">
-  <!-- Hero Section -->
-  {% section 'hero_section', id: 'hero_section' %}
-  
-  <!-- Intro Section -->
-  {% section 'intro_section', id: 'intro_section' %}
+{%- comment -%}
+  Placeholder home page — sections will be recomposed once Phase B–D sections are built.
+  Current composition uses sections that survived the purge.
+{%- endcomment -%}
 
-  <!-- Multiple Slider Section -->
-  {% section 'multiple_slider', id: 'multiple_slider' %}
-  
-  <!-- Banner Section -->
-  {% section 'banner1', id: 'banner1' %}
-  
-  <!-- Testimonial Section -->
-  {% section 'testimonial', id: 'testimonial' %}
-
-   <!-- Feature Section -->
-   {% section 'feature', id: 'feature' %}
-  
-  <!-- Blog Section -->
-  {% section 'blog', id: 'blog' %}
-  
-  <!-- Brand Section -->
-  {% section 'brand', id: 'brand' %}
-  
-  <!-- Testimonial Slider Section -->
-  {% section 'testimonial_slider', id: 'testimonial_slider' %}
-  
-  <!-- CTA Banner Section -->
-  {% section 'cta_banner5', id: 'cta_banner5' %}
-</div>
+{% section 'hero_section', id: 'hero_section' %}
+{% section 'feature', id: 'feature' %}
+{% section 'testimonial', id: 'testimonial' %}
+{% section 'blog', id: 'blog' %}
+{% section 'brand', id: 'brand' %}
 
 {% schema %}
 {
+  "name": "Home Page",
   "sections": {
-    "hero_section": {
-      "type": "hero_section",
-      "settings": {
-        "text_alignment": "start",
-        "content_gap_mobile": "space-2xl",
-        "content_gap_desktop": "lg:space-3xl",
-        "button_gap": "space-lg",
-        "background_color": "#ff0000",
-        "section_padding": {
-          "top": 200,
-          "bottom": 200,
-          "left": 0,
-          "right": 0,
-          "verticalLinked": true,
-          "horizontalLinked": true
-        }
-      }
-    },
-    "intro_section": {
-      "type": "intro_section"
-    },
-    "multiple_slider": {
-      "type": "multiple_slider"
-    },
-    "banner1": {
-      "type": "banner1"
-    },
-    "testimonial": {
-      "type": "testimonial"
-    },
-    "feature": {
-      "type": "feature"
-    },
-    "blog": {
-      "type": "blog"
-    },
-    "brand": {
-      "type": "brand"
-    },
-    "testimonial_slider": {
-      "type": "testimonial_slider",
-      "settings": {
-        "background_color": "#ffffff",
-        "section_padding": {
-          "top": 0,
-          "bottom": 0,
-          "left": 0,
-          "right": 0,
-          "verticalLinked": true,
-          "horizontalLinked": true
-        }
-      }
-    },
-    "cta_banner5": {
-      "type": "cta_banner5"
-    }
-  },
-  "name": "Home Page"
+    "hero_section": { "type": "hero_section" },
+    "feature":      { "type": "feature" },
+    "testimonial":  { "type": "testimonial" },
+    "blog":         { "type": "blog" },
+    "brand":        { "type": "brand" }
+  }
 }
 {% endschema %}
