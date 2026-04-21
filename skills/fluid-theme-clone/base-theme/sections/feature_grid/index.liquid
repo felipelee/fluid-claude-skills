@@ -1,0 +1,917 @@
+{%- style -%}
+  .feature-grid.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}
+      padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;
+    {%- else -%}
+      padding: 80px 0;
+    {%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}
+      border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;
+    {%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    {%- endif -%}
+  }
+      .feature-grid.section-{{ section.id }} .feature-grid__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}
+      padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;
+    {%- else -%}
+      padding: 0 64px;
+    {%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}
+      border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;
+    {%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+    overflow: hidden;
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .feature-grid.section-{{ section.id }} .feature-grid__container::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: {{ section.settings.container_overlay_color }};
+      opacity: {{ _cov }};
+      pointer-events: none;
+    }
+  {%- endif -%}
+  .feature-grid.section-{{ section.id }} .feature-grid__container > * { position: relative; }
+  @media (max-width: 991px) { .feature-grid.section-{{ section.id }} .feature-grid__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .feature-grid.section-{{ section.id }} .feature-grid__container { padding-left: 16px; padding-right: 16px; } }
+
+  .feature-grid.section-{{ section.id }} .feature-grid__intro {
+    text-align: {{ section.settings.alignment | default: 'center' }};
+    max-width: {% if section.settings.alignment == 'center' %}720px{% else %}640px{% endif %};
+    {%- if section.settings.alignment == 'center' -%}margin: 0 auto 56px;{%- else -%}margin-bottom: 56px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  @media (max-width: 767px) { .feature-grid.section-{{ section.id }} .feature-grid__intro { margin-bottom: 32px; } }
+
+  .feature-grid.section-{{ section.id }} .feature-grid__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 32 }}px;
+  }
+  @media (max-width: 991px) {
+    .feature-grid.section-{{ section.id }} .feature-grid__grid {
+      grid-template-columns: repeat({{ section.settings.columns_tablet | default: 2 }}, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 767px) {
+    .feature-grid.section-{{ section.id }} .feature-grid__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .feature-grid.section-{{ section.id }} .feature-card {
+    display: flex; flex-direction: column; gap: 14px;
+    text-align: {{ section.settings.card_alignment | default: 'left' }};
+    {%- if section.settings.card_alignment == 'center' -%}align-items: center;{%- endif -%}
+    overflow: hidden;
+    position: relative;
+  }
+  .feature-grid.section-{{ section.id }} a.feature-card {
+    color: inherit; text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .feature-grid.section-{{ section.id }} a.feature-card:hover {
+    transform: translateY(-2px);
+  }
+{%- endstyle -%}
+
+<section class="feature-grid section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="feature-grid__container">
+
+    {%- assign intro_blocks = section.blocks | where_exp: 'b', 'b.type == "eyebrow" or b.type == "heading_intro" or b.type == "subhead"' -%}
+    {%- assign has_any_card = false -%}
+    {%- for b in section.blocks -%}
+      {%- if b.type == 'feature_card' -%}{%- assign has_any_card = true -%}{%- break -%}{%- endif -%}
+    {%- endfor -%}
+
+    {% comment %} Intro section — eyebrow + heading + subhead (single-use blocks at top). {% endcomment %}
+    {%- assign eyebrow_block       = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_intro_block = section.blocks | where: 'type', 'heading_intro' | first -%}
+    {%- assign subhead_block       = section.blocks | where: 'type', 'subhead' | first -%}
+    {% if eyebrow_block or heading_intro_block or subhead_block %}
+      <div class="feature-grid__intro">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_intro_block %}<div class="rte" {{ heading_intro_block.fluid_attributes }}>{{ heading_intro_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    {% comment %} Card grid — walks blocks statelessly; feature_card is an empty divider. {% endcomment %}
+    {% if has_any_card %}
+      <div class="feature-grid__grid">
+        {% assign in_card = false %}
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'feature_card' %}
+              {% if in_card %}{% if card_is_link %}</a>{% else %}</article>{% endif %}{% endif %}
+              {% capture _card_style %}
+                {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+                {% if block.settings.background_image != blank %}background-image: url({{ block.settings.background_image | img_url: '1200x' }}); background-size: cover; background-position: center;{% endif %}
+                {% assign cp = block.settings.padding %}{% if cp %}padding: {{ cp.top }}px {{ cp.right }}px {{ cp.bottom }}px {{ cp.left }}px;{% endif %}
+                {% assign cbr = block.settings.border_radius %}{% if cbr %}border-radius: {{ cbr.tl }}px {{ cbr.tr }}px {{ cbr.br }}px {{ cbr.bl }}px;{% endif %}
+                {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+              {% endcapture %}
+              {% assign card_is_link = false %}
+              {% if block.settings.link != blank %}
+                {% assign card_is_link = true %}
+                <a class="feature-card" href="{{ block.settings.link }}"
+                   style="{{ _card_style | strip_newlines }}"
+                   {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                   {{ block.fluid_attributes }}>
+              {% else %}
+                <article class="feature-card" style="{{ _card_style | strip_newlines }}" {{ block.fluid_attributes }}>
+              {% endif %}
+              {% assign in_card = true %}
+            {% when 'image' %}
+              {% if in_card %}
+                {% assign _img = block.settings.image %}
+                {% assign _alt = block.settings.alt | default: _img.alt | default: '' %}
+                {% assign _ar = block.settings.aspect_ratio | default: 'auto' %}
+                {% capture _wrap_style %}
+                  {% if _ar != 'auto' %}aspect-ratio: {{ _ar }};{% endif %}
+                  {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                  {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+                {% endcapture %}
+                {% capture _img_style %}
+                  {% if _ar != 'auto' %}width:100%;height:100%;{% endif %}
+                  object-fit: {{ block.settings.fit | default: 'contain' }};
+                  object-position: {{ block.settings.object_position | default: 'center' }};
+                {% endcapture %}
+                {% if block.settings.link != blank %}<a href="{{ block.settings.link }}" class="media-link" {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}>{% endif %}
+                <div class="media-wrap feature-card__icon" style="{{ _wrap_style | strip_newlines }}" {{ block.fluid_attributes }}>
+                  {% if _img %}
+                    <img src="{{ _img | img_url: '256x' }}" alt="{{ _alt | escape }}" loading="lazy" style="{{ _img_style | strip_newlines }}">
+                  {% else %}
+                    <div class="media-wrap__placeholder">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+                    </div>
+                  {% endif %}
+                  {% if block.settings.overlay_color != blank and block.settings.overlay_opacity > 0 %}
+                    {% assign _a = block.settings.overlay_opacity | divided_by: 100.0 %}
+                    <div class="media-wrap__overlay" style="background: {{ block.settings.overlay_color }}; opacity: {{ _a }};"></div>
+                  {% endif %}
+                </div>
+                {% if block.settings.link != blank %}</a>{% endif %}
+              {% endif %}
+            {% when 'heading' %}
+              {% if in_card %}
+                <div class="feature-card__heading rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+              {% endif %}
+            {% when 'text' %}
+              {% if in_card %}
+                <div class="feature-card__body rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+              {% endif %}
+            {% when 'button' %}
+              {% if in_card %}
+                {% capture _btn_style %}
+                  {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+                  {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+                  {% if block.settings.font_size != blank %}font-size: {{ block.settings.font_size }}px;{% endif %}
+                  {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+                  {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
+                  {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+                  {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+                {% endcapture %}
+                <a href="{{ block.settings.link | default: '#' }}"
+                   class="btn btn--{{ block.settings.style | default: 'text' }}"
+                   style="{{ _btn_style | strip_newlines }}"
+                   {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                   {{ block.fluid_attributes }}>
+                  {{ block.settings.text | escape }}
+                </a>
+              {% endif %}
+          {% endcase %}
+        {% endfor %}
+        {% if in_card %}{% if card_is_link %}</a>{% else %}</article>{% endif %}{% endif %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Feature Grid",
+  "tag": "section",
+  "class": "feature-grid-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Intro Alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "radio",
+      "id": "card_alignment",
+      "label": "Card Alignment",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Columns (tablet)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap (px)",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Container"
+    },
+    {
+      "type": "select",
+      "id": "container_max_width",
+      "label": "Max Width",
+      "default": "1280px",
+      "options": [
+        {
+          "value": "960px",
+          "label": "Narrow (960px)"
+        },
+        {
+          "value": "1280px",
+          "label": "Default (1280px)"
+        },
+        {
+          "value": "1440px",
+          "label": "Wide (1440px)"
+        },
+        {
+          "value": "100%",
+          "label": "Full (100%)"
+        }
+      ]
+    },
+    {
+      "type": "padding",
+      "id": "container_padding",
+      "label": "Container Padding",
+      "info": "Inner breathing room around content."
+    },
+    {
+      "type": "corner_radius",
+      "id": "container_border_radius",
+      "label": "Container Border Radius"
+    },
+    {
+      "type": "select",
+      "id": "container_background_color",
+      "label": "Container Background Color",
+      "options": "background_colors",
+      "default": "transparent"
+    },
+    {
+      "type": "image_picker",
+      "id": "container_background_image",
+      "label": "Container Background Image"
+    },
+    {
+      "type": "select",
+      "id": "container_overlay_color",
+      "label": "Container Overlay Color",
+      "options": "background_colors",
+      "default": "transparent"
+    },
+    {
+      "type": "range",
+      "id": "container_overlay_opacity",
+      "label": "Container Overlay Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "container_border_width",
+      "label": "Container Border Width",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "container_border_color",
+      "label": "Container Border Color",
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
+    },
+    {
+      "type": "header",
+      "content": "Section Shell"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "Background Color",
+      "options": "background_colors",
+      "default": "transparent"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image",
+      "info": "Optional. Covers the section background."
+    },
+    {
+      "type": "range",
+      "id": "section_border_width",
+      "label": "Section Border Width",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "section_border_color",
+      "label": "Section Border Color",
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow (intro)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">Why us</h5>"
+        }
+      ]
+    },
+    {
+      "type": "heading_intro",
+      "name": "Heading (intro)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">Everything you need, nothing you don't</h2>"
+        }
+      ]
+    },
+    {
+      "type": "subhead",
+      "name": "Subhead (intro)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">Short, punchy value propositions that explain why your product is different.</p>"
+        }
+      ]
+    },
+    {
+      "type": "feature_card",
+      "name": "New Card",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Link"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Optional. Makes the whole card clickable. Don't combine with nested Button blocks \u2014 pick one."
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Card Background"
+        },
+        {
+          "type": "select",
+          "id": "background_color",
+          "label": "Background Color",
+          "options": "background_colors",
+          "default": "transparent"
+        },
+        {
+          "type": "image_picker",
+          "id": "background_image",
+          "label": "Background Image",
+          "info": "Optional. Fills the card."
+        },
+        {
+          "type": "header",
+          "content": "Card Shape"
+        },
+        {
+          "type": "padding",
+          "id": "padding",
+          "label": "Padding"
+        },
+        {
+          "type": "range",
+          "id": "border_width",
+          "label": "Border Width",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "type": "select",
+          "id": "border_color",
+          "label": "Border Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "corner_radius",
+          "id": "border_radius",
+          "label": "Border Radius"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Alt Text",
+          "info": "Leave blank to use the image's own alt."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Sizing"
+        },
+        {
+          "type": "select",
+          "id": "aspect_ratio",
+          "label": "Aspect Ratio",
+          "default": "1/1",
+          "options": [
+            {
+              "value": "auto",
+              "label": "Auto (natural)"
+            },
+            {
+              "value": "1/1",
+              "label": "Square (1:1)"
+            },
+            {
+              "value": "4/3",
+              "label": "Standard (4:3)"
+            },
+            {
+              "value": "16/9",
+              "label": "Widescreen (16:9)"
+            },
+            {
+              "value": "3/2",
+              "label": "Classic (3:2)"
+            },
+            {
+              "value": "3/4",
+              "label": "Portrait (3:4)"
+            },
+            {
+              "value": "9/16",
+              "label": "Portrait mobile (9:16)"
+            },
+            {
+              "value": "21/9",
+              "label": "Ultrawide (21:9)"
+            }
+          ]
+        },
+        {
+          "type": "radio",
+          "id": "fit",
+          "label": "Fit",
+          "default": "contain",
+          "options": [
+            {
+              "value": "cover",
+              "label": "Cover"
+            },
+            {
+              "value": "contain",
+              "label": "Contain"
+            },
+            {
+              "value": "fill",
+              "label": "Fill"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "object_position",
+          "label": "Object Position",
+          "default": "center",
+          "options": [
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "type": "select",
+          "id": "overlay_color",
+          "label": "Overlay Color",
+          "options": "background_colors",
+          "default": "transparent"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Overlay Opacity",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "%"
+        },
+        {
+          "type": "header",
+          "content": "Shape"
+        },
+        {
+          "type": "range",
+          "id": "border_width",
+          "label": "Border Width",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "type": "select",
+          "id": "border_color",
+          "label": "Border Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "corner_radius",
+          "id": "border_radius",
+          "label": "Border Radius"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<h3 style=\"color: var(--clr-primary);\">Short benefit</h3>"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p style=\"color: var(--clr-body);\">One or two sentences describing the benefit in plain language.</p>"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "font_family",
+          "label": "Font Family",
+          "options": "font_families",
+          "default": "var(--ff-body)"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Style"
+        },
+        {
+          "type": "radio",
+          "id": "style",
+          "label": "Style",
+          "default": "text",
+          "options": [
+            {
+              "value": "filled",
+              "label": "Filled"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "text",
+              "label": "Text only"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "id": "font_size",
+          "label": "Font Size",
+          "min": 10,
+          "max": 32,
+          "step": 1,
+          "default": 14,
+          "unit": "px"
+        },
+        {
+          "type": "padding",
+          "id": "padding",
+          "label": "Padding"
+        },
+        {
+          "type": "select",
+          "id": "background_color",
+          "label": "Background Color",
+          "options": "background_colors",
+          "default": "transparent"
+        },
+        {
+          "type": "select",
+          "id": "text_color",
+          "label": "Text Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "header",
+          "content": "Shape"
+        },
+        {
+          "type": "range",
+          "id": "border_width",
+          "label": "Border Width",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "type": "select",
+          "id": "border_color",
+          "label": "Border Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        },
+        {
+          "type": "corner_radius",
+          "id": "border_radius",
+          "label": "Border Radius"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Feature Grid",
+      "blocks": [
+        {
+          "type": "eyebrow"
+        },
+        {
+          "type": "heading_intro"
+        },
+        {
+          "type": "subhead"
+        },
+        {
+          "type": "feature_card"
+        },
+        {
+          "type": "image",
+          "settings": {
+            "aspect_ratio": "1/1",
+            "fit": "contain"
+          }
+        },
+        {
+          "type": "heading",
+          "settings": {
+            "text": "<h3 style=\"color: var(--clr-primary);\">Fast shipping</h3>"
+          }
+        },
+        {
+          "type": "text",
+          "settings": {
+            "text": "<p style=\"color: var(--clr-body);\">Free 2-day delivery on all orders over $50, no strings attached.</p>"
+          }
+        },
+        {
+          "type": "feature_card"
+        },
+        {
+          "type": "image",
+          "settings": {
+            "aspect_ratio": "1/1",
+            "fit": "contain"
+          }
+        },
+        {
+          "type": "heading",
+          "settings": {
+            "text": "<h3 style=\"color: var(--clr-primary);\">30-day guarantee</h3>"
+          }
+        },
+        {
+          "type": "text",
+          "settings": {
+            "text": "<p style=\"color: var(--clr-body);\">If you don't love it, send it back for a full refund \u2014 no questions asked.</p>"
+          }
+        },
+        {
+          "type": "feature_card"
+        },
+        {
+          "type": "image",
+          "settings": {
+            "aspect_ratio": "1/1",
+            "fit": "contain"
+          }
+        },
+        {
+          "type": "heading",
+          "settings": {
+            "text": "<h3 style=\"color: var(--clr-primary);\">Made responsibly</h3>"
+          }
+        },
+        {
+          "type": "text",
+          "settings": {
+            "text": "<p style=\"color: var(--clr-body);\">Every product is sourced from partners we've personally vetted and trust.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -309,318 +309,491 @@
 
 {% schema %}
 {
-    "name": "Collection",
-    "tag": "section",
-    "class": "collection-section",
-    "enabled_on": {
-        "templates": ["collection_page"]
-    },
-    "settings": [
-        {
-            "type": "header",
-            "content": "Layout Settings"
-        },
-        {
-            "type": "color_background",
-            "id": "background_color",
-            "label": "Background Color",
-            "default": "transparent"
-        },
-        {
-            "type": "padding",
-            "id": "section_padding",
-            "label": "Section Padding"
-        },
-        {
-            "type": "corner_radius",
-            "id": "section_border_radius",
-            "label": "Section Border Radius",
-            "info": "Default 0px. Four corners, link/unlink."
-        }
-    ],
-    "blocks": [
-        {
-            "type": "section_header",
-            "name": "Section Header",
-            "limit": 1,
-            "settings": [
-                {
-                    "type": "checkbox",
-                    "id": "show_collection_title",
-                    "label": "Show Collection Title",
-                    "default": true
-                },
-                {
-                    "type": "select",
-                    "id": "title_heading_tag",
-                    "label": "Title Heading Tag",
-                    "options": [
-                        { "value": "h1", "label": "Heading 1" },
-                        { "value": "h2", "label": "Heading 2" },
-                        { "value": "h3", "label": "Heading 3" },
-                        { "value": "h4", "label": "Heading 4" },
-                        { "value": "h5", "label": "Heading 5" },
-                        { "value": "h6", "label": "Heading 6" }
-                    ],
-                    "default": "h2"
-                },
-                
-                {
-                    "type": "select",
-                    "id": "title_font_weight",
-                    "label": "Title Font Weight",
-                    "options": [
-                        { "value": "font-light", "label": "Light" },
-                        { "value": "font-normal", "label": "Normal" },
-                        { "value": "font-medium", "label": "Medium" },
-                        { "value": "font-semibold", "label": "Semi Bold" },
-                        { "value": "font-bold", "label": "Bold" },
-                        { "value": "font-extrabold", "label": "Extra Bold" }
-                    ],
-                    "default": "font-bold"
-                },
-                {
-                    "type": "color_background",
-                    "id": "title_color",
-                    "label": "Title Color",
-                    "default": "#000000"
-                },
-                {
-                    "type": "header",
-                    "content": "View All Button Settings"
-                },
-                {
-                    "type": "checkbox",
-                    "id": "show_view_all_button",
-                    "label": "Show View All Button",
-                    "default": true
-                },
-                {
-                    "type": "text",
-                    "id": "view_all_button_text",
-                    "label": "View All Button Text",
-                    "default": "View All"
-                },
-                {
-                    "type": "select",
-                    "id": "button_style",
-                    "label": "Button Style",
-                    "options": [
-                        { "value": "btn-border-primary", "label": "Primary Border" },
-                        { "value": "btn-bg-primary", "label": "Primary Background" },
-                        { "value": "btn-border-black", "label": "Black Border" },
-                        { "value": "btn-bg-black", "label": "Black Background" }
-                    ],
-                    "default": "btn-border-black"
-                },
-                {
-                    "type": "color_background",
-                    "id": "button_background_color",
-                    "label": "Button Background Color",
-                    "default": "transparent"
-                },
-                {
-                    "type": "color_background",
-                    "id": "button_text_color",
-                    "label": "Button Text Color",
-                    "default": "#000000"
-                },
-                {
-                    "type": "border",
-                    "id": "button_border",
-                    "label": "Button Border"
-                }
-            ]
-        },
-        {
-            "type": "product_carousel",
-            "name": "Product Carousel",
-            "limit": 1,
-            "settings": [
-                {
-                    "type": "range",
-                    "id": "products_limit",
-                    "min": 3,
-                    "max": 24,
-                    "step": 3,
-                    "label": "Number of Products to Show",
-                    "default": 6
-                },
-                {
-                    "type": "checkbox",
-                    "id": "show_product_variant",
-                    "label": "Show Product Variant",
-                    "default": true
-                },
-                {
-                    "type": "checkbox",
-                    "id": "hide_price",
-                    "label": "Hide Product Price",
-                    "default": false
-                },
-                {
-                    "type": "checkbox",
-                    "id": "show_carousel_arrows",
-                    "label": "Show Carousel Arrows",
-                    "default": true
-                },
-                {
-                    "type": "color_background",
-                    "id": "arrow_color",
-                    "label": "Arrow Color",
-                    "default": "#000000"
-                },
-                {
-                    "type": "range",
-                    "id": "arrow_size",
-                    "min": 24,
-                    "max": 48,
-                    "step": 4,
-                    "unit": "px",
-                    "label": "Arrow Size",
-                    "default": 48
-                },
-                {
-                    "type": "header",
-                    "content": "Product Title Typography"
-                },
-                {
-                    "type": "select",
-                    "id": "product_title_tag",
-                    "label": "Product Title Tag",
-                    "options": [
-                        { "value": "h2", "label": "Heading 2" },
-                        { "value": "h3", "label": "Heading 3" },
-                        { "value": "h4", "label": "Heading 4" },
-                        { "value": "h5", "label": "Heading 5" },
-                        { "value": "h6", "label": "Heading 6" }
-                    ],
-                    "default": "h5"
-                },
-                {
-                    "type": "select",
-                    "id": "product_title_font_weight",
-                    "label": "Product Title Font Weight",
-                    "options": [
-                        { "value": "font-light", "label": "Light" },
-                        { "value": "font-normal", "label": "Normal" },
-                        { "value": "font-medium", "label": "Medium" },
-                        { "value": "font-semibold", "label": "Semi Bold" },
-                        { "value": "font-bold", "label": "Bold" }
-                    ],
-                    "default": "font-semibold"
-                },
-                {
-                    "type": "color_background",
-                    "id": "product_title_color",
-                    "label": "Product Title Color",
-                    "default": "#000000"
-                },
-                {
-                    "type": "header",
-                    "content": "Product Variant Typography"
-                },
-                {
-                    "type": "select",
-                    "id": "product_variant_font_size",
-                    "label": "Product Variant Font Size (Mobile)",
-                    "options": [
-                        { "value": "text-xs", "label": "Extra Small" },
-                        { "value": "text-sm", "label": "Small" },
-                        { "value": "text-base", "label": "Base" },
-                        { "value": "text-lg", "label": "Large" }
-                    ],
-                    "default": "text-sm"
-                },
-                {
-                    "type": "select",
-                    "id": "product_variant_font_size_desktop",
-                    "label": "Product Variant Font Size (Desktop)",
-                    "options": [
-                        { "value": "sm-desktop-text-xs", "label": "Extra Small" },
-                        { "value": "sm-desktop-text-sm", "label": "Small" },
-                        { "value": "sm-desktop-text-base", "label": "Base" },
-                        { "value": "sm-desktop-text-lg", "label": "Large" }
-                    ],
-                    "default": "sm-desktop-text-sm"
-                },
-                {
-                    "type": "select",
-                    "id": "product_variant_font_weight",
-                    "label": "Product Variant Font Weight",
-                    "options": [
-                        { "value": "font-light", "label": "Light" },
-                        { "value": "font-normal", "label": "Normal" },
-                        { "value": "font-medium", "label": "Medium" },
-                        { "value": "font-semibold", "label": "Semi Bold" },
-                        { "value": "font-bold", "label": "Bold" }
-                    ],
-                    "default": "font-normal"
-                },
-                {
-                    "type": "color_background",
-                    "id": "product_variant_color",
-                    "label": "Product Variant Color",
-                    "default": "#666666"
-                },
-                {
-                    "type": "header",
-                    "content": "Product Price Typography"
-                },
-                {
-                    "type": "select",
-                    "id": "product_price_font_size",
-                    "label": "Product Price Font Size (Mobile)",
-                    "options": [
-                        { "value": "text-sm", "label": "Small" },
-                        { "value": "text-base", "label": "Base" },
-                        { "value": "text-lg", "label": "Large" },
-                        { "value": "text-xl", "label": "Extra Large" }
-                    ],
-                    "default": "text-lg"
-                },
-                {
-                    "type": "select",
-                    "id": "product_price_font_size_desktop",
-                    "label": "Product Price Font Size (Desktop)",
-                    "options": [
-                        { "value": "sm-desktop-text-sm", "label": "Small" },
-                        { "value": "sm-desktop-text-base", "label": "Base" },
-                        { "value": "sm-desktop-text-lg", "label": "Large" },
-                        { "value": "sm-desktop-text-xl", "label": "Extra Large" }
-                    ],
-                    "default": "sm-desktop-text-xl"
-                },
-                {
-                    "type": "select",
-                    "id": "product_price_font_weight",
-                    "label": "Product Price Font Weight",
-                    "options": [
-                        { "value": "font-light", "label": "Light" },
-                        { "value": "font-normal", "label": "Normal" },
-                        { "value": "font-medium", "label": "Medium" },
-                        { "value": "font-semibold", "label": "Semi Bold" },
-                        { "value": "font-bold", "label": "Bold" }
-                    ],
-                    "default": "font-bold"
-                },
-                {
-                    "type": "color_background",
-                    "id": "product_price_color",
-                    "label": "Product Price Color",
-                    "default": "#000000"
-                }
-            ]
-        }
-    ],
-    "presets": [
-        {
-            "name": "Collection",
-            "blocks": [
-                { "type": "section_header" },
-                { "type": "product_carousel" }
-            ]
-        }
+  "name": "Collection",
+  "tag": "section",
+  "class": "collection-section",
+  "enabled_on": {
+    "templates": [
+      "collection_page"
     ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "padding",
+      "id": "section_padding",
+      "label": "Section Padding"
+    },
+    {
+      "type": "corner_radius",
+      "id": "section_border_radius",
+      "label": "Section Border Radius",
+      "info": "Default 0px. Four corners, link/unlink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "section_header",
+      "name": "Section Header",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_collection_title",
+          "label": "Show Collection Title",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "title_heading_tag",
+          "label": "Title Heading Tag",
+          "options": [
+            {
+              "value": "h1",
+              "label": "Heading 1"
+            },
+            {
+              "value": "h2",
+              "label": "Heading 2"
+            },
+            {
+              "value": "h3",
+              "label": "Heading 3"
+            },
+            {
+              "value": "h4",
+              "label": "Heading 4"
+            },
+            {
+              "value": "h5",
+              "label": "Heading 5"
+            },
+            {
+              "value": "h6",
+              "label": "Heading 6"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "select",
+          "id": "title_font_weight",
+          "label": "Title Font Weight",
+          "options": [
+            {
+              "value": "font-light",
+              "label": "Light"
+            },
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            },
+            {
+              "value": "font-medium",
+              "label": "Medium"
+            },
+            {
+              "value": "font-semibold",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "font-bold",
+              "label": "Bold"
+            },
+            {
+              "value": "font-extrabold",
+              "label": "Extra Bold"
+            }
+          ],
+          "default": "font-bold"
+        },
+        {
+          "type": "color_background",
+          "id": "title_color",
+          "label": "Title Color",
+          "default": "#000000"
+        },
+        {
+          "type": "header",
+          "content": "View All Button Settings"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_view_all_button",
+          "label": "Show View All Button",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "view_all_button_text",
+          "label": "View All Button Text",
+          "default": "View All"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button Style",
+          "options": [
+            {
+              "value": "btn-border-primary",
+              "label": "Primary Border"
+            },
+            {
+              "value": "btn-bg-primary",
+              "label": "Primary Background"
+            },
+            {
+              "value": "btn-border-black",
+              "label": "Black Border"
+            },
+            {
+              "value": "btn-bg-black",
+              "label": "Black Background"
+            }
+          ],
+          "default": "btn-border-black"
+        },
+        {
+          "type": "color_background",
+          "id": "button_background_color",
+          "label": "Button Background Color",
+          "default": "transparent"
+        },
+        {
+          "type": "color_background",
+          "id": "button_text_color",
+          "label": "Button Text Color",
+          "default": "#000000"
+        },
+        {
+          "type": "range",
+          "id": "button_border_width",
+          "label": "Button Border Width",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "type": "select",
+          "id": "button_border_color",
+          "label": "Button Border Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
+        }
+      ]
+    },
+    {
+      "type": "product_carousel",
+      "name": "Product Carousel",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "range",
+          "id": "products_limit",
+          "min": 3,
+          "max": 24,
+          "step": 3,
+          "label": "Number of Products to Show",
+          "default": 6
+        },
+        {
+          "type": "checkbox",
+          "id": "show_product_variant",
+          "label": "Show Product Variant",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_price",
+          "label": "Hide Product Price",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_carousel_arrows",
+          "label": "Show Carousel Arrows",
+          "default": true
+        },
+        {
+          "type": "color_background",
+          "id": "arrow_color",
+          "label": "Arrow Color",
+          "default": "#000000"
+        },
+        {
+          "type": "range",
+          "id": "arrow_size",
+          "min": 24,
+          "max": 48,
+          "step": 4,
+          "unit": "px",
+          "label": "Arrow Size",
+          "default": 48
+        },
+        {
+          "type": "header",
+          "content": "Product Title Typography"
+        },
+        {
+          "type": "select",
+          "id": "product_title_tag",
+          "label": "Product Title Tag",
+          "options": [
+            {
+              "value": "h2",
+              "label": "Heading 2"
+            },
+            {
+              "value": "h3",
+              "label": "Heading 3"
+            },
+            {
+              "value": "h4",
+              "label": "Heading 4"
+            },
+            {
+              "value": "h5",
+              "label": "Heading 5"
+            },
+            {
+              "value": "h6",
+              "label": "Heading 6"
+            }
+          ],
+          "default": "h5"
+        },
+        {
+          "type": "select",
+          "id": "product_title_font_weight",
+          "label": "Product Title Font Weight",
+          "options": [
+            {
+              "value": "font-light",
+              "label": "Light"
+            },
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            },
+            {
+              "value": "font-medium",
+              "label": "Medium"
+            },
+            {
+              "value": "font-semibold",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "font-bold",
+              "label": "Bold"
+            }
+          ],
+          "default": "font-semibold"
+        },
+        {
+          "type": "color_background",
+          "id": "product_title_color",
+          "label": "Product Title Color",
+          "default": "#000000"
+        },
+        {
+          "type": "header",
+          "content": "Product Variant Typography"
+        },
+        {
+          "type": "select",
+          "id": "product_variant_font_size",
+          "label": "Product Variant Font Size (Mobile)",
+          "options": [
+            {
+              "value": "text-xs",
+              "label": "Extra Small"
+            },
+            {
+              "value": "text-sm",
+              "label": "Small"
+            },
+            {
+              "value": "text-base",
+              "label": "Base"
+            },
+            {
+              "value": "text-lg",
+              "label": "Large"
+            }
+          ],
+          "default": "text-sm"
+        },
+        {
+          "type": "select",
+          "id": "product_variant_font_size_desktop",
+          "label": "Product Variant Font Size (Desktop)",
+          "options": [
+            {
+              "value": "sm-desktop-text-xs",
+              "label": "Extra Small"
+            },
+            {
+              "value": "sm-desktop-text-sm",
+              "label": "Small"
+            },
+            {
+              "value": "sm-desktop-text-base",
+              "label": "Base"
+            },
+            {
+              "value": "sm-desktop-text-lg",
+              "label": "Large"
+            }
+          ],
+          "default": "sm-desktop-text-sm"
+        },
+        {
+          "type": "select",
+          "id": "product_variant_font_weight",
+          "label": "Product Variant Font Weight",
+          "options": [
+            {
+              "value": "font-light",
+              "label": "Light"
+            },
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            },
+            {
+              "value": "font-medium",
+              "label": "Medium"
+            },
+            {
+              "value": "font-semibold",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "font-bold",
+              "label": "Bold"
+            }
+          ],
+          "default": "font-normal"
+        },
+        {
+          "type": "color_background",
+          "id": "product_variant_color",
+          "label": "Product Variant Color",
+          "default": "#666666"
+        },
+        {
+          "type": "header",
+          "content": "Product Price Typography"
+        },
+        {
+          "type": "select",
+          "id": "product_price_font_size",
+          "label": "Product Price Font Size (Mobile)",
+          "options": [
+            {
+              "value": "text-sm",
+              "label": "Small"
+            },
+            {
+              "value": "text-base",
+              "label": "Base"
+            },
+            {
+              "value": "text-lg",
+              "label": "Large"
+            },
+            {
+              "value": "text-xl",
+              "label": "Extra Large"
+            }
+          ],
+          "default": "text-lg"
+        },
+        {
+          "type": "select",
+          "id": "product_price_font_size_desktop",
+          "label": "Product Price Font Size (Desktop)",
+          "options": [
+            {
+              "value": "sm-desktop-text-sm",
+              "label": "Small"
+            },
+            {
+              "value": "sm-desktop-text-base",
+              "label": "Base"
+            },
+            {
+              "value": "sm-desktop-text-lg",
+              "label": "Large"
+            },
+            {
+              "value": "sm-desktop-text-xl",
+              "label": "Extra Large"
+            }
+          ],
+          "default": "sm-desktop-text-xl"
+        },
+        {
+          "type": "select",
+          "id": "product_price_font_weight",
+          "label": "Product Price Font Weight",
+          "options": [
+            {
+              "value": "font-light",
+              "label": "Light"
+            },
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            },
+            {
+              "value": "font-medium",
+              "label": "Medium"
+            },
+            {
+              "value": "font-semibold",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "font-bold",
+              "label": "Bold"
+            }
+          ],
+          "default": "font-bold"
+        },
+        {
+          "type": "color_background",
+          "id": "product_price_color",
+          "label": "Product Price Color",
+          "default": "#000000"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection",
+      "blocks": [
+        {
+          "type": "section_header"
+        },
+        {
+          "type": "product_carousel"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

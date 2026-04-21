@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 2.1.0
+  version: 3.0.0
 ---
 
 # Fluid Theme Clone
@@ -255,17 +255,35 @@ Use `asset.default_variant_url` from the response. For batch uploads, see [refer
 ## Phase 4: Build Sections
 
 ### Naming convention
+
+Prefer canonical names from the section library above (e.g. `sections/feature_grid/`, `sections/testimonial_grid/`). Use a canonical section whenever one fits — don't recreate a slightly different version of the same pattern.
+
+If the source site truly has a section that doesn't match any canonical pattern, use snake_case with no prefix:
+
 ```
-sections/exact-<SITE_PREFIX>-<section-name>/index.liquid
+sections/<descriptive_name>/index.liquid
 ```
+
+Do NOT use `exact-<site-prefix>-*` — the old convention created cruft (banner1, feature2-8, cta_banner3-5) that had to be purged later.
 
 ### Gold Standard Section Architecture
 
 Every section MUST follow these rules. Violating any of them breaks the Fluid visual editor.
 
+#### Section Shell + Container pattern (required)
+
+Every custom section ships with **15 layout settings** in its schema — split into two groups:
+
+- **Section Shell (6)** — outer colored box: `section_padding`, `section_border_radius`, `background_color`, `background_image`, `section_border_width`, `section_border_color`
+- **Container (9)** — inner content frame: `container_max_width`, `container_padding`, `container_border_radius`, `container_background_color`, `container_background_image`, `container_overlay_color`, `container_overlay_opacity`, `container_border_width`, `container_border_color`
+
+All color settings are `select + options: "background_colors"`. All border widths are `range 0-10 px`. Split border controls (width + color) because Fluid's native `border` type uses a hex color picker that breaks the theme-driven color rule.
+
+See [fluid-theme-refine](../fluid-theme-refine/SKILL.md#section-shell-pattern--enforce-on-every-custom-section) for the full CSS wire-up template — every canonical section in the base theme implements it verbatim.
+
 #### Content = Blocks, Layout = Settings
 
-- **Section settings** are for layout ONLY: `padding` (native type), `corner_radius` (native type), `background_color` (select with `"options": "background_colors"`)
+- **Section settings** are for layout ONLY: Section Shell + Container above
 - **Blocks** are for ALL content: headings, paragraphs, images, buttons, cards, etc.
 - Every piece of visible text is a block — never a section setting
 
@@ -390,14 +408,18 @@ All sections use 1280px max-width with theme variable horizontal padding:
 
 Standardized breakpoints: `991px` (tablet), `767px` (mobile). Never use 749px, 768px, or 1023px.
 
-#### Images — Dual Picker Pattern
+#### Images — always through `blocks/image`
 
-Use BOTH `image_picker` and `url` for backwards compatibility:
+Never use a local `image_picker` inside a section schema. All user-uploaded images come through the canonical `blocks/image` block, which provides consistent aspect ratio, fit, object position, overlay, border, and border-radius controls across every section.
+
+When a section needs an image, inline the canonical image block settings into the section's `blocks` array:
 ```json
-{ "type": "image_picker", "id": "image", "label": "Image (Upload)" },
-{ "type": "url", "id": "image_url", "label": "Image URL", "info": "Alternative: paste URL directly" }
+{ "type": "image", "name": "Image", "settings": [ /* full canonical image settings */ ] }
 ```
-Render: `<img src="{{ block.settings.image_url | default: block.settings.image }}">`
+
+Data-driven images (product.images, post.image) are the exception — those use `| image_url` directly in the section Liquid, since the user isn't picking them.
+
+For Fluid Media (video / UGC), use `blocks/fluid_media` — and handle both shapes the `media_picker` returns (Fluid Media object with `fluid_media_id` vs plain image upload). See [fluid-theme-refine](../fluid-theme-refine/SKILL.md#media_picker-returns-two-shapes--fall-back-to--image_url) for the fallback pattern.
 
 #### Dynamic Product Data — Never Static Blocks
 
@@ -417,6 +439,40 @@ Static product blocks disappear on editor save. Dynamic data never does.
 Read [references/section-template.md](references/section-template.md) for the full section boilerplate.
 Read [references/schema-settings-reference.md](references/schema-settings-reference.md) for all setting types.
 Read [references/css-js-patterns.md](references/css-js-patterns.md) for CSS/JS patterns.
+
+### Canonical blocks
+
+The base theme ships with a small number of **canonical block files** in `base-theme/blocks/`. Any section that needs one of these concepts MUST accept the canonical block (inline the settings into the section schema) instead of defining a local variant:
+
+- `blocks/image` — user-uploaded image with aspect ratio, fit, object position, overlay, border, corner radius
+- `blocks/button` — 10 settings: text, link, font_family (select → font_families), open_new_tab, style (filled/outline/text), font_size, padding, background_color, text_color, border_width/color, border_radius
+- `blocks/fluid_media` — `<fluid-media-widget>` wrapper with embed_type (auto/inline/popover/modal), aspect ratio, placeholder fallback to `| image_url` for non-Fluid assets
+- `blocks/schema_entry` — reference card used by the schema-reference page
+
+**Rule:** `image_picker` only lives on `blocks/image` (and data-driven wrappers like `blocks/post_image`). `font_picker` only lives on `config/settings_schema.json`. Never in section settings.
+
+### Canonical section library
+
+The base theme ships a standard library of award-winning ecommerce sections. Compose home pages from these — do not rebuild from scratch:
+
+| Section | Purpose |
+|---|---|
+| `image_text_split`   | Hero / story — 50/50 with flip, accepts canonical image + heading + text + button blocks |
+| `logo_bar`           | Press / partner logos grid, canonical image blocks |
+| `feature_grid`       | Benefits grid — divider + canonical image + heading + text + button (one card per divider) |
+| `featured_products`  | Collection-driven product grid (collection picker + products_to_show range) |
+| `stats_bar`          | Numbers row (prefix/value/suffix/label per stat block) |
+| `cta_banner_v2`      | Final full-width CTA |
+| `faq_accordion`      | Native `<details>`/`<summary>` with bordered or card style |
+| `rich_content`       | Flexible single-column composer (eyebrow/heading/text/image/fluid_media/button) |
+| `ugc_carousel`       | Scroll-snap carousel of fluid_media blocks with UGC defaults (9:16, popover embed) |
+| `comparison_table`   | Us-vs-Them table with check/X/text per row, "Recommended" badge |
+| `testimonial_grid`   | Masonry or grid with divider-block testimonial cards (rating + image + quote + author sub-blocks) |
+| `before_after`       | Drag slider with configurable initial position, labels, aspect ratio |
+| `process_steps`      | Horizontal or vertical steps with divider + number + image + heading + text sub-blocks, connector line |
+| `collection_tiles`   | Shop-by-category tiles with hover zoom, overlay gradient, CTA chip, auto-fills from Fluid collection |
+
+All 14 use the Section Shell (6) + Container (9) pattern and reference `background_colors` / `font_families` option groups exclusively.
 
 ### The Compare -> Code -> Preview -> Refine Loop
 
@@ -564,17 +620,30 @@ Before building sections, set up the theme's design tokens so sections can refer
 
 ### settings_data.json — Set the source site's design tokens
 
-Extract fonts and colors from the source site and set them as current values:
+The base theme defines a **12-color palette** and a **5-font palette**. Extract the source site's tokens and map them in:
 
 ```json
 {
   "current": {
-    "color_primary": "#023026",
-    "color_secondary": "#023026",
-    "color_accent": "#fc6f39",
-    "color_cream": "#FAF8F1",
-    "font_family_body": "Inter",
-    "font_family_heading": "Spartan",
+    "color_primary":   "#023026",
+    "color_secondary": "#1F2937",
+    "color_accent":    "#fc6f39",
+    "color_white":     "#FFFFFF",
+    "color_light":     "#FAF8F1",
+    "color_gray":      "#F2F2F2",
+    "color_muted":     "#9CA3AF",
+    "color_dark":      "#111827",
+    "color_black":     "#000000",
+    "color_body":      "#1F2937",
+    "color_success":   "#10B981",
+    "color_warning":   "#F59E0B",
+
+    "font_family_body":        "Inter",
+    "font_family_heading":     "Spartan",
+    "font_family_accent":      "Inter",
+    "font_family_italic":      "Playfair Display",
+    "font_family_handwriting": "Caveat",
+
     "font_size_h1": 60,
     "font_size_h2": 48,
     "font_size_h3": 32
@@ -582,34 +651,73 @@ Extract fonts and colors from the source site and set them as current values:
 }
 ```
 
-### settings_schema.json — Add option_groups for color dropdowns
+### settings_schema.json — option_groups drive every section dropdown
 
-Every color setting needs an `option_group` so sections can reference them in select dropdowns:
+Every color and font setting needs an `option_group` so sections can reference them in select dropdowns.
+
+**Colors — 12 entries, all `option_group: { id: "background_colors", … }`:**
 
 ```json
-{
-  "type": "color_background",
-  "id": "color_primary",
-  "label": "Primary Color",
-  "default": "#023026",
-  "option_group": { "id": "background_colors", "label": "Primary", "value": "var(--clr-primary)" }
-}
+{ "type": "color_background", "id": "color_primary",   "label": "Primary",
+  "default": "#000000",
+  "option_group": { "id": "background_colors", "label": "Primary",   "value": "var(--clr-primary)" } },
+{ "type": "color_background", "id": "color_secondary", "label": "Secondary",
+  "default": "#1F2937",
+  "option_group": { "id": "background_colors", "label": "Secondary", "value": "var(--clr-secondary)" } },
+{ "type": "color_background", "id": "color_accent",    "label": "Accent",
+  "default": "#FF5722",
+  "option_group": { "id": "background_colors", "label": "Accent",    "value": "var(--clr-accent)" } },
+/* then: white, light, gray, muted, dark, black, body, success, warning — same pattern */
 ```
 
-Without the `option_group`, any section setting with `"options": "background_colors"` will show an empty dropdown.
+**Fonts — 5 entries, all `option_group: { id: "font_families", … }`:**
+
+```json
+{ "type": "font_picker", "id": "font_family_body",        "default": "Roboto",
+  "label": "Body Font",
+  "option_group": { "id": "font_families", "label": "Body",        "value": "var(--ff-body)" } },
+{ "type": "font_picker", "id": "font_family_heading",     "default": "Roboto",
+  "label": "Heading Font",
+  "option_group": { "id": "font_families", "label": "Heading",     "value": "var(--ff-heading)" } },
+{ "type": "font_picker", "id": "font_family_accent",      "default": "Roboto",
+  "label": "Accent Font",
+  "option_group": { "id": "font_families", "label": "Accent",      "value": "var(--ff-accent)" } },
+{ "type": "font_picker", "id": "font_family_italic",      "default": "Playfair Display",
+  "label": "Italic / Serif Font",
+  "option_group": { "id": "font_families", "label": "Italic",      "value": "var(--ff-italic)" } },
+{ "type": "font_picker", "id": "font_family_handwriting", "default": "Caveat",
+  "label": "Handwriting Font",
+  "option_group": { "id": "font_families", "label": "Handwriting", "value": "var(--ff-handwriting)" } }
+```
+
+Without the `option_group`, any section setting with `"options": "background_colors"` or `"options": "font_families"` shows an empty dropdown.
 
 ### theme.liquid — Wire CSS variables
 
-Add all color and spacing variables to `:root` in the `{% style %}` block:
+Add all 12 colors and 5 fonts to `:root` in the `{% style %}` block:
 
 ```liquid
---clr-primary: {{ settings.color_primary | default: '#023026' }};
---clr-accent: {{ settings.color_accent | default: '#fc6f39' }};
---clr-cream: {{ settings.color_cream | default: '#FAF8F1' }};
---clr-heading: {{ settings.color_primary | default: '#023026' }};
+--clr-primary:   {{ settings.color_primary }};
+--clr-secondary: {{ settings.color_secondary }};
+--clr-accent:    {{ settings.color_accent   | default: '#FF5722' }};
+--clr-white:     {{ settings.color_white    | default: '#FFFFFF' }};
+--clr-light:     {{ settings.color_light    | default: '#FAFAFA' }};
+--clr-gray:      {{ settings.color_gray     | default: '#F2F2F2' }};
+--clr-muted:     {{ settings.color_muted    | default: '#9CA3AF' }};
+--clr-dark:      {{ settings.color_dark     | default: '#111827' }};
+--clr-black:     {{ settings.color_black    | default: '#000000' }};
+--clr-body:      {{ settings.color_body     | default: '#1F2937' }};
+--clr-success:   {{ settings.color_success  | default: '#10B981' }};
+--clr-warning:   {{ settings.color_warning  | default: '#F59E0B' }};
+
+--ff-body:        {{ settings.font_family_body        | font_family | default: "system-ui, sans-serif" }};
+--ff-heading:     {{ settings.font_family_heading     | font_family | default: "system-ui, sans-serif" }};
+--ff-accent:      {{ settings.font_family_accent      | font_family | default: "system-ui, sans-serif" }};
+--ff-italic:      {{ settings.font_family_italic      | font_family | default: "'Playfair Display', Georgia, serif" }};
+--ff-handwriting: {{ settings.font_family_handwriting | font_family | default: "'Caveat', cursive" }};
 ```
 
-Sections reference these as `var(--clr-primary)` — the theme config is the single source of truth.
+Sections reference these as `var(--clr-primary)` / `var(--ff-heading)` — theme config is the single source of truth.
 
 ---
 
@@ -717,5 +825,6 @@ When you update [references/schema-settings-reference.md](references/schema-sett
 
 ## Related Skills
 
+- [fluid-theme-refine](../fluid-theme-refine/SKILL.md) — Pixel-perfect QA pass after clone. Canonical source of truth for Section Shell + Container patterns, divider-block pattern, canonical block primacy, media_picker fallback, and template-destroy preset refresh workflow.
 - [fluid-product-admin-import](../fluid-product-admin-import/SKILL.md) — For importing products, categories, and admin settings (run before theme clone)
 - [fluid-onboarding-prefill](../fluid-onboarding-prefill/SKILL.md) — For pre-filling KYC/onboarding forms

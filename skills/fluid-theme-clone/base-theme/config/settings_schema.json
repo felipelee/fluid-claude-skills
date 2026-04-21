@@ -10,7 +10,8 @@
         "type": "font_picker",
         "id": "font_family_body",
         "default": "Roboto",
-        "label": "Body Font"
+        "label": "Body Font",
+        "option_group": { "id": "font_families", "label": "Body", "value": "var(--ff-body)" }
       },
       {
         "type": "header",
@@ -20,7 +21,36 @@
         "type": "font_picker",
         "id": "font_family_heading",
         "default": "Roboto",
-        "label": "Heading Font"
+        "label": "Heading Font",
+        "option_group": { "id": "font_families", "label": "Heading", "value": "var(--ff-heading)" }
+      },
+      {
+        "type": "header",
+        "content": "Accent Typography"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_family_accent",
+        "default": "Roboto",
+        "label": "Accent Font",
+        "info": "Secondary display font \u2014 use for large numbers, hero lines, or eyebrow text.",
+        "option_group": { "id": "font_families", "label": "Accent", "value": "var(--ff-accent)" }
+      },
+      {
+        "type": "font_picker",
+        "id": "font_family_italic",
+        "default": "Playfair Display",
+        "label": "Italic / Serif Font",
+        "info": "For pull-quotes, editorial emphasis, or elegant serif headings.",
+        "option_group": { "id": "font_families", "label": "Italic", "value": "var(--ff-italic)" }
+      },
+      {
+        "type": "font_picker",
+        "id": "font_family_handwriting",
+        "default": "Caveat",
+        "label": "Handwriting Font",
+        "info": "For signatures, casual accents, or personal / UGC touches.",
+        "option_group": { "id": "font_families", "label": "Handwriting", "value": "var(--ff-handwriting)" }
       },
       {
         "type": "header",
@@ -288,47 +318,104 @@
   {
     "name": "color_schema",
     "settings": [
+      { "type": "header", "content": "Brand" },
       {
         "type": "color_background",
         "id": "color_primary",
-        "label": "Primary Color",
+        "label": "Primary",
         "default": "#000000",
         "option_group": { "id": "background_colors", "label": "Primary",   "value": "var(--clr-primary)" }
       },
       {
         "type": "color_background",
         "id": "color_secondary",
-        "label": "Secondary Color",
-        "default": "#000000",
+        "label": "Secondary",
+        "default": "#1F2937",
         "option_group": { "id": "background_colors", "label": "Secondary", "value": "var(--clr-secondary)" }
       },
       {
         "type": "color_background",
+        "id": "color_accent",
+        "label": "Accent",
+        "default": "#FF5722",
+        "info": "Tertiary highlight \u2014 sale badges, CTAs, notifications.",
+        "option_group": { "id": "background_colors", "label": "Accent",    "value": "var(--clr-accent)" }
+      },
+
+      { "type": "header", "content": "Neutrals" },
+      {
+        "type": "color_background",
         "id": "color_white",
-        "label": "White Color",
-        "default": "#ffffff",
+        "label": "White",
+        "default": "#FFFFFF",
         "option_group": { "id": "background_colors", "label": "White",     "value": "var(--clr-white)" }
       },
       {
         "type": "color_background",
+        "id": "color_light",
+        "label": "Light",
+        "default": "#FAFAFA",
+        "info": "Off-white surfaces, subtle backgrounds.",
+        "option_group": { "id": "background_colors", "label": "Light",     "value": "var(--clr-light)" }
+      },
+      {
+        "type": "color_background",
         "id": "color_gray",
-        "label": "Gray Color",
-        "default": "#f2f2f2",
+        "label": "Gray",
+        "default": "#F2F2F2",
+        "info": "Borders, dividers, light fills.",
         "option_group": { "id": "background_colors", "label": "Gray",      "value": "var(--clr-gray)" }
       },
       {
         "type": "color_background",
-        "id": "color_black",
-        "label": "Color Black",
-        "default": "#000000",
-        "option_group": { "id": "background_colors", "label": "Black",     "value": "var(--clr-black)" }
+        "id": "color_muted",
+        "label": "Muted",
+        "default": "#9CA3AF",
+        "info": "Muted text, placeholder copy, disabled states.",
+        "option_group": { "id": "background_colors", "label": "Muted",     "value": "var(--clr-muted)" }
       },
       {
         "type": "color_background",
-        "id": "color_body",
-        "label": "Body Color",
+        "id": "color_dark",
+        "label": "Dark",
+        "default": "#111827",
+        "info": "Dark surfaces, hero backgrounds.",
+        "option_group": { "id": "background_colors", "label": "Dark",      "value": "var(--clr-dark)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_black",
+        "label": "Black",
         "default": "#000000",
+        "option_group": { "id": "background_colors", "label": "Black",     "value": "var(--clr-black)" }
+      },
+
+      { "type": "header", "content": "Text" },
+      {
+        "type": "color_background",
+        "id": "color_body",
+        "label": "Body",
+        "default": "#1F2937",
+        "info": "Default paragraph / body copy color.",
         "option_group": { "id": "background_colors", "label": "Body",      "value": "var(--clr-body)" }
+      },
+
+      { "type": "header", "content": "Status" },
+      {
+        "type": "color_background",
+        "id": "color_success",
+        "label": "Success",
+        "default": "#10B981",
+        "info": "Confirmation, in-stock, positive states.",
+        "option_group": { "id": "background_colors", "label": "Success",   "value": "var(--clr-success)" }
+      },
+      {
+        "type": "color_background",
+        "id": "color_warning",
+        "label": "Warning",
+        "default": "#F59E0B",
+        "info": "Low-stock, attention, caution states.",
+        "option_group": { "id": "background_colors", "label": "Warning",   "value": "var(--clr-warning)" }
       }
     ]
   },

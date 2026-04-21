@@ -4,7 +4,7 @@
     {{ content_for_header }}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css"/>
@@ -15,6 +15,9 @@
     {% style %}
       {{ settings.font_family_body | font_face: font_display: 'swap' }}
       {{ settings.font_family_heading | font_face: font_display: 'swap' }}
+      {{ settings.font_family_accent | font_face: font_display: 'swap' }}
+      {{ settings.font_family_italic | font_face: font_display: 'swap' }}
+      {{ settings.font_family_handwriting | font_face: font_display: 'swap' }}
       {%- comment -%} §6a: Auto-calculate tablet (×0.80) and mobile (×0.65) font sizes {%- endcomment -%}
       {%- assign h1_tablet = settings.font_size_h1 | times: 0.80 | round -%}
       {%- assign h1_mobile = settings.font_size_h1 | times: 0.65 | round -%}
@@ -36,6 +39,9 @@
       :root {
         --ff-body: {{ settings.font_family_body | font_family | default: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }};
         --ff-heading: {{ settings.font_family_heading | font_family | default: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }};
+        --ff-accent: {{ settings.font_family_accent | font_family | default: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }};
+        --ff-italic: {{ settings.font_family_italic | font_family | default: "'Playfair Display', Georgia, 'Times New Roman', serif" }};
+        --ff-handwriting: {{ settings.font_family_handwriting | font_family | default: "'Caveat', 'Brush Script MT', cursive" }};
         --fw-body: {{ settings.font_weight_400 }};
 
         /* §6a: Desktop font sizes (base) */
@@ -93,12 +99,18 @@
         --text-4xl: {{ settings.text_4xl | append: 'px' }};
         --text-5xl: {{ settings.text_5xl | append: 'px' }};
 
-        --clr-primary: {{ settings.color_primary }};
+        --clr-primary:   {{ settings.color_primary }};
         --clr-secondary: {{ settings.color_secondary }};
-        --clr-white: {{ settings.color_white | default: '#fff'}};
-        --clr-gray: {{ settings.color_gray }};
-        --clr-body: {{ settings.color_body }};
-        --clr-black: {{ settings.color_black | default: '#000000'}};
+        --clr-accent:    {{ settings.color_accent   | default: '#FF5722' }};
+        --clr-white:     {{ settings.color_white    | default: '#FFFFFF' }};
+        --clr-light:     {{ settings.color_light    | default: '#FAFAFA' }};
+        --clr-gray:      {{ settings.color_gray     | default: '#F2F2F2' }};
+        --clr-muted:     {{ settings.color_muted    | default: '#9CA3AF' }};
+        --clr-dark:      {{ settings.color_dark     | default: '#111827' }};
+        --clr-black:     {{ settings.color_black    | default: '#000000' }};
+        --clr-body:      {{ settings.color_body     | default: '#1F2937' }};
+        --clr-success:   {{ settings.color_success  | default: '#10B981' }};
+        --clr-warning:   {{ settings.color_warning  | default: '#F59E0B' }};
 
         /* §4: Default page background */
         --page-bg: {{ settings.default_page_background | default: '#ffffff' }};

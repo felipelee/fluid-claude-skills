@@ -1,0 +1,150 @@
+{% comment %}
+  Canonical Fluid Media block — Fluid base theme pattern.
+
+  Wraps the <fluid-media-widget> web component with theme-compliant controls.
+  Use anywhere you want to embed a video or other media asset from the Fluid DAM.
+
+  Eight settings, 3 groups:
+    Media:
+      1. media          — media picker (returns .fluid_media_id + .embed_type + .url)
+      2. embed_type     — select: Let media default | inline | popover | modal
+      3. responsive     — checkbox, default true → responsive="true" on the widget
+    Layout:
+      4. aspect_ratio   — select (auto, 16/9, 1/1, 4/3, 4/5, 9/16, 21/9)
+                         Only enforced when embed_type = inline.
+    Shape:
+      5. background_color — select → background_colors (wrapper bg while loading)
+      6. border_width   — range, 0–10 px
+      7. border_color   — select → background_colors
+      8. border_radius  — corner_radius
+
+  Output:
+    <div class="fluid-media">
+      <fluid-media-widget media-id="…" responsive="true" embed-type="…" data-fluid-widget="true">
+    </div>
+{% endcomment %}
+
+{%- assign _m = block.settings.media -%}
+{%- assign _fmid = _m.fluid_media_id -%}
+{%- assign _img_url = '' -%}
+{%- if _fmid == blank and _m -%}
+  {%- assign _img_url = _m | image_url -%}
+  {%- if _img_url == blank -%}{%- assign _img_url = _m.src | default: _m.url -%}{%- endif -%}
+{%- endif -%}
+
+{%- assign _embed_override = block.settings.embed_type -%}
+{%- if _embed_override == 'auto' -%}
+  {%- assign _embed = _m.embed_type | default: 'inline' -%}
+{%- else -%}
+  {%- assign _embed = _embed_override | default: 'inline' -%}
+{%- endif -%}
+
+{%- assign _ar = block.settings.aspect_ratio | default: 'auto' -%}
+
+{%- capture _wrap_style -%}
+  {%- if _ar != 'auto' and _embed == 'inline' -%}aspect-ratio: {{ _ar }};{%- endif -%}
+  background-color: {{ block.settings.background_color | default: 'transparent' }};
+  {%- assign br = block.settings.border_radius -%}
+  {%- if br -%}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{%- endif -%}
+  {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+{%- endcapture -%}
+
+<div class="fluid-media" style="{{ _wrap_style | strip_newlines }}" {{ block.fluid_attributes }}>
+  {%- if _fmid != blank -%}
+    <fluid-media-widget
+      media-id="{{ _fmid }}"
+      responsive="{% if block.settings.responsive %}true{% else %}false{% endif %}"
+      embed-type="{{ _embed }}"
+      data-fluid-widget="true"></fluid-media-widget>
+  {%- elsif _img_url != blank -%}
+    <img src="{{ _img_url }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+  {%- else -%}
+    <div class="media-wrap__placeholder" style="min-height: 240px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="5" width="18" height="14" rx="2"/>
+        <path d="M10 9l5 3-5 3z" fill="currentColor"/>
+      </svg>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Fluid Media",
+  "settings": [
+    { "type": "header", "content": "Media" },
+    {
+      "type": "media_picker",
+      "id": "media",
+      "label": "Media",
+      "info": "Pick from your Fluid media library. Embeds via <fluid-media-widget>."
+    },
+    {
+      "type": "select",
+      "id": "embed_type",
+      "label": "Embed Type",
+      "default": "auto",
+      "info": "How the media renders on the page.",
+      "options": [
+        { "value": "auto",    "label": "Use media's default" },
+        { "value": "inline",  "label": "Inline (plays in place)" },
+        { "value": "popover", "label": "Popover (opens in overlay)" },
+        { "value": "modal",   "label": "Modal (full-screen)" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "responsive",
+      "label": "Responsive",
+      "default": true,
+      "info": "Widget resizes to its container."
+    },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Aspect Ratio",
+      "default": "16/9",
+      "info": "Only applied when Embed Type is Inline.",
+      "options": [
+        { "value": "auto", "label": "Auto (media's natural)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" },
+        { "value": "9/16", "label": "Portrait mobile (9:16)" },
+        { "value": "21/9", "label": "Ultrawide (21:9)" }
+      ]
+    },
+
+    { "type": "header", "content": "Shape" },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "Background Color",
+      "options": "background_colors",
+      "default": "transparent",
+      "info": "Shows while the widget is loading."
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Border Width",
+      "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "Border Color",
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
+    },
+    {
+      "type": "corner_radius",
+      "id": "border_radius",
+      "label": "Border Radius"
+    }
+  ]
+}
+{% endschema %}

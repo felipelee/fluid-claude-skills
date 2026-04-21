@@ -1,0 +1,422 @@
+{%- style -%}
+  .ps.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .ps.section-{{ section.id }} .ps__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .ps.section-{{ section.id }} .ps__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .ps.section-{{ section.id }} .ps__container > * { position: relative; }
+  @media (max-width: 991px) { .ps.section-{{ section.id }} .ps__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .ps.section-{{ section.id }} .ps__container { padding-left: 16px; padding-right: 16px; } }
+
+  .ps.section-{{ section.id }} .ps__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 64px; max-width: 720px;{%- else -%}margin-bottom: 64px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  {%- assign dir = section.settings.direction | default: 'horizontal' -%}
+
+  .ps.section-{{ section.id }} .ps__steps {
+    display: grid;
+    position: relative;
+    {% if dir == 'horizontal' %}
+      grid-template-columns: repeat({{ section.settings.columns_desktop | default: 4 }}, minmax(0, 1fr));
+      gap: {{ section.settings.gap | default: 40 }}px;
+    {% else %}
+      grid-template-columns: 1fr;
+      gap: {{ section.settings.gap | default: 40 }}px;
+      max-width: 760px; margin: 0 auto;
+    {% endif %}
+  }
+  @media (max-width: 991px) {
+    .ps.section-{{ section.id }} .ps__steps {
+      {% if dir == 'horizontal' %}grid-template-columns: repeat(2, minmax(0, 1fr));{% endif %}
+    }
+  }
+  @media (max-width: 767px) {
+    .ps.section-{{ section.id }} .ps__steps { grid-template-columns: 1fr; gap: 32px; }
+  }
+
+  .ps.section-{{ section.id }} .ps__step {
+    position: relative;
+    display: flex;
+    {% if dir == 'horizontal' %}
+      flex-direction: column;
+      text-align: {{ section.settings.step_alignment | default: 'center' }};
+      align-items: {% if section.settings.step_alignment == 'center' %}center{% elsif section.settings.step_alignment == 'right' %}flex-end{% else %}flex-start{% endif %};
+    {% else %}
+      flex-direction: row;
+      text-align: left;
+      align-items: flex-start;
+      gap: 24px;
+    {% endif %}
+    gap: 16px;
+  }
+
+  {%- if section.settings.show_connector and dir == 'horizontal' -%}
+    .ps.section-{{ section.id }} .ps__step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: {{ section.settings.connector_offset | default: 28 }}px;
+      left: calc(50% + 36px);
+      right: calc(-50% + 36px);
+      height: 2px;
+      background: {{ section.settings.connector_color | default: 'var(--clr-gray)' }};
+      z-index: 1;
+    }
+    @media (max-width: 767px) { .ps.section-{{ section.id }} .ps__step:not(:last-child)::after { display: none; } }
+  {%- endif -%}
+  {%- if section.settings.show_connector and dir == 'vertical' -%}
+    .ps.section-{{ section.id }} .ps__step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: {{ section.settings.connector_offset | default: 56 }}px;
+      left: {{ section.settings.connector_left | default: 27 }}px;
+      bottom: calc(-{{ section.settings.gap | default: 40 }}px - 8px);
+      width: 2px;
+      background: {{ section.settings.connector_color | default: 'var(--clr-gray)' }};
+      z-index: 1;
+    }
+  {%- endif -%}
+
+  .ps.section-{{ section.id }} .ps__body { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+
+  /* Number block */
+  .ps.section-{{ section.id }} .ps__number {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    box-shadow: 0 8px 24px -12px rgba(17, 24, 39, 0.25);
+    z-index: 2;
+    position: relative;
+  }
+
+  /* Step image */
+  .ps.section-{{ section.id }} .ps__media {
+    width: 100%;
+    aspect-ratio: {{ section.settings.media_aspect_ratio | default: '4/3' }};
+    border-radius: {{ section.settings.media_radius | default: 12 }}px;
+    overflow: hidden;
+    background: {{ section.settings.media_placeholder_background | default: 'var(--clr-light)' }};
+    margin-top: 4px;
+  }
+  .ps.section-{{ section.id }} .ps__media img { width: 100%; height: 100%; object-fit: cover; }
+{%- endstyle -%}
+
+<section class="ps section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ps__container">
+
+    {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+    {%- assign subhead_block = section.blocks | where: 'type', 'subhead' | first -%}
+
+    {% if eyebrow_block or heading_block or subhead_block %}
+      <div class="ps__intro">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_block %}<div class="rte" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ps__steps">
+      {%- assign in_step = false -%}
+      {%- assign step_index = 0 -%}
+      {% for block in section.blocks %}
+        {% case block.type %}
+
+          {% when 'step' %}
+            {% if in_step %}</div></div>{% endif %}
+            {% assign step_index = step_index | plus: 1 %}
+            <div class="ps__step" {{ block.fluid_attributes }}>
+            <div class="ps__body-wrap" style="display:contents;">
+            {% assign in_step = true %}
+
+          {% when 'number' %}
+            {% if in_step %}
+              {%- assign size   = block.settings.size | default: 56 -%}
+              {%- assign shape  = block.settings.shape | default: 'circle' -%}
+              {%- assign radius = block.settings.border_radius -%}
+              {%- assign label  = block.settings.number_override -%}
+              {% if label == blank %}{% assign label = step_index %}{% endif %}
+              {%- capture num_style -%}
+                width: {{ size }}px;
+                height: {{ size }}px;
+                font-size: {{ block.settings.font_size | default: 22 }}px;
+                font-family: {{ block.settings.font_family | default: 'var(--ff-heading)' }};
+                background: {{ block.settings.background | default: 'var(--clr-primary)' }};
+                color: {{ block.settings.color | default: 'var(--clr-white)' }};
+                border-radius: {% if shape == 'square' %}{% if radius %}{{ radius.tl }}px {{ radius.tr }}px {{ radius.br }}px {{ radius.bl }}px{% else %}12px{% endif %}{% else %}50%{% endif %};
+                {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+              {%- endcapture -%}
+              <div class="ps__number" style="{{ num_style | strip_newlines }}" {{ block.fluid_attributes }}>{{ label }}</div>
+            {% endif %}
+
+          {% when 'image' %}
+            {% if in_step and block.settings.image %}
+              {%- assign _ar = block.settings.aspect_ratio | default: '' -%}
+              {%- capture media_style -%}
+                {% if _ar != '' %}aspect-ratio: {{ _ar }};{% endif %}
+                {%- assign ibr = block.settings.border_radius -%}
+                {% if ibr %}border-radius: {{ ibr.tl }}px {{ ibr.tr }}px {{ ibr.br }}px {{ ibr.bl }}px;{% endif %}
+                {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+              {%- endcapture -%}
+              <div class="ps__media" style="{{ media_style | strip_newlines }}" {{ block.fluid_attributes }}>
+                <img src="{{ block.settings.image | img_url: '1200x' }}" alt="{{ block.settings.alt | escape }}" loading="lazy" style="object-fit: {{ block.settings.fit | default: 'cover' }};">
+              </div>
+            {% endif %}
+
+          {% when 'step_heading' %}
+            {% if in_step %}
+              {%- capture h_style -%}
+                {% if block.settings.color != blank %}color: {{ block.settings.color }};{% endif %}
+                {% if block.settings.font_size %}font-size: {{ block.settings.font_size }}px;{% endif %}
+                {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+              {%- endcapture -%}
+              <div class="ps__title rte" style="{{ h_style | strip_newlines }}" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+            {% endif %}
+
+          {% when 'step_text' %}
+            {% if in_step %}
+              {%- capture t_style -%}
+                {% if block.settings.color != blank %}color: {{ block.settings.color }};{% endif %}
+                {% if block.settings.font_size %}font-size: {{ block.settings.font_size }}px;{% endif %}
+                line-height: {{ block.settings.line_height | default: '1.6' }};
+              {%- endcapture -%}
+              <div class="ps__text rte" style="{{ t_style | strip_newlines }}" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+            {% endif %}
+
+        {% endcase %}
+      {% endfor %}
+      {% if in_step %}</div></div>{% endif %}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Process Steps",
+  "tag": "section",
+  "class": "process-steps-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "radio", "id": "direction", "label": "Direction", "default": "horizontal",
+      "options": [
+        { "value": "horizontal", "label": "Horizontal (row of steps)" },
+        { "value": "vertical",   "label": "Vertical (timeline)" }
+      ]
+    },
+    { "type": "range", "id": "columns_desktop", "label": "Desktop columns (horizontal)", "min": 2, "max": 6, "step": 1, "default": 4 },
+    { "type": "range", "id": "gap", "label": "Gap between steps (px)", "min": 16, "max": 96, "step": 4, "default": 40 },
+    { "type": "radio", "id": "step_alignment", "label": "Step alignment (horizontal only)", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+    { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Connector Line" },
+    { "type": "checkbox", "id": "show_connector", "label": "Show connecting line", "default": true },
+    { "type": "select",   "id": "connector_color", "label": "Connector color", "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "range",    "id": "connector_offset", "label": "Connector vertical offset (px)", "min": 0, "max": 120, "step": 2, "default": 28, "info": "Adjust so the line aligns with the center of your number block." },
+    { "type": "range",    "id": "connector_left",   "label": "Connector left offset (vertical only, px)", "min": 0, "max": 120, "step": 1, "default": 27 },
+
+    { "type": "header", "content": "Step Image (default)" },
+    { "type": "select", "id": "media_aspect_ratio", "label": "Image aspect ratio", "default": "4/3",
+      "options": [
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "3/4",  "label": "Portrait (3:4)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" }
+      ]
+    },
+    { "type": "range",  "id": "media_radius", "label": "Image radius (px)", "min": 0, "max": 32, "step": 2, "default": 12 },
+    { "type": "select", "id": "media_placeholder_background", "label": "Image placeholder background", "options": "background_colors", "default": "var(--clr-light)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">How it works</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">From order to doorstep</h2>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">Four simple steps to getting yours.</p>" }
+      ]
+    },
+
+    { "type": "step", "name": "+ New Step",
+      "settings": [
+        { "type": "paragraph", "content": "Divider block. Marks the start of a new step. Add number / image / heading / text blocks AFTER this block." }
+      ]
+    },
+
+    { "type": "number", "name": "Step Number",
+      "settings": [
+        { "type": "text",  "id": "number_override", "label": "Number override (leave blank for auto)" },
+        { "type": "radio", "id": "shape", "label": "Shape", "default": "circle",
+          "options": [
+            { "value": "circle", "label": "Circle" },
+            { "value": "square", "label": "Square / rounded" }
+          ]
+        },
+        { "type": "range", "id": "size",      "label": "Size (px)",      "min": 32, "max": 96, "step": 4, "default": 56 },
+        { "type": "range", "id": "font_size", "label": "Font size (px)", "min": 14, "max": 40, "step": 1, "default": 22 },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius (square shape only)" },
+        { "type": "select", "id": "font_family", "label": "Font Family", "options": "font_families", "default": "var(--ff-heading)" },
+        { "type": "select", "id": "background",  "label": "Background",  "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "select", "id": "color",       "label": "Text color",  "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "range",  "id": "border_width","label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color","label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+      ]
+    },
+
+    { "type": "image", "name": "Step Image",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "alt", "label": "Alt Text" },
+        { "type": "select", "id": "aspect_ratio", "label": "Aspect Ratio", "default": "4/3",
+          "options": [
+            { "value": "auto", "label": "Auto (natural)" },
+            { "value": "1/1",  "label": "Square (1:1)" },
+            { "value": "4/3",  "label": "Standard (4:3)" },
+            { "value": "16/9", "label": "Widescreen (16:9)" },
+            { "value": "3/4",  "label": "Portrait (3:4)" },
+            { "value": "4/5",  "label": "Portrait (4:5)" }
+          ]
+        },
+        { "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+          "options": [
+            { "value": "cover",   "label": "Cover" },
+            { "value": "contain", "label": "Contain" }
+          ]
+        },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+        { "type": "range",  "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+      ]
+    },
+
+    { "type": "step_heading", "name": "Step Title",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Title",
+          "default": "<h3 style=\"color: var(--clr-primary); font-size: 20px;\">Step title</h3>" },
+        { "type": "range",  "id": "font_size", "label": "Font size override (px)", "min": 14, "max": 40, "step": 1, "default": 20 },
+        { "type": "select", "id": "font_family", "label": "Font Family", "options": "font_families", "default": "var(--ff-heading)" },
+        { "type": "select", "id": "color",     "label": "Color",         "options": "background_colors", "default": "var(--clr-primary)" }
+      ]
+    },
+
+    { "type": "step_text", "name": "Step Description",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 15px;\">Short description of what happens in this step.</p>" },
+        { "type": "range",  "id": "font_size",   "label": "Font size override (px)", "min": 12, "max": 24, "step": 1, "default": 15 },
+        { "type": "text",   "id": "line_height", "label": "Line height", "default": "1.6" },
+        { "type": "select", "id": "color",       "label": "Color",       "options": "background_colors", "default": "var(--clr-body)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Process Steps",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+
+        { "type": "step" },
+        { "type": "number" },
+        { "type": "step_heading", "settings": { "text": "<h3 style=\"color: var(--clr-primary); font-size: 20px;\">Browse the collection</h3>" } },
+        { "type": "step_text",    "settings": { "text": "<p style=\"color: var(--clr-body); font-size: 15px;\">Find the fit, color, and style that feels like you.</p>" } },
+
+        { "type": "step" },
+        { "type": "number" },
+        { "type": "step_heading", "settings": { "text": "<h3 style=\"color: var(--clr-primary); font-size: 20px;\">Place your order</h3>" } },
+        { "type": "step_text",    "settings": { "text": "<p style=\"color: var(--clr-body); font-size: 15px;\">Checkout in seconds with Apple Pay, Shop Pay, or cards.</p>" } },
+
+        { "type": "step" },
+        { "type": "number" },
+        { "type": "step_heading", "settings": { "text": "<h3 style=\"color: var(--clr-primary); font-size: 20px;\">We craft + pack</h3>" } },
+        { "type": "step_text",    "settings": { "text": "<p style=\"color: var(--clr-body); font-size: 15px;\">Every order is made with care and shipped in 1 business day.</p>" } },
+
+        { "type": "step" },
+        { "type": "number" },
+        { "type": "step_heading", "settings": { "text": "<h3 style=\"color: var(--clr-primary); font-size: 20px;\">Unbox + enjoy</h3>" } },
+        { "type": "step_text",    "settings": { "text": "<p style=\"color: var(--clr-body); font-size: 15px;\">Thoughtful packaging, premium details, and a 30-day guarantee.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

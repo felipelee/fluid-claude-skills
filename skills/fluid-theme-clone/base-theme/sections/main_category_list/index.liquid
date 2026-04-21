@@ -285,12 +285,30 @@
           "id": "title_heading_tag",
           "label": "Title Heading Tag",
           "options": [
-            { "value": "h1", "label": "Heading 1" },
-            { "value": "h2", "label": "Heading 2" },
-            { "value": "h3", "label": "Heading 3" },
-            { "value": "h4", "label": "Heading 4" },
-            { "value": "h5", "label": "Heading 5" },
-            { "value": "h6", "label": "Heading 6" }
+            {
+              "value": "h1",
+              "label": "Heading 1"
+            },
+            {
+              "value": "h2",
+              "label": "Heading 2"
+            },
+            {
+              "value": "h3",
+              "label": "Heading 3"
+            },
+            {
+              "value": "h4",
+              "label": "Heading 4"
+            },
+            {
+              "value": "h5",
+              "label": "Heading 5"
+            },
+            {
+              "value": "h6",
+              "label": "Heading 6"
+            }
           ],
           "default": "h2"
         },
@@ -299,12 +317,30 @@
           "id": "title_font_weight",
           "label": "Title Font Weight",
           "options": [
-            { "value": "font-light", "label": "Light" },
-            { "value": "font-normal", "label": "Normal" },
-            { "value": "font-medium", "label": "Medium" },
-            { "value": "font-semibold", "label": "Semi Bold" },
-            { "value": "font-bold", "label": "Bold" },
-            { "value": "font-extrabold", "label": "Extra Bold" }
+            {
+              "value": "font-light",
+              "label": "Light"
+            },
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            },
+            {
+              "value": "font-medium",
+              "label": "Medium"
+            },
+            {
+              "value": "font-semibold",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "font-bold",
+              "label": "Bold"
+            },
+            {
+              "value": "font-extrabold",
+              "label": "Extra Bold"
+            }
           ],
           "default": "font-bold"
         },
@@ -341,10 +377,22 @@
           "id": "button_style",
           "label": "Button Style",
           "options": [
-            { "value": "btn-border-primary", "label": "Primary Border" },
-            { "value": "btn-bg-primary", "label": "Primary Background" },
-            { "value": "btn-border-black", "label": "Black Border" },
-            { "value": "btn-bg-black", "label": "Black Background" }
+            {
+              "value": "btn-border-primary",
+              "label": "Primary Border"
+            },
+            {
+              "value": "btn-bg-primary",
+              "label": "Primary Background"
+            },
+            {
+              "value": "btn-border-black",
+              "label": "Black Border"
+            },
+            {
+              "value": "btn-bg-black",
+              "label": "Black Background"
+            }
           ],
           "default": "btn-border-black"
         },
@@ -361,9 +409,21 @@
           "default": "#000000"
         },
         {
-          "type": "border",
-          "id": "button_border",
-          "label": "Button Border"
+          "type": "range",
+          "id": "button_border_width",
+          "label": "Button Border Width",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "type": "select",
+          "id": "button_border_color",
+          "label": "Button Border Color",
+          "options": "background_colors",
+          "default": "var(--clr-primary)"
         }
       ]
     },
@@ -412,11 +472,26 @@
           "id": "category_title_tag",
           "label": "Category Title Tag",
           "options": [
-            { "value": "h2", "label": "Heading 2" },
-            { "value": "h3", "label": "Heading 3" },
-            { "value": "h4", "label": "Heading 4" },
-            { "value": "h5", "label": "Heading 5" },
-            { "value": "h6", "label": "Heading 6" }
+            {
+              "value": "h2",
+              "label": "Heading 2"
+            },
+            {
+              "value": "h3",
+              "label": "Heading 3"
+            },
+            {
+              "value": "h4",
+              "label": "Heading 4"
+            },
+            {
+              "value": "h5",
+              "label": "Heading 5"
+            },
+            {
+              "value": "h6",
+              "label": "Heading 6"
+            }
           ],
           "default": "h5"
         },
@@ -425,11 +500,26 @@
           "id": "category_title_font_weight",
           "label": "Category Title Font Weight",
           "options": [
-            { "value": "font-light", "label": "Light" },
-            { "value": "font-normal", "label": "Normal" },
-            { "value": "font-medium", "label": "Medium" },
-            { "value": "font-semibold", "label": "Semi Bold" },
-            { "value": "font-bold", "label": "Bold" }
+            {
+              "value": "font-light",
+              "label": "Light"
+            },
+            {
+              "value": "font-normal",
+              "label": "Normal"
+            },
+            {
+              "value": "font-medium",
+              "label": "Medium"
+            },
+            {
+              "value": "font-semibold",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "font-bold",
+              "label": "Bold"
+            }
           ],
           "default": "font-semibold"
         },
@@ -446,8 +536,12 @@
     {
       "name": "Category List",
       "blocks": [
-        { "type": "section_header" },
-        { "type": "category_carousel" }
+        {
+          "type": "section_header"
+        },
+        {
+          "type": "category_carousel"
+        }
       ]
     }
   ]

@@ -12,7 +12,7 @@
     8. text_color       — select → background_colors (theme-aware)
     9. border           — border control (width + color)
    10. border_radius    — corner_radius control
-   11. font_family      — font_picker
+   11. font_family      — select → font_families (theme-driven)
 
   Style sets the base CSS class (.btn--filled / outline / text).
   Font Size + Padding together determine the visual size (no t-shirt preset).
@@ -30,13 +30,12 @@
   {%- if block.settings.background_color != blank -%}background-color: {{ block.settings.background_color }};{%- endif -%}
   {%- if block.settings.text_color != blank -%}color: {{ block.settings.text_color }};{%- endif -%}
   {%- if block.settings.font_size != blank -%}font-size: {{ block.settings.font_size }}px;{%- endif -%}
-  {%- if block.settings.font_family != blank -%}font-family: {{ block.settings.font_family | font_family }};{%- endif -%}
+  {%- if block.settings.font_family != blank -%}font-family: {{ block.settings.font_family }};{%- endif -%}
   {%- assign p = block.settings.padding -%}
   {%- if p -%}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{%- endif -%}
   {%- assign br = block.settings.border_radius -%}
   {%- if br -%}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{%- endif -%}
-  {%- assign bd = block.settings.border -%}
-  {%- if bd.width -%}border: {{ bd.width }} solid {{ bd.color }};{%- endif -%}
+  {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
 {%- endcapture -%}
 
 <a href="{{ block.settings.link | default: '#' }}"
@@ -67,10 +66,11 @@
       "label": "Link"
     },
     {
-      "type": "font_picker",
+      "type": "select",
       "id": "font_family",
       "label": "Font Family",
-      "default": "Inter"
+      "options": "font_families",
+      "default": "var(--ff-body)"
     },
     {
       "type": "checkbox",
@@ -136,9 +136,21 @@
       "content": "Shape"
     },
     {
-      "type": "border",
-      "id": "border",
-      "label": "Border"
+      "type": "range",
+      "id": "border_width",
+      "label": "Border Width",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "Border Color",
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
     },
     {
       "type": "corner_radius",

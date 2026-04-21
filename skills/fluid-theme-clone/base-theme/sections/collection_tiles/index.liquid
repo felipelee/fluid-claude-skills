@@ -1,0 +1,354 @@
+{%- style -%}
+  .ct.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .ct.section-{{ section.id }} .ct__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1440px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .ct.section-{{ section.id }} .ct__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .ct.section-{{ section.id }} .ct__container > * { position: relative; }
+  @media (max-width: 991px) { .ct.section-{{ section.id }} .ct__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .ct.section-{{ section.id }} .ct__container { padding-left: 16px; padding-right: 16px; } }
+
+  .ct.section-{{ section.id }} .ct__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 56px; max-width: 760px;{%- else -%}margin-bottom: 56px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .ct.section-{{ section.id }} .ct__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 20 }}px;
+  }
+  @media (max-width: 991px) {
+    .ct.section-{{ section.id }} .ct__grid { grid-template-columns: repeat({{ section.settings.columns_tablet | default: 2 }}, minmax(0, 1fr)); }
+  }
+  @media (max-width: 767px) {
+    .ct.section-{{ section.id }} .ct__grid { grid-template-columns: repeat({{ section.settings.columns_mobile | default: 1 }}, minmax(0, 1fr)); gap: 12px; }
+  }
+
+  .ct.section-{{ section.id }} .ct__tile {
+    position: relative;
+    display: block;
+    aspect-ratio: {{ section.settings.tile_aspect_ratio | default: '4/5' }};
+    {%- assign tbr = section.settings.tile_border_radius -%}
+    {%- if tbr -%}border-radius: {{ tbr.tl }}px {{ tbr.tr }}px {{ tbr.br }}px {{ tbr.bl }}px;{%- endif -%}
+    overflow: hidden;
+    background: {{ section.settings.tile_placeholder_background | default: 'var(--clr-gray)' }};
+    text-decoration: none;
+    isolation: isolate;
+    transition: transform .25s ease;
+  }
+  .ct.section-{{ section.id }} .ct__tile:hover { transform: translateY(-4px); }
+
+  .ct.section-{{ section.id }} .ct__media {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    transition: transform .55s cubic-bezier(.2,.6,.2,1);
+    z-index: 0;
+  }
+  .ct.section-{{ section.id }} .ct__tile:hover .ct__media { transform: scale(1.06); }
+
+  .ct.section-{{ section.id }} .ct__media-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--clr-muted);
+    background: repeating-linear-gradient(45deg, var(--clr-gray) 0 18px, var(--clr-light) 18px 36px);
+    z-index: 0;
+  }
+
+  .ct.section-{{ section.id }} .ct__tile::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 40%, {{ section.settings.overlay_color | default: 'rgba(17, 24, 39, 0.65)' }} 100%);
+    opacity: {{ section.settings.overlay_opacity | default: 70 | divided_by: 100.0 }};
+    z-index: 1;
+    transition: opacity .25s;
+    pointer-events: none;
+  }
+  .ct.section-{{ section.id }} .ct__tile:hover::after { opacity: {{ section.settings.overlay_opacity | default: 70 | plus: 15 | at_most: 100 | divided_by: 100.0 }}; }
+
+  .ct.section-{{ section.id }} .ct__content {
+    position: absolute; inset: 0;
+    z-index: 2;
+    padding: {{ section.settings.content_padding | default: 24 }}px;
+    display: flex;
+    flex-direction: column;
+    justify-content: {% case section.settings.content_vertical %}{% when 'top' %}flex-start{% when 'center' %}center{% else %}flex-end{% endcase %};
+    align-items: {% case section.settings.content_horizontal %}{% when 'right' %}flex-end{% when 'center' %}center{% else %}flex-start{% endcase %};
+    text-align: {{ section.settings.content_horizontal | default: 'left' }};
+    gap: 6px;
+    color: {{ section.settings.tile_text_color | default: 'var(--clr-white)' }};
+  }
+
+  .ct.section-{{ section.id }} .ct__subtitle {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: {{ section.settings.subtitle_color | default: 'var(--clr-white)' }};
+    opacity: 0.85;
+    margin: 0;
+  }
+  .ct.section-{{ section.id }} .ct__title {
+    font-size: {{ section.settings.title_font_size | default: 28 }}px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: {{ section.settings.title_color | default: 'var(--clr-white)' }};
+    margin: 0;
+    font-family: {{ section.settings.title_font_family | default: 'var(--ff-heading)' }};
+  }
+  @media (max-width: 767px) {
+    .ct.section-{{ section.id }} .ct__title { font-size: {{ section.settings.title_font_size | default: 28 | times: 0.8 | round }}px; }
+  }
+  .ct.section-{{ section.id }} .ct__cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 10px;
+    font-size: 14px; font-weight: 600;
+    color: {{ section.settings.cta_color | default: 'var(--clr-white)' }};
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: {{ section.settings.cta_background | default: 'rgba(255,255,255,0.15)' }};
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background .2s, transform .2s;
+  }
+  .ct.section-{{ section.id }} .ct__tile:hover .ct__cta {
+    background: {{ section.settings.cta_hover_background | default: 'var(--clr-white)' }};
+    color: {{ section.settings.cta_hover_color | default: 'var(--clr-primary)' }};
+  }
+  .ct.section-{{ section.id }} .ct__cta svg { width: 14px; height: 14px; transition: transform .2s; }
+  .ct.section-{{ section.id }} .ct__tile:hover .ct__cta svg { transform: translateX(3px); }
+{%- endstyle -%}
+
+<section class="ct section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ct__container">
+
+    {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+    {%- assign subhead_block = section.blocks | where: 'type', 'subhead' | first -%}
+    {%- assign tiles         = section.blocks | where: 'type', 'tile' -%}
+
+    {% if eyebrow_block or heading_block or subhead_block %}
+      <div class="ct__intro">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_block %}<div class="rte" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if tiles.size > 0 %}
+      <div class="ct__grid">
+        {% for block in tiles %}
+          {%- assign _col = block.settings.collection -%}
+          {%- assign _href = block.settings.link -%}
+          {%- if _href == blank and _col -%}
+            {%- assign _href = _col.url | default: '#' -%}
+          {%- endif -%}
+          {%- if _href == blank -%}{%- assign _href = '#' -%}{%- endif -%}
+
+          {%- assign _title = block.settings.title -%}
+          {%- if _title == blank and _col -%}{%- assign _title = _col.title -%}{%- endif -%}
+          {%- if _title == blank -%}{%- assign _title = 'Shop Collection' -%}{%- endif -%}
+
+          {%- assign _img_url = '' -%}
+          {%- if block.settings.image -%}
+            {%- assign _img_url = block.settings.image | img_url: '1600x' -%}
+          {%- elsif _col.image -%}
+            {%- assign _img_url = _col.image | image_url -%}
+          {%- elsif _col.image_url -%}
+            {%- assign _img_url = _col.image_url -%}
+          {%- endif -%}
+
+          <a class="ct__tile" href="{{ _href }}" {{ block.fluid_attributes }}>
+            {% if _img_url != blank %}
+              <img class="ct__media" src="{{ _img_url }}" alt="{{ _title | escape }}" loading="lazy">
+            {% else %}
+              <div class="ct__media-placeholder">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+              </div>
+            {% endif %}
+
+            <div class="ct__content">
+              {% if block.settings.subtitle %}<p class="ct__subtitle">{{ block.settings.subtitle | escape }}</p>{% endif %}
+              <h3 class="ct__title">{{ _title | escape }}</h3>
+              {% if section.settings.show_cta %}
+                <span class="ct__cta">
+                  {{ block.settings.cta_text | default: section.settings.default_cta_text | default: 'Shop' | escape }}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection Tiles",
+  "tag": "section",
+  "class": "collection-tiles-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 1, "max": 5, "step": 1, "default": 3 },
+    { "type": "range", "id": "columns_tablet",  "label": "Columns (tablet)",  "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "columns_mobile",  "label": "Columns (mobile)",  "min": 1, "max": 2, "step": 1, "default": 1 },
+    { "type": "range", "id": "gap", "label": "Gap between tiles (px)", "min": 4, "max": 48, "step": 2, "default": 20 },
+    { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Tile" },
+    { "type": "select", "id": "tile_aspect_ratio", "label": "Aspect Ratio", "default": "4/5",
+      "options": [
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" },
+        { "value": "3/4",  "label": "Portrait (3:4)" },
+        { "value": "9/16", "label": "Portrait mobile (9:16)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "3/2",  "label": "Classic (3:2)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" }
+      ]
+    },
+    { "type": "corner_radius", "id": "tile_border_radius", "label": "Tile Border Radius" },
+    { "type": "select", "id": "tile_placeholder_background", "label": "Placeholder background", "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Overlay" },
+    { "type": "select", "id": "overlay_color", "label": "Overlay color", "options": "background_colors", "default": "var(--clr-dark)" },
+    { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 100, "step": 5, "default": 70, "unit": "%" },
+
+    { "type": "header", "content": "Content" },
+    { "type": "select", "id": "content_vertical", "label": "Vertical position", "default": "bottom",
+      "options": [
+        { "value": "top",    "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom", "label": "Bottom" }
+      ]
+    },
+    { "type": "select", "id": "content_horizontal", "label": "Horizontal alignment", "default": "left",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+    { "type": "range",  "id": "content_padding", "label": "Content padding (px)", "min": 8, "max": 48, "step": 2, "default": 24 },
+    { "type": "range",  "id": "title_font_size", "label": "Title font size (px)", "min": 16, "max": 64, "step": 2, "default": 28 },
+    { "type": "select", "id": "title_font_family", "label": "Title font family", "options": "font_families", "default": "var(--ff-heading)" },
+    { "type": "select", "id": "title_color",    "label": "Title color",    "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "subtitle_color", "label": "Subtitle color", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "tile_text_color", "label": "Base text color", "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Tile CTA" },
+    { "type": "checkbox", "id": "show_cta", "label": "Show CTA chip", "default": true },
+    { "type": "text",     "id": "default_cta_text", "label": "Default CTA text", "default": "Shop" },
+    { "type": "select", "id": "cta_color",             "label": "CTA text",            "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "cta_background",       "label": "CTA background",       "options": "background_colors", "default": "var(--clr-dark)" },
+    { "type": "select", "id": "cta_hover_background", "label": "CTA hover background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "cta_hover_color",      "label": "CTA hover text",       "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1440px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">Shop by category</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">Find your fit</h2>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">Curated collections made for the way you live.</p>" }
+      ]
+    },
+    { "type": "tile", "name": "Tile",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection",
+          "info": "Pick a Fluid collection. Title + image + URL auto-fill from it unless overridden below." },
+        { "type": "header", "content": "Overrides" },
+        { "type": "text",     "id": "subtitle", "label": "Subtitle (small eyebrow)", "default": "Collection" },
+        { "type": "text",     "id": "title",    "label": "Title override" },
+        { "type": "image_picker", "id": "image", "label": "Image override" },
+        { "type": "url",      "id": "link",     "label": "Link override" },
+        { "type": "text",     "id": "cta_text", "label": "CTA text override" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Tiles",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "tile", "settings": { "subtitle": "New", "title": "Bestsellers" } },
+        { "type": "tile", "settings": { "subtitle": "Season",  "title": "Spring Drop" } },
+        { "type": "tile", "settings": { "subtitle": "Limited", "title": "The Archive" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

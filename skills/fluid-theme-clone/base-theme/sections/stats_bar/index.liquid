@@ -1,0 +1,243 @@
+{%- style -%}
+  .stats-bar.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 60 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 60 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 60px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .stats-bar.section-{{ section.id }} .stats-bar__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+    overflow: hidden;
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .stats-bar.section-{{ section.id }} .stats-bar__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .stats-bar.section-{{ section.id }} .stats-bar__container > * { position: relative; }
+  @media (max-width: 991px) { .stats-bar.section-{{ section.id }} .stats-bar__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .stats-bar.section-{{ section.id }} .stats-bar__container { padding-left: 16px; padding-right: 16px; } }
+
+  .stats-bar.section-{{ section.id }} .stats-bar__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 4 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 32 }}px;
+    text-align: {{ section.settings.stat_alignment | default: 'center' }};
+  }
+  @media (max-width: 991px) { .stats-bar.section-{{ section.id }} .stats-bar__grid { grid-template-columns: repeat({{ section.settings.columns_tablet | default: 2 }}, minmax(0, 1fr)); } }
+  @media (max-width: 767px) { .stats-bar.section-{{ section.id }} .stats-bar__grid { grid-template-columns: repeat({{ section.settings.columns_mobile | default: 2 }}, minmax(0, 1fr)); gap: 24px; } }
+
+  .stats-bar.section-{{ section.id }} .stat {
+    display: flex; flex-direction: column; gap: 6px;
+    {%- if section.settings.stat_alignment == 'center' -%}align-items: center;{%- endif -%}
+    {%- if section.settings.stat_alignment == 'right' -%}align-items: flex-end;{%- endif -%}
+  }
+  .stats-bar.section-{{ section.id }} .stat__value {
+    font-size: {{ section.settings.value_font_size | default: 48 }}px;
+    line-height: 1.05;
+    font-weight: {{ section.settings.value_font_weight | default: 700 }};
+    color: {{ section.settings.value_color | default: 'var(--clr-primary)' }};
+    letter-spacing: -0.02em;
+    display: flex; align-items: baseline; gap: 2px;
+  }
+  @media (max-width: 767px) {
+    .stats-bar.section-{{ section.id }} .stat__value { font-size: {{ section.settings.value_font_size | default: 48 | times: 0.7 | round }}px; }
+  }
+  .stats-bar.section-{{ section.id }} .stat__value .suffix,
+  .stats-bar.section-{{ section.id }} .stat__value .prefix {
+    font-size: 0.6em; opacity: 0.85;
+  }
+  .stats-bar.section-{{ section.id }} .stat__label {
+    font-size: {{ section.settings.label_font_size | default: 15 }}px;
+    line-height: 1.5;
+    color: {{ section.settings.label_color | default: 'var(--clr-body)' }};
+  }
+  .stats-bar.section-{{ section.id }} .stat__divider {
+    display: {% if section.settings.show_dividers %}block{% else %}none{% endif %};
+    width: 1px;
+    background: {{ section.settings.divider_color | default: 'var(--clr-primary)' }};
+    opacity: 0.2;
+  }
+{%- endstyle -%}
+
+<section class="stats-bar section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="stats-bar__container">
+
+    {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+    {%- assign subhead_block = section.blocks | where: 'type', 'subhead' | first -%}
+    {%- assign stat_blocks = section.blocks | where: 'type', 'stat' -%}
+
+    {% if eyebrow_block or heading_block or subhead_block %}
+      <div class="stats-bar__intro" style="text-align: {{ section.settings.intro_alignment | default: 'center' }}; margin-bottom: 48px; display: flex; flex-direction: column; gap: 12px;{% if section.settings.intro_alignment == 'center' %}max-width: 720px; margin-left: auto; margin-right: auto;{% endif %}">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_block %}<div class="rte" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if stat_blocks.size > 0 %}
+      <div class="stats-bar__grid">
+        {% for block in stat_blocks %}
+          <div class="stat" {{ block.fluid_attributes }}>
+            <div class="stat__value">
+              {% if block.settings.prefix != blank %}<span class="prefix">{{ block.settings.prefix | escape }}</span>{% endif %}
+              <span>{{ block.settings.value | default: '0' | escape }}</span>
+              {% if block.settings.suffix != blank %}<span class="suffix">{{ block.settings.suffix | escape }}</span>{% endif %}
+            </div>
+            {% if block.settings.label != blank %}
+              <div class="stat__label">{{ block.settings.label | escape }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Stats Bar",
+  "tag": "section",
+  "class": "stats-bar-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+    {
+      "type": "radio", "id": "stat_alignment", "label": "Stat Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 2, "max": 6, "step": 1, "default": 4 },
+    { "type": "range", "id": "columns_tablet",  "label": "Columns (tablet)",  "min": 1, "max": 4, "step": 1, "default": 2 },
+    { "type": "range", "id": "columns_mobile",  "label": "Columns (mobile)",  "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "gap", "label": "Gap (px)", "min": 8, "max": 80, "step": 4, "default": 32 },
+    { "type": "checkbox", "id": "show_dividers", "label": "Show dividers between stats", "default": false },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "range", "id": "value_font_size", "label": "Number Font Size (px)", "min": 24, "max": 96, "step": 2, "default": 48 },
+    {
+      "type": "select", "id": "value_font_weight", "label": "Number Font Weight", "default": "700",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" },
+        { "value": "800", "label": "Extra Bold" },
+        { "value": "900", "label": "Black" }
+      ]
+    },
+    { "type": "select", "id": "value_color", "label": "Number Color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "range", "id": "label_font_size", "label": "Label Font Size (px)", "min": 11, "max": 22, "step": 1, "default": 15 },
+    { "type": "select", "id": "label_color", "label": "Label Color", "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "divider_color", "label": "Divider Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">By the numbers</h5>" }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">Trusted by thousands</h2>" }
+      ]
+    },
+    {
+      "type": "subhead",
+      "name": "Subhead",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">What we've accomplished together.</p>" }
+      ]
+    },
+    {
+      "type": "stat",
+      "name": "Stat",
+      "settings": [
+        { "type": "text", "id": "prefix", "label": "Prefix (optional)", "info": "e.g. '$' or '#'" },
+        { "type": "text", "id": "value",  "label": "Value", "default": "10,000", "info": "Short. The big number." },
+        { "type": "text", "id": "suffix", "label": "Suffix (optional)", "info": "e.g. '+', '%', 'K'" },
+        { "type": "text", "id": "label",  "label": "Label", "default": "Happy customers" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Stats Bar",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "stat", "settings": { "value": "50K", "suffix": "+", "label": "Orders shipped" } },
+        { "type": "stat", "settings": { "value": "4.9",  "suffix": "★",  "label": "Average rating" } },
+        { "type": "stat", "settings": { "value": "98", "suffix": "%", "label": "Would recommend" } },
+        { "type": "stat", "settings": { "value": "24",  "suffix": "h",  "label": "Fast support" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

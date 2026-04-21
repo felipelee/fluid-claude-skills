@@ -1,0 +1,323 @@
+{%- style -%}
+  .ba.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .ba.section-{{ section.id }} .ba__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1080px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .ba.section-{{ section.id }} .ba__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .ba.section-{{ section.id }} .ba__container > * { position: relative; }
+  @media (max-width: 991px) { .ba.section-{{ section.id }} .ba__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .ba.section-{{ section.id }} .ba__container { padding-left: 16px; padding-right: 16px; } }
+
+  .ba.section-{{ section.id }} .ba__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 48px; max-width: 720px;{%- else -%}margin-bottom: 48px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .ba.section-{{ section.id }} .ba__slider {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ section.settings.aspect_ratio | default: '16/9' }};
+    overflow: hidden;
+    {%- assign sbr = section.settings.slider_border_radius -%}
+    {%- if sbr -%}border-radius: {{ sbr.tl }}px {{ sbr.tr }}px {{ sbr.br }}px {{ sbr.bl }}px;{%- endif -%}
+    user-select: none;
+    box-shadow: 0 16px 48px -18px rgba(17, 24, 39, 0.25);
+    background: {{ section.settings.placeholder_background | default: 'var(--clr-gray)' }};
+  }
+  .ba.section-{{ section.id }} .ba__img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    pointer-events: none;
+  }
+  .ba.section-{{ section.id }} .ba__after-wrap {
+    position: absolute; inset: 0;
+    width: {{ section.settings.initial_position | default: 50 }}%;
+    overflow: hidden;
+    will-change: width;
+  }
+  .ba.section-{{ section.id }} .ba__after-wrap .ba__img {
+    width: calc(100% * (100 / {{ section.settings.initial_position | default: 50 }}));
+    min-width: 100vw;
+  }
+  .ba.section-{{ section.id }} .ba__range {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0; cursor: ew-resize;
+    margin: 0; padding: 0; border: 0;
+    -webkit-appearance: none; appearance: none;
+    background: transparent;
+  }
+  .ba.section-{{ section.id }} .ba__range::-webkit-slider-thumb { -webkit-appearance: none; width: 48px; height: 100%; cursor: ew-resize; }
+  .ba.section-{{ section.id }} .ba__range::-moz-range-thumb     { width: 48px; height: 100%; cursor: ew-resize; border: 0; background: transparent; }
+
+  .ba.section-{{ section.id }} .ba__divider {
+    position: absolute; top: 0; bottom: 0;
+    width: 2px;
+    left: calc({{ section.settings.initial_position | default: 50 }}% - 1px);
+    background: {{ section.settings.handle_color | default: 'var(--clr-white)' }};
+    pointer-events: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+    will-change: left;
+  }
+  .ba.section-{{ section.id }} .ba__handle {
+    position: absolute; top: 50%;
+    left: calc({{ section.settings.initial_position | default: 50 }}% - 22px);
+    transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: {{ section.settings.handle_color | default: 'var(--clr-white)' }};
+    color: {{ section.settings.handle_icon_color | default: 'var(--clr-primary)' }};
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    will-change: left;
+  }
+  .ba.section-{{ section.id }} .ba__handle svg { width: 20px; height: 20px; }
+
+  .ba.section-{{ section.id }} .ba__label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    pointer-events: none;
+  }
+  .ba.section-{{ section.id }} .ba__label--before {
+    left: 16px;
+    background: {{ section.settings.before_label_background | default: 'var(--clr-dark)' }};
+    color: {{ section.settings.before_label_color | default: 'var(--clr-white)' }};
+  }
+  .ba.section-{{ section.id }} .ba__label--after {
+    right: 16px;
+    background: {{ section.settings.after_label_background | default: 'var(--clr-accent)' }};
+    color: {{ section.settings.after_label_color | default: 'var(--clr-white)' }};
+  }
+
+  .ba.section-{{ section.id }} .ba__placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--clr-muted);
+    font-size: 14px;
+    background: repeating-linear-gradient(45deg, var(--clr-gray) 0 20px, var(--clr-light) 20px 40px);
+  }
+{%- endstyle -%}
+
+<section class="ba section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ba__container">
+
+    {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+    {%- assign subhead_block = section.blocks | where: 'type', 'subhead' | first -%}
+
+    {% if eyebrow_block or heading_block or subhead_block %}
+      <div class="ba__intro">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_block %}<div class="rte" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ba__slider" data-ba-slider>
+      {% if section.settings.before_image %}
+        <img class="ba__img ba__before" src="{{ section.settings.before_image | img_url: '2400x' }}" alt="{{ section.settings.before_label | default: 'Before' | escape }}" loading="lazy">
+      {% else %}
+        <div class="ba__placeholder">Add a "Before" image</div>
+      {% endif %}
+      <div class="ba__after-wrap" data-ba-after>
+        {% if section.settings.after_image %}
+          <img class="ba__img ba__after" src="{{ section.settings.after_image | img_url: '2400x' }}" alt="{{ section.settings.after_label | default: 'After' | escape }}" loading="lazy">
+        {% else %}
+          <div class="ba__placeholder">Add an "After" image</div>
+        {% endif %}
+      </div>
+
+      {% if section.settings.show_labels %}
+        <div class="ba__label ba__label--before">{{ section.settings.before_label | default: 'Before' | escape }}</div>
+        <div class="ba__label ba__label--after">{{ section.settings.after_label | default: 'After' | escape }}</div>
+      {% endif %}
+
+      <div class="ba__divider" data-ba-divider></div>
+      <div class="ba__handle" data-ba-handle>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+          <polyline points="9 18 15 12 9 6" transform="translate(9 0)"></polyline>
+        </svg>
+      </div>
+
+      <input class="ba__range" type="range" min="0" max="100" value="{{ section.settings.initial_position | default: 50 }}" aria-label="Before / After slider" data-ba-range>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  function init(root) {
+    var range   = root.querySelector('[data-ba-range]');
+    var after   = root.querySelector('[data-ba-after]');
+    var divider = root.querySelector('[data-ba-divider]');
+    var handle  = root.querySelector('[data-ba-handle]');
+    var afterImg = after && after.querySelector('.ba__img');
+    if (!range || !after || !divider || !handle) return;
+
+    function setPos(v) {
+      var pct = Math.max(0, Math.min(100, v));
+      after.style.width   = pct + '%';
+      divider.style.left  = 'calc(' + pct + '% - 1px)';
+      handle.style.left   = 'calc(' + pct + '% - 22px)';
+      if (afterImg) {
+        afterImg.style.width = (pct > 0 ? (100 * 100 / pct) : 100) + '%';
+        afterImg.style.minWidth = '100vw';
+      }
+    }
+
+    range.addEventListener('input',  function () { setPos(range.value); });
+    range.addEventListener('change', function () { setPos(range.value); });
+    // set initial
+    setPos(range.value);
+  }
+
+  function boot() {
+    document.querySelectorAll('.section-{{ section.id }} [data-ba-slider]').forEach(init);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Before / After",
+  "tag": "section",
+  "class": "before-after-section",
+  "settings": [
+    { "type": "header", "content": "Images" },
+    { "type": "image_picker", "id": "before_image", "label": "Before Image" },
+    { "type": "image_picker", "id": "after_image",  "label": "After Image" },
+    { "type": "select", "id": "aspect_ratio", "label": "Aspect Ratio", "default": "16/9",
+      "options": [
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "3/2",  "label": "Classic (3:2)" },
+        { "value": "3/4",  "label": "Portrait (3:4)" },
+        { "value": "21/9", "label": "Ultrawide (21:9)" }
+      ]
+    },
+    { "type": "corner_radius", "id": "slider_border_radius", "label": "Slider Corner Radius" },
+
+    { "type": "header", "content": "Labels" },
+    { "type": "checkbox", "id": "show_labels", "label": "Show labels", "default": true },
+    { "type": "text", "id": "before_label", "label": "Before label", "default": "Before" },
+    { "type": "text", "id": "after_label",  "label": "After label",  "default": "After" },
+    { "type": "select", "id": "before_label_background", "label": "Before label background", "options": "background_colors", "default": "var(--clr-dark)" },
+    { "type": "select", "id": "before_label_color",      "label": "Before label text",       "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "after_label_background",  "label": "After label background",  "options": "background_colors", "default": "var(--clr-accent)" },
+    { "type": "select", "id": "after_label_color",       "label": "After label text",        "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Handle" },
+    { "type": "range",  "id": "initial_position", "label": "Initial Position", "min": 5, "max": 95, "step": 5, "default": 50, "unit": "%" },
+    { "type": "select", "id": "handle_color",      "label": "Handle background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "handle_icon_color", "label": "Handle icon color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "placeholder_background", "label": "Placeholder background", "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Layout" },
+    { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1080px",
+      "options": [
+        { "value": "720px",  "label": "Extra narrow (720px)" },
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">The difference</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">See the transformation</h2>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">Drag to compare \u2014 real results from real customers.</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Before / After",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" }
+      ]
+    }
+  ]
+}
+{% endschema %}

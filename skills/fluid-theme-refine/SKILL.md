@@ -8,7 +8,7 @@ description: >-
   "compare and fix," "tighten up," "QA the theme," "visual diff," "side by side
   comparison," "it doesn't look right," "make it exact," or "closer to the original."
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # Fluid Theme Refine
@@ -673,41 +673,106 @@ Each lives at `{template}/default/index.liquid`. A commonly missed one is `libra
 
 ## Section Shell Pattern — enforce on every custom section
 
-Every custom (non-Fluid-built-in) section MUST ship with these four controls in its `{% schema %}` settings array:
+Every custom (non-Fluid-built-in) section MUST ship with these three groups in its `{% schema %}` settings:
 
+**Section Shell** (outer box):
 ```json
 { "type": "padding",        "id": "section_padding",       "label": "Section Padding" },
 { "type": "corner_radius",  "id": "section_border_radius", "label": "Section Border Radius" },
 { "type": "select",         "id": "background_color",      "label": "Background Color",
   "options": "background_colors", "default": "transparent" },
-{ "type": "border",         "id": "section_border",        "label": "Section Border" }
+{ "type": "image_picker",   "id": "background_image",      "label": "Background Image",
+  "info": "Optional. Covers the section background." },
+{ "type": "range",          "id": "section_border_width",  "label": "Section Border Width",
+  "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+{ "type": "select",         "id": "section_border_color",  "label": "Section Border Color",
+  "options": "background_colors", "default": "var(--clr-primary)" }
 ```
 
-Plus in the CSS `{%- style -%}` block, wire all four:
+**Container** (inner content frame — 9 settings):
+```json
+{ "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+  "options": [
+    { "value": "720px",  "label": "Extra narrow (720px)" },
+    { "value": "960px",  "label": "Narrow (960px)" },
+    { "value": "1080px", "label": "Comfy (1080px)" },
+    { "value": "1280px", "label": "Default (1280px)" },
+    { "value": "1440px", "label": "Wide (1440px)" },
+    { "value": "100%",   "label": "Full (100%)" }
+  ]
+},
+{ "type": "padding",       "id": "container_padding",       "label": "Container Padding" },
+{ "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+{ "type": "select",        "id": "container_background_color", "label": "Container Background Color",
+  "options": "background_colors", "default": "transparent" },
+{ "type": "image_picker",  "id": "container_background_image", "label": "Container Background Image" },
+{ "type": "select",        "id": "container_overlay_color",    "label": "Container Overlay Color",
+  "options": "background_colors", "default": "transparent" },
+{ "type": "range",         "id": "container_overlay_opacity",  "label": "Container Overlay Opacity",
+  "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+{ "type": "range",         "id": "container_border_width",     "label": "Container Border Width",
+  "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+{ "type": "select",        "id": "container_border_color",     "label": "Container Border Color",
+  "options": "background_colors", "default": "var(--clr-primary)" }
+```
+
+Container is a full design surface, not just a width/padding wrapper. It supports its own background color + image, overlay (color + opacity), border, and corner radius — nested inside the Section Shell. Editors can create a hero with a dark section shell and a rounded container card inside without nesting sections.
+
+CSS wire-up in `{%- style -%}`:
 
 ```liquid
 {%- style -%}
-  .section-{{ section.id }} {
+  /* --- Section Shell --- */
+  .my-section.section-{{ section.id }} {
     {%- assign p = section.settings.section_padding -%}
-    {%- if p -%}
-      padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;
-    {%- endif -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
     {%- assign r = section.settings.section_border_radius -%}
-    {%- if r -%}
-      border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;
-    {%- endif -%}
-    {%- assign sb = section.settings.section_border -%}
-    {%- if sb.width -%}
-      border: {{ sb.width }} solid {{ sb.color }};
-    {%- endif -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
     background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
   }
+
+  /* --- Container --- */
+  .my-section.section-{{ section.id }} .my-section__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .my-section.section-{{ section.id }} .my-section__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .my-section.section-{{ section.id }} .my-section__container > * { position: relative; }
+  @media (max-width: 991px) { .my-section.section-{{ section.id }} .my-section__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .my-section.section-{{ section.id }} .my-section__container { padding-left: 16px; padding-right: 16px; } }
 {%- endstyle -%}
 
-<section class="section-{{ section.id }}" {{ section.fluid_attributes }}>
-  …
+<section class="my-section section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="my-section__container">
+    …
+  </div>
 </section>
 ```
+
+Standardized responsive breakpoints: `991px` (tablet), `767px` (mobile). Never use 749, 768, 1023, or any Shopify-era value.
+
+**Why the split?** `section_padding` controls the outer colored area (vertical spacing between sections, colored background padding). `container_padding` controls inner content spacing (how far from the container edge the text/images sit). Editors often want generous section padding (80px top/bottom) but tighter container padding (24px sides). Two controls, two concerns.
+
+**Why two `border_*` settings instead of `"type": "border"`?** Fluid's native `border` control uses a hex color picker internally, breaking theme-driven color rules. Splitting into `border_width` (range) + `border_color` (select → background_colors) keeps every color theme-aware.
 
 Audit script (run before refinement to flag sections missing the pattern):
 ```python
@@ -724,7 +789,10 @@ for name in sorted(os.listdir(BASE)):
     m = re.search(r"{%\s*schema\s*%}(.*?){%\s*endschema\s*%}", s, re.DOTALL)
     if not m: continue
     settings = json.loads(m.group(1)).get("settings", [])
-    required = {"section_padding", "section_border_radius", "background_color", "section_border"}
+    required = {"section_padding", "section_border_radius", "background_color",
+                "section_border_width", "section_border_color",
+                "container_max_width", "container_padding", "container_border_radius",
+                "container_background_color", "container_border_width", "container_border_color"}
     ids = {x.get("id") for x in settings}
     missing = required - ids
     if missing:
@@ -820,12 +888,90 @@ for name in sorted(os.listdir(BASE)):
 
 ---
 
+## Theme config: 12 colors + 5 fonts
+
+Every base theme's `config/settings_schema.json` exposes a standard palette of **12 named colors** and **5 named fonts**, each with an `option_group` so sections can reference them in select dropdowns. If any are missing, add them before refinement.
+
+**12 colors** — grouped Brand / Neutrals / Text / Status:
+
+| ID | Default | Group label |
+|---|---|---|
+| `color_primary`   | `#000000` | Primary   |
+| `color_secondary` | `#1F2937` | Secondary |
+| `color_accent`    | `#FF5722` | Accent    |
+| `color_white`     | `#FFFFFF` | White     |
+| `color_light`     | `#FAFAFA` | Light     |
+| `color_gray`      | `#F2F2F2` | Gray      |
+| `color_muted`     | `#9CA3AF` | Muted     |
+| `color_dark`      | `#111827` | Dark      |
+| `color_black`     | `#000000` | Black     |
+| `color_body`      | `#1F2937` | Body      |
+| `color_success`   | `#10B981` | Success   |
+| `color_warning`   | `#F59E0B` | Warning   |
+
+Each uses:
+```json
+{
+  "type": "color_background",
+  "id": "color_accent",
+  "label": "Accent",
+  "default": "#FF5722",
+  "option_group": { "id": "background_colors", "label": "Accent", "value": "var(--clr-accent)" }
+}
+```
+
+And is wired in `layouts/theme.liquid`:
+```liquid
+--clr-accent: {{ settings.color_accent | default: '#FF5722' }};
+```
+
+**5 fonts** — Body / Heading / Accent / Italic / Handwriting:
+
+| ID | Default | Group label |
+|---|---|---|
+| `font_family_body`        | `Roboto`          | Body        |
+| `font_family_heading`     | `Roboto`          | Heading     |
+| `font_family_accent`      | `Roboto`          | Accent      |
+| `font_family_italic`      | `Playfair Display`| Italic      |
+| `font_family_handwriting` | `Caveat`          | Handwriting |
+
+Each uses:
+```json
+{
+  "type": "font_picker",
+  "id": "font_family_italic",
+  "default": "Playfair Display",
+  "label": "Italic / Serif Font",
+  "option_group": { "id": "font_families", "label": "Italic", "value": "var(--ff-italic)" }
+}
+```
+
+Wired in `layouts/theme.liquid`:
+```liquid
+--ff-italic: {{ settings.font_family_italic | font_family | default: "'Playfair Display', Georgia, serif" }};
+```
+
+**Never use `font_picker` in section or block settings.** Always pull from the theme via select + `font_families` option group:
+```json
+{ "type": "select", "id": "font_family", "label": "Font Family",
+  "options": "font_families", "default": "var(--ff-body)" }
+```
+
+Liquid output:
+```liquid
+{% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+```
+(No `| font_family` filter — the value is already a `var(--ff-…)` reference.)
+
+---
+
 ## Canonical block primacy — break composites into reusable blocks
 
 There are a small number of **canonical blocks** in `base-theme/blocks/`:
-- `blocks/image` — any time an image appears anywhere in the theme
-- `blocks/button` — any time a button appears
-- (add more as patterns are formalized — heading, text, video, icon, etc.)
+- `blocks/image` — any time a user-uploaded image appears anywhere in the theme
+- `blocks/button` — any time a button appears (10 settings: text, link, font, open_new_tab, style, font_size, padding, background_color, text_color, border, border_radius)
+- `blocks/fluid_media` — any time a Fluid Media widget (video / UGC) appears
+- `blocks/schema_entry` — reference card used by the schema-reference page
 
 **Rule:** anywhere a section needs one of these things, it must accept the canonical block, not define its own local variant.
 
@@ -926,13 +1072,61 @@ Migration checklist when refactoring a composite block:
 
 ---
 
+## `media_picker` returns two shapes — fall back to `| image_url`
+
+`{ "type": "media_picker" }` returns a Fluid Media object with `fluid_media_id` when the editor picks a Fluid video / UGC asset — but it returns a plain image object (no `fluid_media_id`) when the editor uploads a JPG/PNG. Rendering only the `<fluid-media-widget>` branch loses every plain-image pick.
+
+Right pattern:
+```liquid
+{%- assign _m = block.settings.media -%}
+{%- assign _fmid = _m.fluid_media_id -%}
+{%- assign _img_url = '' -%}
+{%- if _fmid == blank and _m -%}
+  {%- assign _img_url = _m | image_url -%}
+  {%- if _img_url == blank -%}{%- assign _img_url = _m.src | default: _m.url -%}{%- endif -%}
+{%- endif -%}
+
+{% if _fmid != blank %}
+  <fluid-media-widget media-id="{{ _fmid }}" embed-type="{{ _embed }}" responsive="true" data-fluid-widget="true"></fluid-media-widget>
+{% elsif _img_url != blank %}
+  <img src="{{ _img_url }}" alt="" loading="lazy">
+{% else %}
+  <div class="media-wrap__placeholder">…</div>
+{% endif %}
+```
+
+---
+
+## Delete legacy sections properly (template vs resource)
+
+`DELETE /api/application_themes/{THEME_ID}/resources` with `{ "application_theme_resource": { "key": "sections/foo/index.liquid" } }` returns 200 but **does not** delete the template — it nulls the content, leaving an empty `ApplicationThemeTemplate` record that still appears in the editor as a zero-block section.
+
+To fully purge a legacy section, destroy its template record:
+
+```bash
+# Find the resource_id
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://$COMPANY.fluid.app/api/application_themes/$THEME_ID/resources" \
+  | jq '.application_theme_resources[] | select(.key | startswith("sections/foo/"))'
+# resource_id will be the template ID (integer)
+
+# Destroy it
+curl -X DELETE -H "Authorization: Bearer $TOKEN" \
+  "https://$COMPANY.fluid.app/api/application_theme_templates/$TEMPLATE_ID"
+# → { "message": "Template was successfully destroyed." }
+```
+
+Same pattern works for the `home_page/default` template when you need to force preset re-expansion after changing a section's block structure: destroy the template, then re-push `home_page/default/index.liquid`. Fluid creates a fresh template record and runs preset expansion, picking up the new blocks.
+
+---
+
 ## Quick Diagnostic Checklist
 
 When a theme looks broken in the editor, check:
 
 - [ ] `layouts/theme.liquid` has `{{ content_for_header }}` and `{{ content_for_layout }}` / `{% content_for_layout %}`
 - [ ] All CSS files are in `assets/` (not at theme root) and linked in `theme.liquid`
-- [ ] `config/settings_schema.json` has `option_group: { id: "background_colors", … }` on every color and `option_group: { id: "text_presets", … }` on every heading font-size
+- [ ] `config/settings_schema.json` has all **12 colors** with `option_group: { id: "background_colors", … }` and all **5 fonts** with `option_group: { id: "font_families", … }`, and `option_group: { id: "text_presets", … }` on every heading font-size
 - [ ] `config/settings_data.json` has current values for every setting referenced in `theme.liquid`'s `:root`
 - [ ] Every section's outermost element has `{{ section.fluid_attributes }}`
 - [ ] Every block's outermost element has `{{ block.fluid_attributes }}`
@@ -940,11 +1134,14 @@ When a theme looks broken in the editor, check:
 - [ ] Heading blocks default to `<h1>`-`<h6>` (not `<p>`), with inline `color: var(--clr-primary);`
 - [ ] All 18 required templates exist at `{template}/default/index.liquid`
 - [ ] No section schema uses unsupported types (`number`, `article`, `video`, `video_url`, `inline_richtext`)
-- [ ] **Every custom section has the Section Shell pattern** (padding + corner_radius + select(background_colors) + border + fluid_attributes)
+- [ ] **Every custom section has the Section Shell (6) + Container (9) pattern** — section_padding, section_border_radius, background_color, background_image, section_border_width, section_border_color + container_max_width, container_padding, container_border_radius, container_background_color, container_background_image, container_overlay_color, container_overlay_opacity, container_border_width, container_border_color
 - [ ] **No raw `"type": "color"` or `"type": "color_background"` in section/block settings** — must be `select + options: "background_colors"`
+- [ ] **No `"type": "font_picker"` in section/block settings** — must be `select + options: "font_families"`
 - [ ] **No phantom `{{ X_block.settings.text | default: "<p>..." }}` fallbacks** in section markup — use `{% if X_block %}...{% endif %}`
 - [ ] **Images come from canonical `blocks/image`** — no section-specific `image_picker` fields except on the canonical block itself
-- [ ] **Buttons come from canonical `blocks/button`** — 11-setting pattern (text, link, font_family, open_new_tab, style, font_size, padding, background_color, text_color, border, border_radius)
+- [ ] **Buttons come from canonical `blocks/button`** — 10-setting pattern (text, link, font_family via select:font_families, open_new_tab, style, font_size, padding, background_color, text_color, border, border_radius)
+- [ ] **Fluid Media embeds come from canonical `blocks/fluid_media`** with the `media_picker` → `fluid_media_id` / `| image_url` fallback pattern
+- [ ] **Grouped cards (testimonials, features, steps) use the divider-block pattern** — empty divider block opens a new card, subsequent canonical/sub-blocks render inside it until the next divider
 
 For block/preset issues specifically:
 - [ ] Section's `"blocks"` array in schema has blocks with **inline settings** (not standalone references)

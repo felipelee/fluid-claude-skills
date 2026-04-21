@@ -1,23 +1,38 @@
-{%- comment -%}
-  Placeholder home page — sections will be recomposed once Phase B–D sections are built.
-  Current composition uses sections that survived the purge.
-{%- endcomment -%}
-
-{% section 'hero_section', id: 'hero_section' %}
-{% section 'feature', id: 'feature' %}
-{% section 'testimonial', id: 'testimonial' %}
-{% section 'blog', id: 'blog' %}
-{% section 'brand', id: 'brand' %}
+{% section 'image_text_split',  id: 'hero'            %}
+{% section 'collection_tiles',  id: 'shop_by'         %}
+{% section 'logo_bar',          id: 'press'           %}
+{% section 'feature_grid',      id: 'benefits'        %}
+{% section 'featured_products', id: 'featured'        %}
+{% section 'stats_bar',         id: 'stats'           %}
+{% section 'image_text_split',  id: 'story'           %}
+{% section 'before_after',      id: 'transformation'  %}
+{% section 'process_steps',     id: 'how_it_works'    %}
+{% section 'comparison_table',  id: 'compare'         %}
+{% section 'ugc_carousel',      id: 'ugc'             %}
+{% section 'testimonial_grid',  id: 'reviews'         %}
+{% section 'rich_content',      id: 'detail'          %}
+{% section 'faq_accordion',     id: 'faq'             %}
+{% section 'cta_banner_v2',     id: 'cta_final'       %}
 
 {% schema %}
 {
   "name": "Home Page",
   "sections": {
-    "hero_section": { "type": "hero_section" },
-    "feature":      { "type": "feature" },
-    "testimonial":  { "type": "testimonial" },
-    "blog":         { "type": "blog" },
-    "brand":        { "type": "brand" }
+    "hero":            { "type": "image_text_split" },
+    "shop_by":         { "type": "collection_tiles" },
+    "press":           { "type": "logo_bar" },
+    "benefits":        { "type": "feature_grid" },
+    "featured":        { "type": "featured_products" },
+    "stats":           { "type": "stats_bar" },
+    "story":           { "type": "image_text_split" },
+    "transformation":  { "type": "before_after" },
+    "how_it_works":    { "type": "process_steps" },
+    "compare":         { "type": "comparison_table" },
+    "ugc":             { "type": "ugc_carousel" },
+    "reviews":         { "type": "testimonial_grid" },
+    "detail":          { "type": "rich_content" },
+    "faq":             { "type": "faq_accordion" },
+    "cta_final":       { "type": "cta_banner_v2" }
   }
 }
 {% endschema %}

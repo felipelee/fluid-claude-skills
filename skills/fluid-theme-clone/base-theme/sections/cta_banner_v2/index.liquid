@@ -1,0 +1,202 @@
+{%- style -%}
+  .cta-banner.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 100 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 100 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 100px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'var(--clr-primary)' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .cta-banner.section-{{ section.id }} .cta-banner__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+    overflow: hidden;
+    text-align: {{ section.settings.alignment | default: 'center' }};
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .cta-banner.section-{{ section.id }} .cta-banner__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .cta-banner.section-{{ section.id }} .cta-banner__container > * { position: relative; }
+  @media (max-width: 991px) { .cta-banner.section-{{ section.id }} .cta-banner__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .cta-banner.section-{{ section.id }} .cta-banner__container { padding-left: 16px; padding-right: 16px; } }
+
+  .cta-banner.section-{{ section.id }} .cta-banner__content {
+    display: flex; flex-direction: column; gap: 20px;
+    {% if section.settings.alignment == 'center' %}align-items: center; max-width: 720px; margin: 0 auto;{% endif %}
+    {% if section.settings.alignment == 'right'  %}align-items: flex-end;{% endif %}
+  }
+  .cta-banner.section-{{ section.id }} .cta-banner__buttons {
+    display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;
+    justify-content: {% case section.settings.alignment %}{% when 'center' %}center{% when 'right' %}flex-end{% else %}flex-start{% endcase %};
+  }
+{%- endstyle -%}
+
+<section class="cta-banner section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="cta-banner__container">
+    <div class="cta-banner__content">
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'eyebrow' %}
+            <div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+          {% when 'heading' %}
+            <div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+          {% when 'subhead' %}
+            <div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+        {% endcase %}
+      {% endfor %}
+
+      {%- assign button_blocks = section.blocks | where: 'type', 'button' -%}
+      {% if button_blocks.size > 0 %}
+        <div class="cta-banner__buttons">
+          {% for block in button_blocks %}
+            {% capture _btn_style %}
+              {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+              {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+              {% if block.settings.font_size != blank %}font-size: {{ block.settings.font_size }}px;{% endif %}
+              {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+              {% assign bp = block.settings.padding %}{% if bp %}padding: {{ bp.top }}px {{ bp.right }}px {{ bp.bottom }}px {{ bp.left }}px;{% endif %}
+              {% assign bbr = block.settings.border_radius %}{% if bbr %}border-radius: {{ bbr.tl }}px {{ bbr.tr }}px {{ bbr.br }}px {{ bbr.bl }}px;{% endif %}
+              {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+            {% endcapture %}
+            <a href="{{ block.settings.link | default: '#' }}"
+               class="btn btn--{{ block.settings.style | default: 'filled' }}"
+               style="{{ _btn_style | strip_newlines }}"
+               {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+               {{ block.fluid_attributes }}>
+              {{ block.settings.text | escape }}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "CTA Banner",
+  "tag": "section",
+  "class": "cta-banner-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "radio", "id": "alignment", "label": "Content Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-white); text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8;\">Ready to start?</h5>" }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-white);\">Join thousands of happy customers.</h2>" }
+      ]
+    },
+    {
+      "type": "subhead",
+      "name": "Subhead",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-white); font-size: 18px; opacity: 0.9;\">Shop the collection — free shipping, 30-day returns, no questions asked.</p>" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "settings": [
+        { "type": "header", "content": "Content" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Shop now" },
+        { "type": "url", "id": "link", "label": "Link" },
+        { "type": "select", "id": "font_family", "label": "Font Family", "options": "font_families", "default": "var(--ff-body)" },
+        { "type": "checkbox", "id": "open_new_tab", "label": "Open in new tab", "default": false },
+        { "type": "header", "content": "Style" },
+        {
+          "type": "radio", "id": "style", "label": "Style", "default": "filled",
+          "options": [
+            { "value": "filled",  "label": "Filled" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "text",    "label": "Text only" }
+          ]
+        },
+        { "type": "range", "id": "font_size", "label": "Font Size", "min": 10, "max": 32, "step": 1, "default": 16, "unit": "px" },
+        { "type": "padding", "id": "padding", "label": "Padding" },
+        { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "select", "id": "text_color",       "label": "Text Color",       "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "header", "content": "Shape" },
+        { "type": "range", "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CTA Banner",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "button" }
+      ]
+    }
+  ]
+}
+{% endschema %}

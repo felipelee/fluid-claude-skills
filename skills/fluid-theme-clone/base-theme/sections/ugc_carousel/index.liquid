@@ -1,0 +1,452 @@
+{%- style -%}
+  .ugc-carousel.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1440px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .ugc-carousel.section-{{ section.id }} .ugc-carousel__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__container > * { position: relative; }
+  @media (max-width: 991px) { .ugc-carousel.section-{{ section.id }} .ugc-carousel__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .ugc-carousel.section-{{ section.id }} .ugc-carousel__container { padding-left: 16px; padding-right: 16px; } }
+
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 40px; max-width: 720px;{%- else -%}margin-bottom: 40px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__viewport {
+    position: relative;
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - ({{ section.settings.items_desktop | default: 4 }} - 1) * {{ section.settings.gap | default: 16 }}px) / {{ section.settings.items_desktop | default: 4 }});
+    gap: {{ section.settings.gap | default: 16 }}px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 0;
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__track::-webkit-scrollbar { display: none; }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__slide {
+    scroll-snap-align: start;
+    min-width: 0;
+  }
+  @media (max-width: 991px) {
+    .ugc-carousel.section-{{ section.id }} .ugc-carousel__track {
+      grid-auto-columns: calc((100% - ({{ section.settings.items_tablet | default: 3 }} - 1) * {{ section.settings.gap | default: 16 }}px) / {{ section.settings.items_tablet | default: 3 }});
+    }
+  }
+  @media (max-width: 767px) {
+    .ugc-carousel.section-{{ section.id }} .ugc-carousel__track {
+      grid-auto-columns: calc((100% - ({{ section.settings.items_mobile | default: 2 }} - 1) * 12px) / {{ section.settings.items_mobile | default: 2 }});
+      gap: 12px;
+    }
+  }
+
+  .ugc-carousel.section-{{ section.id }} .fluid-media {
+    aspect-ratio: {{ section.settings.item_aspect_ratio | default: '9/16' }};
+    {%- assign cbr = section.settings.item_border_radius -%}
+    {%- if cbr -%}border-radius: {{ cbr.tl }}px {{ cbr.tr }}px {{ cbr.br }}px {{ cbr.bl }}px;{%- endif -%}
+    overflow: hidden;
+    background: var(--clr-gray);
+  }
+  .ugc-carousel.section-{{ section.id }} .fluid-media fluid-media-widget,
+  .ugc-carousel.section-{{ section.id }} .fluid-media fluid-media-widget > * {
+    width: 100%; height: 100%;
+  }
+
+  .ugc-carousel.section-{{ section.id }} .ugc-card-caption {
+    margin-top: 12px;
+    font-size: 14px;
+    color: {{ section.settings.caption_color | default: 'var(--clr-body)' }};
+    text-align: {{ section.settings.caption_alignment | default: 'left' }};
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-card-author {
+    font-weight: 600;
+    color: {{ section.settings.caption_color | default: 'var(--clr-body)' }};
+    margin-right: 6px;
+  }
+
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__arrows {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: {% if section.settings.show_arrows %}flex{% else %}none{% endif %};
+    align-items: center; justify-content: space-between;
+    padding: 0 4px;
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__arrow {
+    pointer-events: auto;
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer;
+    background: {{ section.settings.arrow_bg_color | default: 'var(--clr-white)' }};
+    color: {{ section.settings.arrow_color | default: 'var(--clr-primary)' }};
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(10, 37, 64, 0.12);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__arrow:hover { transform: scale(1.05); }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__arrow:disabled { opacity: 0; pointer-events: none; }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__arrow svg { width: 18px; height: 18px; }
+
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__dots {
+    display: {% if section.settings.show_pagination %}flex{% else %}none{% endif %};
+    justify-content: center; gap: 8px; margin-top: 24px;
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__dot {
+    width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+    background: {{ section.settings.arrow_bg_color | default: 'var(--clr-gray)' }};
+    opacity: 0.5; transition: opacity 0.2s, transform 0.2s;
+  }
+  .ugc-carousel.section-{{ section.id }} .ugc-carousel__dot.is-active {
+    background: {{ section.settings.arrow_color | default: 'var(--clr-primary)' }};
+    opacity: 1; transform: scale(1.25);
+  }
+{%- endstyle -%}
+
+<section class="ugc-carousel section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ugc-carousel__container">
+
+    {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+    {%- assign subhead_block = section.blocks | where: 'type', 'subhead' | first -%}
+    {%- assign media_blocks  = section.blocks | where: 'type', 'fluid_media' -%}
+
+    {% if eyebrow_block or heading_block or subhead_block %}
+      <div class="ugc-carousel__intro">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_block %}<div class="rte" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    {% if media_blocks.size > 0 %}
+      <div class="ugc-carousel__viewport" data-ugc-carousel
+           data-autoplay="{% if section.settings.autoplay %}1{% else %}0{% endif %}"
+           data-autoplay-interval="{{ section.settings.autoplay_interval | default: 5000 }}"
+           data-loop="{% if section.settings.loop %}1{% else %}0{% endif %}">
+        <div class="ugc-carousel__track" data-ugc-track>
+          {% for block in media_blocks %}
+            {% assign _m = block.settings.media %}
+            {% assign _fmid = _m.fluid_media_id %}
+            {% assign _embed = block.settings.embed_type | default: 'popover' %}
+            {% if _embed == 'auto' %}{% assign _embed = _m.embed_type | default: 'popover' %}{% endif %}
+            {% assign _img_url = '' %}
+            {% if _fmid == blank and _m %}
+              {% assign _img_url = _m | image_url %}
+              {% if _img_url == blank %}{% assign _img_url = _m.src | default: _m.url %}{% endif %}
+            {% endif %}
+            <div class="ugc-carousel__slide" {{ block.fluid_attributes }}>
+              <div class="fluid-media">
+                {% if _fmid != blank %}
+                  <fluid-media-widget media-id="{{ _fmid }}"
+                    responsive="true"
+                    embed-type="{{ _embed }}"
+                    data-fluid-widget="true"></fluid-media-widget>
+                {% elsif _img_url != blank %}
+                  <img src="{{ _img_url }}" alt="{{ block.settings.author | default: 'UGC' | escape }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                  <div class="media-wrap__placeholder" style="width:100%;height:100%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>
+                  </div>
+                {% endif %}
+              </div>
+              {% if block.settings.author != blank or block.settings.caption != blank %}
+                <div class="ugc-card-caption">
+                  {% if block.settings.author != blank %}<span class="ugc-card-author">{{ block.settings.author | escape }}</span>{% endif %}
+                  {% if block.settings.caption != blank %}<span>{{ block.settings.caption | escape }}</span>{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+        {% if section.settings.show_arrows %}
+          <div class="ugc-carousel__arrows">
+            <button type="button" class="ugc-carousel__arrow" data-ugc-prev aria-label="Previous">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button type="button" class="ugc-carousel__arrow" data-ugc-next aria-label="Next">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        {% endif %}
+        {% if section.settings.show_pagination %}
+          <div class="ugc-carousel__dots" data-ugc-dots>
+            {% for block in media_blocks %}
+              <button type="button" class="ugc-carousel__dot{% if forloop.first %} is-active{% endif %}" data-ugc-dot="{{ forloop.index0 }}" aria-label="Go to slide {{ forloop.index }}"></button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if media_blocks.size > 0 %}
+<script>
+(function () {
+  function init(root) {
+    var track = root.querySelector('[data-ugc-track]');
+    if (!track) return;
+    var prev  = root.querySelector('[data-ugc-prev]');
+    var next  = root.querySelector('[data-ugc-next]');
+    var dots  = root.querySelectorAll('[data-ugc-dot]');
+    var loop  = root.getAttribute('data-loop') === '1';
+    var autoplay = root.getAttribute('data-autoplay') === '1';
+    var interval = parseInt(root.getAttribute('data-autoplay-interval'), 10) || 5000;
+
+    function slideWidth() {
+      var first = track.firstElementChild;
+      if (!first) return 0;
+      var style = getComputedStyle(track);
+      var gap = parseFloat(style.columnGap || style.gap || '0') || 0;
+      return first.offsetWidth + gap;
+    }
+    function maxScroll() { return track.scrollWidth - track.clientWidth; }
+
+    function scrollByDir(dir) {
+      var w = slideWidth();
+      var target = track.scrollLeft + dir * w;
+      if (loop) {
+        if (dir < 0 && track.scrollLeft <= 1) target = maxScroll();
+        else if (dir > 0 && track.scrollLeft >= maxScroll() - 1) target = 0;
+      } else {
+        target = Math.max(0, Math.min(target, maxScroll()));
+      }
+      track.scrollTo({ left: target, behavior: 'smooth' });
+    }
+
+    function updateArrows() {
+      if (!prev || !next || loop) return;
+      prev.disabled = track.scrollLeft <= 1;
+      next.disabled = track.scrollLeft >= maxScroll() - 1;
+    }
+    function updateDots() {
+      if (!dots.length) return;
+      var w = slideWidth();
+      if (!w) return;
+      var idx = Math.round(track.scrollLeft / w);
+      dots.forEach(function (d, i) { d.classList.toggle('is-active', i === idx); });
+    }
+
+    if (prev) prev.addEventListener('click', function () { scrollByDir(-1); });
+    if (next) next.addEventListener('click', function () { scrollByDir(1); });
+    dots.forEach(function (d) {
+      d.addEventListener('click', function () {
+        var i = parseInt(d.getAttribute('data-ugc-dot'), 10) || 0;
+        track.scrollTo({ left: i * slideWidth(), behavior: 'smooth' });
+      });
+    });
+
+    track.addEventListener('scroll', function () { updateArrows(); updateDots(); }, { passive: true });
+    window.addEventListener('resize', function () { updateArrows(); updateDots(); });
+    updateArrows(); updateDots();
+
+    if (autoplay) {
+      var timer = null;
+      function start() { stop(); timer = setInterval(function () { scrollByDir(1); }, interval); }
+      function stop()  { if (timer) { clearInterval(timer); timer = null; } }
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+      root.addEventListener('focusin',  stop);
+      root.addEventListener('focusout', start);
+      start();
+    }
+  }
+
+  function boot() {
+    document.querySelectorAll('#shopify-section-{{ section.id }} [data-ugc-carousel], .section-{{ section.id }} [data-ugc-carousel]').forEach(init);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "UGC Carousel",
+  "tag": "section",
+  "class": "ugc-carousel-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Carousel" },
+    { "type": "range", "id": "items_desktop", "label": "Items visible (desktop)", "min": 2, "max": 6, "step": 1, "default": 4 },
+    { "type": "range", "id": "items_tablet",  "label": "Items visible (tablet)",  "min": 1, "max": 4, "step": 1, "default": 3 },
+    { "type": "range", "id": "items_mobile",  "label": "Items visible (mobile)",  "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "gap", "label": "Gap between items (px)", "min": 0, "max": 48, "step": 2, "default": 16 },
+    { "type": "checkbox", "id": "loop", "label": "Loop (wrap to start/end)", "default": true },
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": false },
+    { "type": "range", "id": "autoplay_interval", "label": "Autoplay interval (ms)",
+      "min": 2000, "max": 10000, "step": 500, "default": 5000 },
+    { "type": "checkbox", "id": "show_arrows",     "label": "Show navigation arrows", "default": true },
+    { "type": "checkbox", "id": "show_pagination", "label": "Show pagination dots",   "default": false },
+
+    { "type": "header", "content": "Item" },
+    {
+      "type": "select", "id": "item_aspect_ratio", "label": "Item Aspect Ratio", "default": "9/16",
+      "info": "UGC is typically vertical — 9:16 matches TikTok / Reels / Stories.",
+      "options": [
+        { "value": "9/16", "label": "Portrait mobile (9:16)" },
+        { "value": "3/4",  "label": "Portrait (3:4)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" },
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" }
+      ]
+    },
+    { "type": "corner_radius", "id": "item_border_radius", "label": "Item Border Radius" },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "select", "id": "caption_color", "label": "Caption Color", "options": "background_colors", "default": "var(--clr-body)" },
+    {
+      "type": "radio", "id": "caption_alignment", "label": "Caption Alignment", "default": "left",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+    { "type": "select", "id": "arrow_color",    "label": "Arrow / Dot Color",       "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "arrow_bg_color", "label": "Arrow Background",        "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1440px",
+      "options": [
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">Customers</h5>" }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">See it in action</h2>" }
+      ]
+    },
+    {
+      "type": "subhead",
+      "name": "Subhead",
+      "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">Real reviews from real customers.</p>" }
+      ]
+    },
+    {
+      "type": "fluid_media",
+      "name": "UGC Media",
+      "settings": [
+        { "type": "header", "content": "Media" },
+        { "type": "media_picker", "id": "media", "label": "Media",
+          "info": "Pick a UGC video / image from your Fluid media library." },
+        {
+          "type": "select", "id": "embed_type", "label": "Embed Type", "default": "popover",
+          "options": [
+            { "value": "auto",    "label": "Use media's default" },
+            { "value": "inline",  "label": "Inline (plays in place)" },
+            { "value": "popover", "label": "Popover (opens in overlay)" },
+            { "value": "modal",   "label": "Modal (full-screen)" }
+          ]
+        },
+        { "type": "header", "content": "Caption" },
+        { "type": "text", "id": "author",  "label": "Author / Handle",
+          "info": "Short \u2014 e.g. '@jane_doe' or 'Jane D.'" },
+        { "type": "text", "id": "caption", "label": "Caption",
+          "info": "Optional. One short line under the video." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "UGC Carousel",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "fluid_media", "settings": { "author": "@customer_1" } },
+        { "type": "fluid_media", "settings": { "author": "@customer_2" } },
+        { "type": "fluid_media", "settings": { "author": "@customer_3" } },
+        { "type": "fluid_media", "settings": { "author": "@customer_4" } },
+        { "type": "fluid_media", "settings": { "author": "@customer_5" } },
+        { "type": "fluid_media", "settings": { "author": "@customer_6" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

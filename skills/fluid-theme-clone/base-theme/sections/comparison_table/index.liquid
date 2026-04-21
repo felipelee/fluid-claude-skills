@@ -1,0 +1,316 @@
+{%- style -%}
+  .cmp.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .cmp.section-{{ section.id }} .cmp__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1080px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .cmp.section-{{ section.id }} .cmp__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .cmp.section-{{ section.id }} .cmp__container > * { position: relative; }
+  @media (max-width: 991px) { .cmp.section-{{ section.id }} .cmp__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .cmp.section-{{ section.id }} .cmp__container { padding-left: 16px; padding-right: 16px; } }
+
+  .cmp.section-{{ section.id }} .cmp__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 56px; max-width: 720px;{%- else -%}margin-bottom: 56px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .cmp.section-{{ section.id }} .cmp__table {
+    display: grid;
+    grid-template-columns: minmax(200px, 1.4fr) 1fr 1fr;
+    border-radius: {{ section.settings.table_radius | default: 16 }}px;
+    overflow: hidden;
+    background: {{ section.settings.table_background | default: 'var(--clr-white)' }};
+    box-shadow: 0 12px 40px -16px rgba(17, 24, 39, 0.15);
+  }
+  .cmp.section-{{ section.id }} .cmp__head,
+  .cmp.section-{{ section.id }} .cmp__cell {
+    padding: 20px 24px;
+    display: flex; align-items: center;
+    font-size: 15.5px;
+    line-height: 1.5;
+    border-bottom: 1px solid {{ section.settings.row_border | default: 'var(--clr-gray)' }};
+  }
+  .cmp.section-{{ section.id }} .cmp__table > *:nth-last-child(-n+3) { border-bottom: none; }
+  .cmp.section-{{ section.id }} .cmp__head {
+    font-weight: 600;
+    font-size: 17px;
+    padding-top: 28px; padding-bottom: 28px;
+    letter-spacing: -0.01em;
+  }
+  .cmp.section-{{ section.id }} .cmp__head--us {
+    background: {{ section.settings.us_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.us_text_color | default: 'var(--clr-white)' }};
+    justify-content: center;
+    position: relative;
+  }
+  .cmp.section-{{ section.id }} .cmp__head--them {
+    background: {{ section.settings.them_background | default: 'var(--clr-light)' }};
+    color: {{ section.settings.them_text_color | default: 'var(--clr-muted)' }};
+    justify-content: center;
+  }
+  .cmp.section-{{ section.id }} .cmp__head--feature {
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: {{ section.settings.feature_label_color | default: 'var(--clr-muted)' }};
+  }
+  .cmp.section-{{ section.id }} .cmp__badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: {{ section.settings.us_badge_background | default: 'var(--clr-accent)' }};
+    color: {{ section.settings.us_badge_text_color | default: 'var(--clr-white)' }};
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 999px;
+    display: {% if section.settings.show_badge %}inline-block{% else %}none{% endif %};
+  }
+  .cmp.section-{{ section.id }} .cmp__feature {
+    font-weight: 500;
+    color: {{ section.settings.feature_color | default: 'var(--clr-primary)' }};
+  }
+  .cmp.section-{{ section.id }} .cmp__cell--us {
+    background: {{ section.settings.us_cell_background | default: 'var(--clr-light)' }};
+    color: {{ section.settings.us_cell_text_color | default: 'var(--clr-primary)' }};
+    justify-content: center;
+    font-weight: 500;
+  }
+  .cmp.section-{{ section.id }} .cmp__cell--them {
+    background: {{ section.settings.them_cell_background | default: 'var(--clr-white)' }};
+    color: {{ section.settings.them_cell_text_color | default: 'var(--clr-muted)' }};
+    justify-content: center;
+  }
+  .cmp.section-{{ section.id }} .cmp__ico {
+    width: 24px; height: 24px; flex-shrink: 0;
+  }
+  .cmp.section-{{ section.id }} .cmp__ico--check { color: {{ section.settings.check_color | default: 'var(--clr-success)' }}; }
+  .cmp.section-{{ section.id }} .cmp__ico--x     { color: {{ section.settings.cross_color | default: 'var(--clr-muted)' }}; }
+
+  @media (max-width: 767px) {
+    .cmp.section-{{ section.id }} .cmp__table {
+      grid-template-columns: minmax(130px, 1fr) 80px 80px;
+    }
+    .cmp.section-{{ section.id }} .cmp__head,
+    .cmp.section-{{ section.id }} .cmp__cell {
+      padding: 14px 10px;
+      font-size: 13.5px;
+    }
+    .cmp.section-{{ section.id }} .cmp__head {
+      font-size: 14px;
+      padding-top: 22px; padding-bottom: 22px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="cmp section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="cmp__container">
+
+    {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+    {%- assign heading_block = section.blocks | where: 'type', 'heading' | first -%}
+    {%- assign subhead_block = section.blocks | where: 'type', 'subhead' | first -%}
+    {%- assign row_blocks    = section.blocks | where: 'type', 'row' -%}
+
+    {% if eyebrow_block or heading_block or subhead_block %}
+      <div class="cmp__intro">
+        {% if eyebrow_block %}<div class="rte" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text }}</div>{% endif %}
+        {% if heading_block %}<div class="rte" {{ heading_block.fluid_attributes }}>{{ heading_block.settings.text }}</div>{% endif %}
+        {% if subhead_block %}<div class="rte" {{ subhead_block.fluid_attributes }}>{{ subhead_block.settings.text }}</div>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="cmp__table">
+      <div class="cmp__head cmp__head--feature">{{ section.settings.feature_label | default: 'Features' | escape }}</div>
+      <div class="cmp__head cmp__head--us">
+        {% if section.settings.show_badge %}<span class="cmp__badge">{{ section.settings.badge_text | default: 'Recommended' | escape }}</span>{% endif %}
+        {{ section.settings.us_label | default: 'Our Product' | escape }}
+      </div>
+      <div class="cmp__head cmp__head--them">{{ section.settings.them_label | default: 'Them' | escape }}</div>
+
+      {% for block in row_blocks %}
+        <div class="cmp__cell cmp__feature" {{ block.fluid_attributes }}>{{ block.settings.feature | default: 'Feature' | escape }}</div>
+        <div class="cmp__cell cmp__cell--us">
+          {% case block.settings.us_value %}
+            {% when 'check' %}
+              <svg class="cmp__ico cmp__ico--check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            {% when 'x' %}
+              <svg class="cmp__ico cmp__ico--x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            {% else %}
+              <span>{{ block.settings.us_text | escape }}</span>
+          {% endcase %}
+        </div>
+        <div class="cmp__cell cmp__cell--them">
+          {% case block.settings.them_value %}
+            {% when 'check' %}
+              <svg class="cmp__ico cmp__ico--check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            {% when 'x' %}
+              <svg class="cmp__ico cmp__ico--x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            {% else %}
+              <span>{{ block.settings.them_text | escape }}</span>
+          {% endcase %}
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Comparison Table",
+  "tag": "section",
+  "class": "comparison-table-section",
+  "settings": [
+    { "type": "header", "content": "Labels" },
+    { "type": "text", "id": "feature_label", "label": "Left column header", "default": "Features" },
+    { "type": "text", "id": "us_label",      "label": "Our product label", "default": "Our Product" },
+    { "type": "text", "id": "them_label",    "label": "Competitor label",  "default": "Them" },
+    { "type": "checkbox", "id": "show_badge", "label": "Show \"Recommended\" badge", "default": true },
+    { "type": "text", "id": "badge_text",    "label": "Badge text", "default": "Recommended" },
+
+    { "type": "header", "content": "Our Column Colors" },
+    { "type": "select", "id": "us_background",      "label": "Header background", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "us_text_color",      "label": "Header text",       "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "us_cell_background", "label": "Cell background",   "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "us_cell_text_color", "label": "Cell text",         "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "us_badge_background","label": "Badge background",  "options": "background_colors", "default": "var(--clr-accent)" },
+    { "type": "select", "id": "us_badge_text_color","label": "Badge text",        "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Their Column Colors" },
+    { "type": "select", "id": "them_background",      "label": "Header background", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "them_text_color",      "label": "Header text",       "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "them_cell_background", "label": "Cell background",   "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "them_cell_text_color", "label": "Cell text",         "options": "background_colors", "default": "var(--clr-muted)" },
+
+    { "type": "header", "content": "Icons" },
+    { "type": "select", "id": "check_color", "label": "Checkmark color", "options": "background_colors", "default": "var(--clr-success)" },
+    { "type": "select", "id": "cross_color", "label": "Cross color",     "options": "background_colors", "default": "var(--clr-muted)" },
+
+    { "type": "header", "content": "Table Style" },
+    { "type": "range",  "id": "table_radius", "label": "Table radius (px)", "min": 0, "max": 32, "step": 2, "default": 16 },
+    { "type": "select", "id": "table_background",    "label": "Table background",    "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "row_border",          "label": "Row divider color",   "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "feature_color",       "label": "Feature label color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "feature_label_color", "label": "Top-left label color","options": "background_colors", "default": "var(--clr-muted)" },
+
+    { "type": "header", "content": "Layout" },
+    { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1080px",
+      "options": [
+        { "value": "720px",  "label": "Extra narrow (720px)" },
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">Compare</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary);\">Why we're different</h2>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead", "limit": 1,
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">See how we stack up against the competition.</p>" }
+      ]
+    },
+    { "type": "row", "name": "Row",
+      "settings": [
+        { "type": "text", "id": "feature", "label": "Feature", "default": "Free shipping" },
+        { "type": "header", "content": "Our column" },
+        { "type": "radio", "id": "us_value", "label": "Display as", "default": "check",
+          "options": [
+            { "value": "check", "label": "Checkmark" },
+            { "value": "x",     "label": "Cross" },
+            { "value": "text",  "label": "Text" }
+          ]
+        },
+        { "type": "text", "id": "us_text", "label": "Text (if Display = Text)", "default": "Yes" },
+        { "type": "header", "content": "Their column" },
+        { "type": "radio", "id": "them_value", "label": "Display as", "default": "x",
+          "options": [
+            { "value": "check", "label": "Checkmark" },
+            { "value": "x",     "label": "Cross" },
+            { "value": "text",  "label": "Text" }
+          ]
+        },
+        { "type": "text", "id": "them_text", "label": "Text (if Display = Text)", "default": "No" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comparison Table",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "row", "settings": { "feature": "Free shipping", "us_value": "check", "them_value": "x" } },
+        { "type": "row", "settings": { "feature": "30-day returns", "us_value": "check", "them_value": "x" } },
+        { "type": "row", "settings": { "feature": "Handcrafted quality", "us_value": "check", "them_value": "x" } },
+        { "type": "row", "settings": { "feature": "Ethically sourced", "us_value": "check", "them_value": "text", "them_text": "Unknown" } },
+        { "type": "row", "settings": { "feature": "Price", "us_value": "text", "us_text": "$49", "them_value": "text", "them_text": "$129" } },
+        { "type": "row", "settings": { "feature": "Lifetime warranty", "us_value": "check", "them_value": "x" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -35,8 +35,7 @@
   {%- if _ar != 'auto' -%}aspect-ratio: {{ _ar }};{%- endif -%}
   {%- assign br = block.settings.border_radius -%}
   {%- if br -%}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{%- endif -%}
-  {%- assign bd = block.settings.border -%}
-  {%- if bd.width -%}border: {{ bd.width }} solid {{ bd.color }};{%- endif -%}
+  {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
 {%- endcapture -%}
 
 {%- capture _img_style -%}
@@ -76,60 +75,172 @@
 {
   "name": "Image",
   "settings": [
-    { "type": "header", "content": "Content" },
-    { "type": "image_picker", "id": "image",        "label": "Image" },
-    { "type": "text",         "id": "alt",          "label": "Alt Text",
-      "info": "Leave blank to use the image's own alt. Required for accessibility — describe what's in the image." },
-    { "type": "url",          "id": "link",         "label": "Link" },
-    { "type": "checkbox",     "id": "open_new_tab", "label": "Open in new tab", "default": false },
-
-    { "type": "header", "content": "Sizing" },
     {
-      "type": "select", "id": "aspect_ratio", "label": "Aspect Ratio", "default": "auto",
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "alt",
+      "label": "Alt Text",
+      "info": "Leave blank to use the image's own alt. Required for accessibility \u2014 describe what's in the image."
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_new_tab",
+      "label": "Open in new tab",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Sizing"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Aspect Ratio",
+      "default": "auto",
       "options": [
-        { "value": "auto",  "label": "Auto (natural)" },
-        { "value": "1/1",   "label": "Square (1:1)" },
-        { "value": "4/3",   "label": "Standard (4:3)" },
-        { "value": "16/9",  "label": "Widescreen (16:9)" },
-        { "value": "3/2",   "label": "Classic (3:2)" },
-        { "value": "3/4",   "label": "Portrait (3:4)" },
-        { "value": "9/16",  "label": "Portrait mobile (9:16)" },
-        { "value": "21/9",  "label": "Ultrawide (21:9)" }
+        {
+          "value": "auto",
+          "label": "Auto (natural)"
+        },
+        {
+          "value": "1/1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4/3",
+          "label": "Standard (4:3)"
+        },
+        {
+          "value": "16/9",
+          "label": "Widescreen (16:9)"
+        },
+        {
+          "value": "3/2",
+          "label": "Classic (3:2)"
+        },
+        {
+          "value": "3/4",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "9/16",
+          "label": "Portrait mobile (9:16)"
+        },
+        {
+          "value": "21/9",
+          "label": "Ultrawide (21:9)"
+        }
       ]
     },
     {
-      "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+      "type": "radio",
+      "id": "fit",
+      "label": "Fit",
+      "default": "cover",
       "options": [
-        { "value": "cover",   "label": "Cover" },
-        { "value": "contain", "label": "Contain" },
-        { "value": "fill",    "label": "Fill" }
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "fill",
+          "label": "Fill"
+        }
       ]
     },
     {
-      "type": "select", "id": "object_position", "label": "Object Position", "default": "center",
+      "type": "select",
+      "id": "object_position",
+      "label": "Object Position",
+      "default": "center",
       "info": "Only affects images with Fit = Cover.",
       "options": [
-        { "value": "center", "label": "Center" },
-        { "value": "top",    "label": "Top" },
-        { "value": "bottom", "label": "Bottom" },
-        { "value": "left",   "label": "Left" },
-        { "value": "right",  "label": "Right" }
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
       ]
     },
-
-    { "type": "header", "content": "Overlay" },
     {
-      "type": "select", "id": "overlay_color", "label": "Overlay Color",
-      "options": "background_colors", "default": "transparent"
+      "type": "header",
+      "content": "Overlay"
     },
     {
-      "type": "range", "id": "overlay_opacity", "label": "Overlay Opacity",
-      "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%"
+      "type": "select",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "options": "background_colors",
+      "default": "transparent"
     },
-
-    { "type": "header", "content": "Shape" },
-    { "type": "border",        "id": "border",        "label": "Border" },
-    { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" }
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "Shape"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Border Width",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "border_color",
+      "label": "Border Color",
+      "options": "background_colors",
+      "default": "var(--clr-primary)"
+    },
+    {
+      "type": "corner_radius",
+      "id": "border_radius",
+      "label": "Border Radius"
+    }
   ]
 }
 {% endschema %}
