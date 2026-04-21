@@ -61,6 +61,7 @@ All requests require `Authorization: Bearer {FLUID_API_TOKEN}`.
 
 ## Settings
 
-| Method | Endpoint |
-|--------|----------|
-| GET | `/api/settings/company_countries` |
+| Method | Endpoint | Used for |
+|--------|----------|----------|
+| GET | `/api/settings/company` | Company identity (id, name) for preflight confirmation |
+| GET | `/api/settings/company_countries` | Token validation + country data |

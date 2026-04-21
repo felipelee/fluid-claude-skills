@@ -51,25 +51,33 @@ Read these when you need detailed lookups during execution:
 
 ## Step 1: Collect Credentials
 
-Ask the user for ALL FOUR before doing anything:
+Ask for all four required inputs before doing anything. Also ask for the optional primary contact.
+
+Required:
 
 1. **Company website URL** — The site to scrape (e.g. `https://yellowbirdfoods.com`)
 2. **Fluid URL** — Their Fluid store (e.g. `https://companyname.fluid.app`)
 3. **Fluid API token** — Developer token from Fluid admin
 4. **Firecrawl API key** — From [firecrawl.dev](https://firecrawl.dev)
-5. **Primary contact name** (optional) — Who will be the person primarily filling out the onboarding form? If unknown, leave blank — we'll report all people we find and you can assign later.
+
+Optional:
+
+5. **Primary contact name** — Who will be the person primarily filling out the onboarding form? If unknown, leave blank — we'll report all people we find and you can assign later.
 
 If the user provides a primary contact name, attempt to match it against people found during research and create an owner record for that person with `onboarding_contact: true`. If no name is provided, all discovered people are reported as "relevant persons" only — no owner records are created.
 
 ## Step 2: Validate Credentials
 
-Run these three checks in parallel. If any fail, stop immediately.
+Run these four checks in parallel. If any fail, stop immediately.
 
 | Check | Method | Success |
 |-------|--------|---------|
 | Source site reachable | `GET {company_url}` (follow redirects) | 200 |
-| Fluid API token works | `GET {fluid_url}/api/settings/company_countries` with Bearer token | 200, extract company ID and name |
+| Fluid API token works | `GET {fluid_url}/api/settings/company_countries` with Bearer token | 200 |
+| Company identity | `GET {fluid_url}/api/settings/company` with Bearer token | 200, extract company `id` and `name` |
 | Firecrawl key works | `POST https://api.firecrawl.dev/v1/scrape` with a test URL | 200 |
+
+The `company_countries` call validates the token and returns the country data you'll use in Step 8. The `company` call is what gives you the human-readable name for the identity confirmation prompt below — `company_countries` does not return a company name.
 
 Print results:
 
