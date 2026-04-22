@@ -6,6 +6,100 @@ Every control is set in a section or block schema via `{ "type": "<type>", "id":
 
 ---
 
+## 🚫 NON-NEGOTIABLE RULES — Read first, every time
+
+These rules are violated most often. Before you write any schema, internalize them.
+
+### 1. Content images MUST be `blocks/image` — never `image_picker`
+
+Any image the merchant can swap — a hero image, a card photo, an avatar, a logo, a step illustration, an ingredient shot, a "before"/"after" photo — **must be added as a canonical `image` block**. Not as a section-level `image_picker`. Not as an inline `image_picker` inside some other block's settings.
+
+**ALLOWED uses of `image_picker`:**
+
+| Location | Id (convention) | Purpose |
+|----------|-----------------|---------|
+| Section Shell | `background_image` | Decorative full-section background |
+| Container | `container_background_image` | Decorative container background |
+| Canonical `blocks/image` only | `image` | The single image control inside the canonical image block |
+| Data-driven wrappers (`blocks/post_image`, etc.) | varies | Fallback when the resource's own image is blank |
+
+**FORBIDDEN uses of `image_picker`:**
+
+- As a section-level content image (e.g. `before_image`, `after_image`, `hero_image`, `logo_image`)
+- As an image field inside a non-image block (e.g. `avatar` on a review card, `photo` on a testimonial, `logo_image` on a press card)
+- As an "image override" on a product-picker block that isn't the canonical image block
+
+**Why:** the canonical `image` block ships 7+ controls (aspect ratio, fit, object position, corner radius, border width/color, overlay) that every card/tile/hero needs. When you inline an `image_picker` directly, merchants lose all of those controls, can't duplicate the image independently, and the layout breaks the moment the design needs variation.
+
+**When a section needs images per card** (review grid, testimonial grid, logo bar, step list, before/after, ingredient list), use the **divider block pattern**: one divider block type (e.g. `review`, `step`, `logo_item`) with no image field, plus canonical `image` block instances that render inside the current divider's scope via the stateful walk.
+
+**Pre-push checklist:** grep your section for `"type": "image_picker"`. Every match must fall into one of the three ALLOWED rows above. If any match is a content image, convert it to a canonical `image` block.
+
+### 2. Content fonts MUST come from `font_families` option group — never `font_picker`
+
+`font_picker` only lives in `config/settings_schema.json`. Section-level font choices are `select` pointed at `font_families`, whose values are CSS variables (`var(--ff-heading)`, `var(--ff-italic)`, etc.).
+
+### 3. Content colors MUST come from `background_colors` option group — never raw hex
+
+Same reason as fonts. Section-level color choices are `select` pointed at `background_colors`, whose values are CSS variables (`var(--clr-primary)`, `transparent`, etc.).
+
+### 4. Every section uses Section Shell + Container — no exceptions
+
+Canonical structure (6 + 9 = 15 settings that every section ships):
+
+**Section Shell (6 settings — always at the bottom of the settings array under a `{ "type": "header", "content": "Section Shell" }` header):**
+- `padding` — id `section_padding`
+- `corner_radius` — id `section_border_radius`
+- `select` (background_colors) — id `background_color`
+- `image_picker` — id `background_image`
+- `range 0–10` — id `section_border_width`
+- `select` (background_colors) — id `section_border_color`
+
+**Container (9 settings — under a `{ "type": "header", "content": "Container" }` header, placed just before Section Shell):**
+- `select` — id `container_max_width` (options: 1080px / 1280px / 1440px / 100%)
+- `padding` — id `container_padding`
+- `corner_radius` — id `container_border_radius`
+- `select` (background_colors) — id `container_background_color`
+- `image_picker` — id `container_background_image`
+- `select` (background_colors) — id `container_overlay_color`
+- `range 0–100%` — id `container_overlay_opacity`
+- `range 0–10` — id `container_border_width`
+- `select` (background_colors) — id `container_border_color`
+
+**Implementation in Liquid:**
+
+```liquid
+.sec.section-{{ section.id }} {
+  {%- assign p = section.settings.section_padding -%}
+  {%- if p -%}padding: {{ p.top | default: 80 }}px 0 {{ p.bottom | default: 80 }}px 0;{%- else -%}padding: 80px 0;{%- endif -%}
+  background-color: {{ section.settings.background_color | default: 'transparent' }};
+}
+.sec.section-{{ section.id }} .sec__container {
+  max-width: {{ section.settings.container_max_width | default: '1280px' }};
+  margin: 0 auto;
+  padding: 0 64px;
+}
+```
+
+Vertical padding on the shell keeps the background edge-to-edge. The container holds content at max-width. **Don't** put horizontal padding on the shell or you'll kill full-bleed backgrounds.
+
+### 5. Hero intros use richtext BLOCKS — not section-level text fields
+
+Every section with an intro (heading, eyebrow, subhead) exposes them as canonical `eyebrow`, `heading`, `subhead` blocks — each a single `richtext` setting with a styled default. Merchant can edit, add, remove, and reorder them independently. Never a single `{ "type": "text", "id": "heading" }` section setting for a visible title.
+
+**Default richtext** ships with inline `style=""` so first-paint looks intentional:
+
+```json
+{ "type": "richtext", "id": "text", "label": "Text",
+  "default": "<h2 style=\"color: var(--clr-primary); font-size: clamp(32px, 4.5vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;\">Default heading</h2>" }
+```
+
+### 6. `{% render %}` resolves ONLY from `components/` — never `blocks/`
+
+`blocks/*` is a documentation folder for canonical block schemas. Fluid's render engine cannot find files there. If a section needs a shared markup chunk, put it in `components/` and render it from there. For canonical block schemas (like `blocks/cart_button`), **inline** the markup in the section file instead of rendering.
+
+---
+
 ## Controls at a glance
 
 ### Input
@@ -34,7 +128,7 @@ Every control is set in a section or block schema via `{ "type": "<type>", "id":
 | `color` | Hex string | Solid color picker |
 | `color_background` | Hex or gradient string | Solid color + gradient picker |
 | `font_picker` | String | Font family selector |
-| `image_picker` / `image` | Image object | Upload/select image |
+| `image_picker` / `image` | Image object | Upload/select image — **only for section/container background or inside canonical `blocks/image`** (see rule 1 above) |
 | `video_picker` | Video object | Upload/select video |
 | `media_picker` | Media object | Image or video with embed settings |
 | `text_alignment` | String (`left` \| `center` \| `right`) | Alignment buttons |
@@ -132,7 +226,9 @@ Every control is set in a section or block schema via `{ "type": "<type>", "id":
 { "type": "color_background", "id": "bg", "label": "Background", "default": "#fff" }
 { "type": "font_picker", "id": "heading_font", "label": "Heading Font", "default": "Inter" }
 
-{ "type": "image_picker", "id": "hero_image", "label": "Hero Image" }
+{ "type": "image_picker", "id": "background_image", "label": "Background Image" }   // ✅ decorative BG only
+// ❌ DO NOT use image_picker for content images — add a canonical `image` block instead
+// See "NON-NEGOTIABLE RULES → rule 1" at the top of this reference.
 { "type": "video_picker", "id": "demo_video", "label": "Demo Video" }
 { "type": "media_picker", "id": "hero_media", "label": "Hero Media" }
 

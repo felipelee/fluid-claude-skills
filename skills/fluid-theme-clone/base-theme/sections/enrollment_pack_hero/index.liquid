@@ -1,24 +1,24 @@
 {%- comment -%}
-  product_hero — canonical PDP hero
-  Gallery (left) + info column (right) with sticky info on desktop.
-  Wired to Fluid's product object + checkout JS hooks.
-  Drop {% section 'product_hero' %} into product/<slug>/index.liquid
+  enrollment_pack_hero — award-winning MLM enrollment PDP hero.
+  Grid gallery (left) + info column (right). Wired to Fluid's enrollment_pack object.
+  CTA fires data-fluid-add-enrollment-pack="{id}" for Fluid's enrollment checkout.
+  Drop {% section 'enrollment_pack_hero' %} into enrollment_pack/<slug>/index.liquid
 {%- endcomment -%}
 
-{%- assign not_purchasable = product.out_of_stock or product.available_for_country == false or product.active == false -%}
-{%- assign sel_variant = product.selected_or_first_available_variant -%}
+{%- assign not_purchasable = enrollment_pack.out_of_stock or enrollment_pack.available_for_country == false or enrollment_pack.active == false -%}
+{%- assign sel_variant = enrollment_pack.selected_or_first_available_variant -%}
 
 {%- comment -%} Pick image source: variant images (when present) > product images {%- endcomment -%}
-{%- assign images_array = product.images -%}
+{%- assign images_array = enrollment_pack.images -%}
 {%- if sel_variant.images and sel_variant.images.size > 0 -%}
   {%- assign images_array = sel_variant.images | parse_json -%}
 {%- endif -%}
 
 {%- comment -%} Compute savings if compare-at-price > price {%- endcomment -%}
 {%- assign has_compare = false -%}
-{%- if product.compare_at_price and product.compare_at_price != blank -%}
-  {%- assign cmp = product.compare_at_price | plus: 0.0 -%}
-  {%- assign cur = product.price | plus: 0.0 -%}
+{%- if enrollment_pack.compare_at_price and enrollment_pack.compare_at_price != blank -%}
+  {%- assign cmp = enrollment_pack.compare_at_price | plus: 0.0 -%}
+  {%- assign cur = enrollment_pack.price | plus: 0.0 -%}
   {%- if cmp > cur and cur > 0 -%}
     {%- assign has_compare = true -%}
     {%- assign savings_pct = cmp | minus: cur | times: 100.0 | divided_by: cmp | round -%}
@@ -94,37 +94,52 @@
     .ph.section-{{ section.id }} .ph__info { order: unset; position: static; }
   }
 
-  /* ── Gallery ──────────────────────────────────────────────── */
-  .ph.section-{{ section.id }} .ph__gallery-wrap {
+  /* ── Grid gallery (Seed-style) ────────────────────────────── */
+  {%- assign _grid_cols = section.settings.grid_columns | default: 2 -%}
+  {%- assign _grid_gap  = section.settings.grid_gap | default: 8 -%}
+  .ph.section-{{ section.id }} .ph__grid-gallery {
     display: grid;
-    {% if section.settings.thumbnail_position == 'left' %}
-      grid-template-columns: 84px 1fr;
-      gap: 16px;
-    {% else %}
-      grid-template-columns: 1fr;
-      gap: 12px;
-    {% endif %}
+    grid-template-columns: repeat({{ _grid_cols }}, minmax(0, 1fr));
+    gap: {{ _grid_gap }}px;
   }
-  @media (max-width: 991px) {
-    .ph.section-{{ section.id }} .ph__gallery-wrap { grid-template-columns: 1fr; gap: 12px; }
+  @media (max-width: 767px) {
+    .ph.section-{{ section.id }} .ph__grid-gallery {
+      grid-template-columns: repeat({{ section.settings.grid_columns_mobile | default: 1 }}, minmax(0, 1fr));
+      gap: {{ section.settings.grid_gap_mobile | default: 6 }}px;
+    }
   }
-
-  .ph.section-{{ section.id }} .ph__main-image-wrap {
-    position: relative;
-    aspect-ratio: {{ section.settings.image_aspect_ratio | default: '1/1' }};
+  .ph.section-{{ section.id }} .ph__tile {
+    appearance: none; -webkit-appearance: none;
+    border: 0; padding: 0; margin: 0;
     background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+    font: inherit; color: inherit;
+    display: block; width: 100%;
+    aspect-ratio: {{ section.settings.image_aspect_ratio | default: '1/1' }};
+    overflow: hidden;
+    cursor: zoom-in;
+    position: relative;
     {%- assign ibr = section.settings.image_border_radius -%}
     {%- if ibr -%}border-radius: {{ ibr.tl }}px {{ ibr.tr }}px {{ ibr.br }}px {{ ibr.bl }}px;{%- else -%}border-radius: 12px;{%- endif -%}
-    overflow: hidden;
+    transition: transform .25s ease;
   }
-  .ph.section-{{ section.id }} .ph__main-image {
-    position: absolute; inset: 0;
+  .ph.section-{{ section.id }} .ph__tile:hover { transform: scale(0.995); }
+  .ph.section-{{ section.id }} .ph__tile > img,
+  .ph.section-{{ section.id }} .ph__tile > video {
     width: 100%; height: 100%;
     object-fit: cover; object-position: center;
-    transition: opacity .25s ease;
-    cursor: zoom-in;
+    display: block;
   }
-  .ph.section-{{ section.id }} .ph__main-image-placeholder {
+  .ph.section-{{ section.id }} .ph__tile--hero {
+    {% if _grid_cols != 1 %}grid-column: span {{ _grid_cols }};{% endif %}
+    aspect-ratio: {{ section.settings.hero_aspect_ratio | default: '16/10' }};
+  }
+  @media (max-width: 767px) {
+    .ph.section-{{ section.id }} .ph__tile--hero {
+      grid-column: span {{ section.settings.grid_columns_mobile | default: 1 }};
+      aspect-ratio: {{ section.settings.image_aspect_ratio | default: '1/1' }};
+    }
+  }
+  .ph.section-{{ section.id }} .ph__tile-placeholder {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     color: var(--clr-muted); opacity: 0.5;
@@ -139,140 +154,7 @@
     background: {{ section.settings.savings_badge_background | default: 'var(--clr-accent)' }};
     color: {{ section.settings.savings_badge_color | default: 'var(--clr-white)' }};
     border-radius: 999px;
-  }
-
-  {%- assign _thumb_max_visible = section.settings.thumbnail_max_visible | default: 6 -%}
-  .ph.section-{{ section.id }} .ph__thumb-strip {
-    position: relative;
-    {% if section.settings.thumbnail_position == 'left' %}
-      display: flex; flex-direction: column;
-    {% else %}
-      display: block;
-    {% endif %}
-  }
-  .ph.section-{{ section.id }} .ph__thumbs {
-    display: grid;
-    gap: 6px;
-    {% if section.settings.thumbnail_position == 'left' %}
-      grid-template-columns: 1fr;
-      grid-auto-rows: auto;
-      max-height: calc(84px * {{ _thumb_max_visible }} + 6px * ({{ _thumb_max_visible }} - 1));
-      overflow-y: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      scroll-snap-type: y mandatory;
-      scroll-behavior: smooth;
-    {% else %}
-      grid-auto-flow: column;
-      grid-auto-columns: 84px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      -webkit-overflow-scrolling: touch;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-    {% endif %}
-  }
-  .ph.section-{{ section.id }} .ph__thumbs::-webkit-scrollbar { display: none; }
-
-  /* Reset button defaults + make thumbs truly flush */
-  .ph.section-{{ section.id }} .ph__thumb {
-    appearance: none; -webkit-appearance: none;
-    border: 0; padding: 0; margin: 0;
-    background: transparent;
-    font: inherit; color: inherit;
-    display: block; width: 100%;
-    aspect-ratio: 1/1;
-    overflow: hidden;
-    cursor: pointer;
-    transition: opacity .15s, transform .15s;
-    opacity: 0.6;
-    scroll-snap-align: start;
-    position: relative;
-  }
-  .ph.section-{{ section.id }} .ph__thumb img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-  }
-  .ph.section-{{ section.id }} .ph__thumb:hover { opacity: 0.9; }
-  .ph.section-{{ section.id }} .ph__thumb.is-active { opacity: 1; }
-  .ph.section-{{ section.id }} .ph__thumb.is-active::after {
-    content: "";
-    position: absolute; left: 0; bottom: 0;
-    width: 100%; height: 3px;
-    background: {{ section.settings.thumb_active_color | default: 'var(--clr-primary)' }};
-  }
-  {% if section.settings.thumbnail_position == 'left' %}
-  .ph.section-{{ section.id }} .ph__thumb.is-active::after { left: 0; top: 0; width: 3px; height: 100%; }
-  {% endif %}
-
-  /* Arrow scroll buttons for the thumb strip */
-  .ph.section-{{ section.id }} .ph__thumb-arrow {
-    appearance: none; -webkit-appearance: none;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: {{ section.settings.card_background | default: 'var(--clr-white)' }};
-    color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
-    border: 1.5px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background-color .15s, border-color .15s, opacity .15s;
-    padding: 0;
-    z-index: 2;
-  }
-  {% if section.settings.thumbnail_position == 'left' %}
-  .ph.section-{{ section.id }} .ph__thumb-arrow {
-    width: 32px; height: 32px;
-    align-self: center;
-    margin: 6px 0;
-  }
-  {% else %}
-  .ph.section-{{ section.id }} .ph__thumb-arrow {
-    width: 36px; height: 36px;
-    position: absolute; top: 50%; transform: translateY(-50%);
-    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.15);
-  }
-  .ph.section-{{ section.id }} .ph__thumb-arrow[data-dir="prev"] { left: -6px; }
-  .ph.section-{{ section.id }} .ph__thumb-arrow[data-dir="next"] { right: -6px; }
-  {% endif %}
-  .ph.section-{{ section.id }} .ph__thumb-arrow:hover:not(:disabled) {
-    background: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
-    color: {{ section.settings.card_background | default: 'var(--clr-white)' }};
-    border-color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
-  }
-  .ph.section-{{ section.id }} .ph__thumb-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
-  .ph.section-{{ section.id }} .ph__thumb-arrow svg { width: 16px; height: 16px; }
-
-  /* Mobile: force thumbs into horizontal strip below main image */
-  @media (max-width: 991px) {
-    .ph.section-{{ section.id }} .ph__thumb-strip {
-      display: block;
-      order: 2;
-    }
-    .ph.section-{{ section.id }} .ph__main-image-wrap { order: 1; }
-    .ph.section-{{ section.id }} .ph__thumbs {
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(0, calc((100% - 3px * 5) / 6));
-      grid-template-columns: none;
-      grid-auto-rows: auto;
-      max-height: none;
-      gap: 3px;
-      overflow-x: auto;
-      overflow-y: visible;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-    }
-    .ph.section-{{ section.id }} .ph__thumb.is-active::after {
-      left: 0; bottom: 0; top: auto;
-      width: 100%; height: 3px;
-    }
-    .ph.section-{{ section.id }} .ph__thumb-arrow {
-      width: 36px; height: 36px;
-      position: absolute; top: 50%; transform: translateY(-50%);
-      margin: 0;
-      box-shadow: 0 4px 12px -4px rgba(0,0,0,0.15);
-    }
-    .ph.section-{{ section.id }} .ph__thumb-arrow[data-dir="prev"] { left: -6px; }
-    .ph.section-{{ section.id }} .ph__thumb-arrow[data-dir="next"] { right: -6px; }
-    .ph.section-{{ section.id }} .ph__gallery-wrap { display: flex; flex-direction: column; gap: 8px; }
+    pointer-events: none;
   }
 
   /* ── Info column ──────────────────────────────────────────── */
@@ -452,6 +334,18 @@
     border-radius: 10px;
     font-size: 14px; text-align: center;
   }
+
+  .ph.section-{{ section.id }} .ph__commission {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 10px;
+    padding: 8px 14px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    background: {{ section.settings.commission_background | default: 'rgba(16, 185, 129, 0.12)' }};
+    color: {{ section.settings.commission_color | default: 'var(--clr-success)' }};
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .ph.section-{{ section.id }} .ph__commission svg { width: 14px; height: 14px; }
 
   /* ── Trust strip ──────────────────────────────────────────── */
   .ph.section-{{ section.id }} .ph__trust {
@@ -689,67 +583,25 @@
   <div class="ph__container">
     <div class="ph__grid">
 
-      {%- comment -%} ───────── Gallery ───────── {%- endcomment -%}
+      {%- comment -%} ───────── Grid gallery (Seed-style) ───────── {%- endcomment -%}
       <div class="ph__gallery">
-        <div class="ph__gallery-wrap" data-ph-gallery>
-          {% if section.settings.thumbnail_position == 'left' %}
-            {%- assign _show_thumb_arrows = false -%}
-            {%- if images_array.size > _thumb_max_visible -%}{%- assign _show_thumb_arrows = true -%}{%- endif -%}
-            <div class="ph__thumb-strip" data-ph-thumb-strip>
-              {% if _show_thumb_arrows %}
-                <button type="button" class="ph__thumb-arrow" data-ph-thumbs-prev data-dir="prev" aria-label="Scroll thumbnails up">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                </button>
-              {% endif %}
-              <div class="ph__thumbs" data-ph-thumbs>
-                {% for image in images_array %}
-                  <button type="button" class="ph__thumb{% if forloop.first %} is-active{% endif %}" data-ph-thumb data-image-src="{{ image.src }}" aria-label="View image {{ forloop.index }}">
-                    <img src="{{ image.src }}" alt="{{ product.title | escape }} — view {{ forloop.index }}" loading="lazy">
-                  </button>
-                {% endfor %}
-              </div>
-              {% if _show_thumb_arrows %}
-                <button type="button" class="ph__thumb-arrow" data-ph-thumbs-next data-dir="next" aria-label="Scroll thumbnails down">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-              {% endif %}
-            </div>
-          {% endif %}
-
-          <div class="ph__main-image-wrap">
-            {% if has_compare and section.settings.show_savings_badge %}
-              <span class="ph__badge">−{{ savings_pct }}%</span>
-            {% endif %}
-            {% if images_array.size > 0 %}
-              <img class="ph__main-image" src="{{ images_array[0].src }}" alt="{{ product.title | escape }}" data-ph-main loading="eager">
-            {% else %}
-              <div class="ph__main-image-placeholder">
+        <div class="ph__grid-gallery" data-ph-gallery>
+          {% if images_array.size > 0 %}
+            {% for image in images_array %}
+              {%- assign _hero_class = '' -%}
+              {%- if section.settings.feature_first_tile and forloop.first -%}{%- assign _hero_class = ' ph__tile--hero' -%}{%- endif -%}
+              <button type="button" class="ph__tile{{ _hero_class }}" data-ph-tile data-image-src="{{ image.src }}" aria-label="Open image {{ forloop.index }} of {{ images_array.size }}">
+                {% if forloop.first and has_compare and section.settings.show_savings_badge %}
+                  <span class="ph__badge">−{{ savings_pct }}%</span>
+                {% endif %}
+                <img src="{{ image.src }}" alt="{{ enrollment_pack.title | escape }} — view {{ forloop.index }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+              </button>
+            {% endfor %}
+          {% else %}
+            <div class="ph__tile ph__tile--hero">
+              <div class="ph__tile-placeholder">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="64" height="64"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
               </div>
-            {% endif %}
-          </div>
-
-          {% if section.settings.thumbnail_position == 'bottom' %}
-            {%- assign _show_thumb_arrows = false -%}
-            {%- if images_array.size > _thumb_max_visible -%}{%- assign _show_thumb_arrows = true -%}{%- endif -%}
-            <div class="ph__thumb-strip" data-ph-thumb-strip>
-              {% if _show_thumb_arrows %}
-                <button type="button" class="ph__thumb-arrow" data-ph-thumbs-prev data-dir="prev" aria-label="Scroll thumbnails left">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-              {% endif %}
-              <div class="ph__thumbs" data-ph-thumbs>
-                {% for image in images_array %}
-                  <button type="button" class="ph__thumb{% if forloop.first %} is-active{% endif %}" data-ph-thumb data-image-src="{{ image.src }}" aria-label="View image {{ forloop.index }}">
-                    <img src="{{ image.src }}" alt="{{ product.title | escape }} — view {{ forloop.index }}" loading="lazy">
-                  </button>
-                {% endfor %}
-              </div>
-              {% if _show_thumb_arrows %}
-                <button type="button" class="ph__thumb-arrow" data-ph-thumbs-next data-dir="next" aria-label="Scroll thumbnails right">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              {% endif %}
             </div>
           {% endif %}
         </div>
@@ -757,7 +609,7 @@
 
       {%- comment -%} ───────── Info column ───────── {%- endcomment -%}
       <div class="ph__info">
-        {% form 'product', product, class: 'ph__form', id: 'product-form-{{ section.id }}' %}
+        <div class="ph__form" id="enrollment-form-{{ section.id }}">
           <div class="ph__info-stack">
 
             {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
@@ -767,7 +619,7 @@
               <div class="ph__eyebrow">{{ section.settings.default_eyebrow | default: 'Bestseller' | escape }}</div>
             {% endif %}
 
-            <h1 class="ph__title">{{ product.title | escape }}</h1>
+            <h1 class="ph__title">{{ enrollment_pack.title | escape }}</h1>
 
             {% if section.settings.show_rating %}
               {%- assign rating = section.settings.rating_value | default: 4.9 | plus: 0 -%}
@@ -797,9 +649,9 @@
             {% endif %}
 
             <div class="ph__price-row">
-              <span class="ph__price">{{ product.price }}</span>
+              <span class="ph__price">{{ enrollment_pack.price }}</span>
               {% if has_compare %}
-                <span class="ph__compare">{{ product.compare_at_price }}</span>
+                <span class="ph__compare">{{ enrollment_pack.compare_at_price }}</span>
                 <span class="ph__savings">Save {{ savings_pct }}%</span>
               {% endif %}
             </div>
@@ -808,7 +660,7 @@
             {% for block in details_blocks %}
               <div class="ph__details rte" {{ block.fluid_attributes }}>
                 {% if block.settings.use_product_description %}
-                  {{ product.description }}
+                  {{ enrollment_pack.description }}
                 {% else %}
                   {{ block.settings.body }}
                 {% endif %}
@@ -818,10 +670,10 @@
             {%- assign desc_block = section.blocks | where: 'type', 'description' | first -%}
             {% if desc_block and desc_block.settings.text != blank %}
               <div class="ph__short-desc rte" {{ desc_block.fluid_attributes }}>{{ desc_block.settings.text }}</div>
-            {% elsif product.short_description != blank %}
-              <div class="ph__short-desc">{{ product.short_description }}</div>
-            {% elsif product.feature_text != blank %}
-              <div class="ph__short-desc">{{ product.feature_text }}</div>
+            {% elsif enrollment_pack.short_description != blank %}
+              <div class="ph__short-desc">{{ enrollment_pack.short_description }}</div>
+            {% elsif enrollment_pack.feature_text != blank %}
+              <div class="ph__short-desc">{{ enrollment_pack.feature_text }}</div>
             {% endif %}
 
             {%- assign hl_blocks = section.blocks | where: 'type', 'highlight' -%}
@@ -860,27 +712,27 @@
               </div>
             {% endif %}
 
-            {% if product.subscription_plans and product.subscription_plans.size > 0 and section.settings.show_subscription_toggle %}
-              {%- assign sub_plan = product.subscription_plans | first -%}
+            {% if enrollment_pack.subscription_plans and enrollment_pack.subscription_plans.size > 0 and section.settings.show_subscription_toggle %}
+              {%- assign sub_plan = enrollment_pack.subscription_plans | first -%}
               {%- assign sub_save_pct = section.settings.subscription_savings_pct | default: 15 -%}
               <div class="ph__sub-toggle" data-ph-sub-toggle role="radiogroup" aria-label="Purchase type">
-                <button type="button" class="ph__sub-option{% unless product.subscription_only %} is-active{% endunless %}" data-ph-sub-option="onetime" role="radio" aria-checked="{% unless product.subscription_only %}true{% else %}false{% endunless %}">
+                <button type="button" class="ph__sub-option{% unless enrollment_pack.subscription_only %} is-active{% endunless %}" data-ph-sub-option="onetime" role="radio" aria-checked="{% unless enrollment_pack.subscription_only %}true{% else %}false{% endunless %}">
                   <span class="ph__sub-option-label">{{ section.settings.onetime_label | default: 'One-time purchase' | escape }}</span>
-                  <span class="ph__sub-option-detail">{{ product.price }}</span>
+                  <span class="ph__sub-option-detail">{{ enrollment_pack.price }}</span>
                 </button>
-                <button type="button" class="ph__sub-option{% if product.subscription_only %} is-active{% endif %}" data-ph-sub-option="subscribe" role="radio" aria-checked="{% if product.subscription_only %}true{% else %}false{% endif %}">
+                <button type="button" class="ph__sub-option{% if enrollment_pack.subscription_only %} is-active{% endif %}" data-ph-sub-option="subscribe" role="radio" aria-checked="{% if enrollment_pack.subscription_only %}true{% else %}false{% endif %}">
                   <span class="ph__sub-option-label">
                     {{ section.settings.subscribe_label | default: 'Subscribe & save' | escape }}
                     <span class="ph__sub-option-saving">{{ sub_save_pct }}% off</span>
                   </span>
-                  <span class="ph__sub-option-detail">{{ product.subscription_price | default: product.price }} · cancel anytime</span>
+                  <span class="ph__sub-option-detail">{{ enrollment_pack.subscription_price | default: enrollment_pack.price }} · cancel anytime</span>
                 </button>
               </div>
             {% endif %}
 
-            {% if product.options_with_values and product.options_with_values.size > 0 %}
+            {% if enrollment_pack.options_with_values and enrollment_pack.options_with_values.size > 0 %}
               <div class="ph__divider"></div>
-              {% for option in product.options_with_values %}
+              {% for option in enrollment_pack.options_with_values %}
                 <div class="ph__variant-group">
                   <label class="ph__variant-label">
                     {{ option.name | escape }}
@@ -907,27 +759,19 @@
             {% endif %}
 
             {% unless not_purchasable %}
-              <div class="ph__buy-row">
-                <div class="ph__qty" aria-label="Quantity">
-                  <button type="button" data-ph-qty-dec aria-label="Decrease quantity">−</button>
-                  <input type="number" value="1" min="1" {% if product.buyable_quantity %}max="{{ product.buyable_quantity }}"{% endif %} name="quantity" id="fluid-checkout-quantity" data-ph-qty-input>
-                  <button type="button" data-ph-qty-inc aria-label="Increase quantity">+</button>
-                </div>
-                <button type="button" class="ph__cta" data-ph-cta
-                  data-fluid-add-to-cart="{{ selected_variant_id }}"
-                  data-fluid-quantity="1"
-                  {% if product.subscription_only %}data-fluid-subscription-plan-id="{{ product.selected_subscription_plan_id }}"{% endif %}>
-                  {{ section.settings.cta_label | default: 'Add to cart' | escape }}
-                </button>
-              </div>
+              <button type="button" class="ph__cta" data-ph-cta
+                data-fluid-add-enrollment-pack="{{ enrollment_pack.id }}"
+                {% if enrollment_pack.subscription_only %}data-fluid-subscription-plan-id="{{ enrollment_pack.selected_subscription_plan_id }}"{% endif %}>
+                {{ section.settings.cta_label | default: 'Start earning today' | escape }}
+              </button>
 
-              {% if section.settings.show_urgency and product.buyable_quantity and product.buyable_quantity > 0 and product.buyable_quantity <= section.settings.low_stock_threshold %}
-                <div class="ph__urgency">
-                  {%- assign urg_tpl = section.settings.urgency_template -%}
-                  {%- if urg_tpl == blank -%}{%- assign urg_tpl = 'Only QTY left in stock' -%}{%- endif -%}
-                  {{ urg_tpl | replace: 'QTY', product.buyable_quantity }}
+              {% if section.settings.show_commission_callout %}
+                <div class="ph__commission">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span>{{ section.settings.commission_callout | default: 'Commission-eligible from day one' | escape }}</span>
                 </div>
               {% endif %}
+
             {% else %}
               <div class="ph__sold-out">{{ section.settings.sold_out_label | default: 'Currently unavailable' | escape }}</div>
             {% endunless %}
@@ -965,7 +809,7 @@
                     <summary>{{ block.settings.title | default: 'Details' | escape }}</summary>
                     <div class="ph__acc-body rte">
                       {% if block.settings.use_product_description %}
-                        {{ product.description }}
+                        {{ enrollment_pack.description }}
                       {% else %}
                         {{ block.settings.body }}
                       {% endif %}
@@ -976,7 +820,7 @@
             {% endif %}
 
           </div>
-        {% endform %}
+        </div>
       </div>
 
     </div>
@@ -1003,17 +847,17 @@
 <div class="ph__sticky-bar" data-ph-sticky-bar>
   <div class="ph__sticky-thumb">
     {% if images_array.size > 0 %}
-      <img src="{{ images_array[0].src }}" alt="{{ product.title | escape }}">
+      <img src="{{ images_array[0].src }}" alt="{{ enrollment_pack.title | escape }}">
     {% endif %}
   </div>
   <div class="ph__sticky-info">
-    <div class="ph__sticky-title">{{ product.title | escape }}</div>
-    <div class="ph__sticky-price">{{ product.price }}</div>
+    <div class="ph__sticky-title">{{ enrollment_pack.title | escape }}</div>
+    <div class="ph__sticky-price">{{ enrollment_pack.price }}</div>
   </div>
   <button type="button" class="ph__sticky-cta"
-    data-fluid-add-to-cart="{{ selected_variant_id }}"
+    data-fluid-add-enrollment-pack="{{ enrollment_pack.id }}"
     data-fluid-quantity="1"
-    {% if product.subscription_only %}data-fluid-subscription-plan-id="{{ product.selected_subscription_plan_id }}"{% endif %}>
+    {% if enrollment_pack.subscription_only %}data-fluid-subscription-plan-id="{{ enrollment_pack.selected_subscription_plan_id }}"{% endif %}>
     {{ section.settings.sticky_cta_label | default: 'Add' | escape }}
   </button>
 </div>
@@ -1022,81 +866,22 @@
 <script>
 (function () {
   function init(root) {
-    var main = root.querySelector('[data-ph-main]');
-    var thumbs = root.querySelectorAll('[data-ph-thumb]');
-    thumbs.forEach(function (t) {
+    /* Grid tiles click to open lightbox at that image index */
+    var tiles = root.querySelectorAll('[data-ph-tile]');
+    var lightboxImg = root.querySelector('[data-ph-lightbox-img]');
+    var lightboxCounter = root.querySelector('[data-ph-lightbox-counter]');
+    var lightbox = root.querySelector('[data-ph-lightbox]');
+    tiles.forEach(function (t, idx) {
       t.addEventListener('click', function () {
         var src = t.getAttribute('data-image-src');
-        if (main && src) main.setAttribute('src', src);
-        thumbs.forEach(function (x) { x.classList.remove('is-active'); });
-        t.classList.add('is-active');
+        if (lightboxImg && src) lightboxImg.setAttribute('src', src);
+        if (lightbox) lightbox.classList.add('is-open');
+        if (lightboxCounter) lightboxCounter.textContent = (idx + 1) + ' / ' + tiles.length;
+        lightbox && lightbox.setAttribute('data-ph-lightbox-index', String(idx));
       });
     });
 
-    /* Thumbnail strip scroll arrows */
-    var thumbRail  = root.querySelector('[data-ph-thumbs]');
-    var thumbPrev  = root.querySelector('[data-ph-thumbs-prev]');
-    var thumbNext  = root.querySelector('[data-ph-thumbs-next]');
-    if (thumbRail) {
-      function thumbStep() {
-        var first = thumbRail.querySelector('[data-ph-thumb]');
-        if (!first) return 84;
-        var r = first.getBoundingClientRect();
-        // Vertical on desktop-left, horizontal on mobile or when position=bottom
-        var style = getComputedStyle(thumbRail);
-        var isVertical = style.gridAutoFlow !== 'column' && window.matchMedia('(min-width: 992px)').matches;
-        return isVertical ? r.height : r.width;
-      }
-      function thumbAxis() {
-        var style = getComputedStyle(thumbRail);
-        var isVertical = style.gridAutoFlow !== 'column' && window.matchMedia('(min-width: 992px)').matches;
-        return isVertical ? 'y' : 'x';
-      }
-      function updateThumbArrows() {
-        if (!thumbPrev || !thumbNext) return;
-        var axis = thumbAxis();
-        var pos  = axis === 'y' ? thumbRail.scrollTop : thumbRail.scrollLeft;
-        var size = axis === 'y' ? thumbRail.clientHeight : thumbRail.clientWidth;
-        var total = axis === 'y' ? thumbRail.scrollHeight : thumbRail.scrollWidth;
-        thumbPrev.disabled = pos <= 4;
-        thumbNext.disabled = pos + size >= total - 4;
-      }
-      function scrollThumbs(dir) {
-        var step = thumbStep() * 2;
-        var axis = thumbAxis();
-        var opts = { behavior: 'smooth' };
-        opts[axis === 'y' ? 'top' : 'left'] = dir * step;
-        thumbRail.scrollBy(opts);
-      }
-      if (thumbPrev) thumbPrev.addEventListener('click', function () { scrollThumbs(-1); });
-      if (thumbNext) thumbNext.addEventListener('click', function () { scrollThumbs(1); });
-      thumbRail.addEventListener('scroll', function () { window.requestAnimationFrame(updateThumbArrows); }, { passive: true });
-      window.addEventListener('resize', updateThumbArrows);
-      updateThumbArrows();
-    }
-
-    var qInput = root.querySelector('[data-ph-qty-input]');
-    var qDec = root.querySelector('[data-ph-qty-dec]');
-    var qInc = root.querySelector('[data-ph-qty-inc]');
-    var addBtn = root.querySelector('[data-fluid-add-to-cart]');
-    function syncQty() {
-      if (!qInput || !addBtn) return;
-      addBtn.setAttribute('data-fluid-quantity', qInput.value || 1);
-    }
-    if (qDec) qDec.addEventListener('click', function () {
-      if (!qInput) return;
-      var v = parseInt(qInput.value || '1', 10);
-      qInput.value = Math.max(parseInt(qInput.min || '1', 10), v - 1);
-      syncQty();
-    });
-    if (qInc) qInc.addEventListener('click', function () {
-      if (!qInput) return;
-      var v = parseInt(qInput.value || '1', 10);
-      var max = qInput.max ? parseInt(qInput.max, 10) : Infinity;
-      qInput.value = Math.min(max, v + 1);
-      syncQty();
-    });
-    if (qInput) qInput.addEventListener('input', syncQty);
+    var addBtn = root.querySelector('[data-fluid-add-enrollment-pack]');
 
     /* Variant pill radios — toggle is-active on label */
     root.querySelectorAll('.ph__variant-pill input[type="radio"]').forEach(function (r) {
@@ -1116,7 +901,7 @@
           x.classList.toggle('is-active', x === b);
           x.setAttribute('aria-checked', x === b ? 'true' : 'false');
         });
-        var planAttr = b.getAttribute('data-ph-sub-option') === 'subscribe' ? '{{ product.selected_subscription_plan_id }}' : '';
+        var planAttr = b.getAttribute('data-ph-sub-option') === 'subscribe' ? '{{ enrollment_pack.selected_subscription_plan_id }}' : '';
         if (addBtn) {
           if (planAttr) addBtn.setAttribute('data-fluid-subscription-plan-id', planAttr);
           else addBtn.removeAttribute('data-fluid-subscription-plan-id');
@@ -1124,16 +909,14 @@
       });
     });
 
-    /* Image lightbox — click main image opens overlay */
-    var lightbox = document.querySelector('[data-ph-lightbox]');
-    if (main && lightbox) {
+    /* Image lightbox — navigates through tile sources */
+    if (lightbox) {
       var lbImg     = lightbox.querySelector('[data-ph-lightbox-img]');
       var lbCounter = lightbox.querySelector('[data-ph-lightbox-counter]');
       var lbClose   = lightbox.querySelector('[data-ph-lightbox-close]');
       var lbPrev    = lightbox.querySelector('[data-ph-lightbox-prev]');
       var lbNext    = lightbox.querySelector('[data-ph-lightbox-next]');
-      var sources   = Array.prototype.map.call(thumbs, function (t) { return t.getAttribute('data-image-src'); });
-      if (sources.length === 0 && main.src) sources = [main.src];
+      var sources   = Array.prototype.map.call(tiles, function (t) { return t.getAttribute('data-image-src'); });
       var idx = 0;
 
       function show(i) {
@@ -1142,21 +925,17 @@
         if (lbImg) lbImg.setAttribute('src', sources[idx]);
         if (lbCounter) lbCounter.textContent = (idx + 1) + ' / ' + sources.length;
       }
-      function open(i) {
-        show(i || 0);
-        lightbox.classList.add('is-open');
-        lightbox.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-      }
       function close() {
         lightbox.classList.remove('is-open');
         lightbox.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
       }
-      main.addEventListener('click', function () {
-        var src = main.getAttribute('src');
-        var found = sources.indexOf(src);
-        open(found >= 0 ? found : 0);
+      tiles.forEach(function (t, i) {
+        t.addEventListener('click', function () {
+          idx = i;
+          lightbox.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        });
       });
       if (lbClose) lbClose.addEventListener('click', close);
       if (lbPrev) lbPrev.addEventListener('click', function () { show(idx - 1); });
@@ -1194,13 +973,11 @@
 })();
 </script>
 
-<script src="{{ 'product.js' | asset_url }}"></script>
-
 {% schema %}
 {
-  "name": "Product Hero",
+  "name": "Enrollment Pack Hero (Grid Gallery)",
   "tag": "section",
-  "class": "product-hero-section",
+  "class": "enrollment-pack-hero-section",
   "settings": [
     { "type": "header", "content": "Layout" },
     { "type": "radio", "id": "gallery_position", "label": "Gallery position", "default": "left",
@@ -1209,13 +986,6 @@
         { "value": "right", "label": "Gallery right, info left" }
       ]
     },
-    { "type": "radio", "id": "thumbnail_position", "label": "Thumbnail position", "default": "left",
-      "options": [
-        { "value": "left",   "label": "Vertical strip (left of main image)" },
-        { "value": "bottom", "label": "Horizontal strip (below main image)" }
-      ]
-    },
-    { "type": "range", "id": "thumbnail_max_visible", "label": "Max thumbnails visible before scroll", "min": 3, "max": 10, "step": 1, "default": 6 },
     { "type": "select", "id": "split_ratio", "label": "Split ratio (gallery / info)", "default": "60-40",
       "options": [
         { "value": "50-50", "label": "50 / 50" },
@@ -1227,8 +997,13 @@
     { "type": "checkbox", "id": "sticky_info", "label": "Sticky info column on scroll (desktop)", "default": true },
     { "type": "range", "id": "sticky_offset", "label": "Sticky offset from top (px)", "min": 0, "max": 200, "step": 4, "default": 100 },
 
-    { "type": "header", "content": "Image / Gallery" },
-    { "type": "select", "id": "image_aspect_ratio", "label": "Main image aspect ratio", "default": "1/1",
+    { "type": "header", "content": "Grid Gallery" },
+    { "type": "range", "id": "grid_columns",        "label": "Grid columns (desktop)", "min": 1, "max": 4, "step": 1, "default": 2 },
+    { "type": "range", "id": "grid_columns_mobile", "label": "Grid columns (mobile)",  "min": 1, "max": 2, "step": 1, "default": 1 },
+    { "type": "range", "id": "grid_gap",            "label": "Gap (desktop, px)",      "min": 0, "max": 32, "step": 2, "default": 8 },
+    { "type": "range", "id": "grid_gap_mobile",     "label": "Gap (mobile, px)",       "min": 0, "max": 24, "step": 2, "default": 6 },
+    { "type": "checkbox", "id": "feature_first_tile", "label": "Feature first tile (spans full width)", "default": true },
+    { "type": "select", "id": "image_aspect_ratio", "label": "Tile aspect ratio", "default": "1/1",
       "options": [
         { "value": "1/1",  "label": "Square (1:1)" },
         { "value": "4/5",  "label": "Portrait (4:5)" },
@@ -1238,10 +1013,20 @@
         { "value": "3/2",  "label": "Classic (3:2)" }
       ]
     },
-    { "type": "corner_radius", "id": "image_border_radius", "label": "Image border radius" },
-    { "type": "select", "id": "image_placeholder_background", "label": "Image placeholder background", "options": "background_colors", "default": "var(--clr-light)" },
-    { "type": "select", "id": "thumb_active_color", "label": "Active thumbnail border", "options": "background_colors", "default": "var(--clr-primary)" },
-    { "type": "select", "id": "thumb_hover_color",  "label": "Hover thumbnail border",  "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "hero_aspect_ratio", "label": "Hero tile aspect ratio (when featured)", "default": "16/10",
+      "options": [
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" },
+        { "value": "16/10","label": "Widescreen (16:10)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "3/2",  "label": "Classic (3:2)" },
+        { "value": "21/9", "label": "Ultra-wide (21:9)" }
+      ],
+      "visible_if": "{{ section.settings.feature_first_tile }}"
+    },
+    { "type": "corner_radius", "id": "image_border_radius", "label": "Tile corner radius" },
+    { "type": "select", "id": "image_placeholder_background", "label": "Tile placeholder background", "options": "background_colors", "default": "var(--clr-light)" },
 
     { "type": "header", "content": "Eyebrow + Rating" },
     { "type": "checkbox", "id": "show_default_eyebrow", "label": "Show eyebrow when no Eyebrow block is added", "default": false },
@@ -1281,28 +1066,26 @@
     { "type": "select", "id": "variant_pill_active_bg",    "label": "Pill active background", "options": "background_colors", "default": "var(--clr-primary)" },
     { "type": "select", "id": "variant_pill_active_color", "label": "Pill active text",   "options": "background_colors", "default": "var(--clr-white)" },
 
-    { "type": "header", "content": "Add to Cart" },
-    { "type": "text",   "id": "cta_label", "label": "Button text", "default": "Add to cart" },
-    { "type": "text",   "id": "sold_out_label", "label": "Sold-out text", "default": "Currently unavailable" },
+    { "type": "header", "content": "Join CTA" },
+    { "type": "text",   "id": "cta_label", "label": "Button text", "default": "Start earning today" },
+    { "type": "text",   "id": "sold_out_label", "label": "Unavailable text", "default": "Enrollment closed" },
     { "type": "select", "id": "cta_background", "label": "Button background", "options": "background_colors", "default": "var(--clr-primary)" },
     { "type": "select", "id": "cta_text_color", "label": "Button text color", "options": "background_colors", "default": "var(--clr-white)" },
 
+    { "type": "header", "content": "Commission Callout" },
+    { "type": "checkbox", "id": "show_commission_callout", "label": "Show commission-eligibility pill", "default": true },
+    { "type": "text",     "id": "commission_callout", "label": "Callout text", "default": "Commission-eligible from day one" },
+    { "type": "select",   "id": "commission_color",      "label": "Callout text color",   "options": "background_colors", "default": "var(--clr-success)" },
+
     { "type": "header", "content": "Subscription Toggle" },
-    { "type": "checkbox", "id": "show_subscription_toggle", "label": "Show subscription toggle (when product has subscription plans)", "default": true },
-    { "type": "text",     "id": "onetime_label",  "label": "One-time label",  "default": "One-time purchase" },
-    { "type": "text",     "id": "subscribe_label","label": "Subscribe label", "default": "Subscribe & save" },
-    { "type": "text",     "id": "subscription_savings_pct", "label": "Subscription savings %", "default": "15" },
+    { "type": "checkbox", "id": "show_subscription_toggle", "label": "Show monthly-renewal toggle (when pack has subscription plans)", "default": true },
+    { "type": "text",     "id": "onetime_label",  "label": "One-time label",  "default": "One-time join fee" },
+    { "type": "text",     "id": "subscribe_label","label": "Subscribe label", "default": "Monthly membership" },
+    { "type": "text",     "id": "subscription_savings_pct", "label": "Monthly savings %", "default": "15" },
     { "type": "select",   "id": "sub_toggle_background",   "label": "Toggle background",  "options": "background_colors", "default": "var(--clr-light)" },
     { "type": "select",   "id": "sub_option_text",         "label": "Option text",        "options": "background_colors", "default": "var(--clr-primary)" },
     { "type": "select",   "id": "sub_option_active_bg",    "label": "Active option background", "options": "background_colors", "default": "var(--clr-white)" },
     { "type": "select",   "id": "sub_option_active_text",  "label": "Active option text", "options": "background_colors", "default": "var(--clr-primary)" },
-
-    { "type": "header", "content": "Inventory Urgency" },
-    { "type": "checkbox", "id": "show_urgency", "label": "Show \"Only N left\" pill when stock is low", "default": true },
-    { "type": "range",    "id": "low_stock_threshold", "label": "Show urgency when stock \u2264", "min": 1, "max": 50, "step": 1, "default": 10 },
-    { "type": "text",     "id": "urgency_template", "label": "Urgency text (use QTY for the number)", "default": "Only QTY left in stock" },
-    { "type": "select",   "id": "urgency_background", "label": "Urgency pill background", "options": "background_colors", "default": "var(--clr-warning)" },
-    { "type": "select",   "id": "urgency_color",      "label": "Urgency pill text",       "options": "background_colors", "default": "var(--clr-warning)" },
 
     { "type": "header", "content": "Highlights Block (overall styling)" },
     { "type": "select", "id": "highlights_background",  "label": "Background",  "options": "background_colors", "default": "transparent" },
@@ -1358,13 +1141,13 @@
   "blocks": [
     { "type": "eyebrow", "name": "Eyebrow",
       "settings": [
-        { "type": "text", "id": "text", "label": "Text", "default": "Bestseller" }
+        { "type": "text", "id": "text", "label": "Text", "default": "Most popular enrollment" }
       ]
     },
     { "type": "description", "name": "Short Description (override)",
       "settings": [
         { "type": "richtext", "id": "text", "label": "Text",
-          "info": "Overrides product.short_description / feature_text. Leave blank to use product data." }
+          "info": "Overrides enrollment_pack.short_description / feature_text. Leave blank to use product data." }
       ]
     },
     { "type": "highlight", "name": "Highlight (icon + text)",
@@ -1401,7 +1184,7 @@
     },
     { "type": "details_block", "name": "Details (plain, under price)", "limit": 1,
       "settings": [
-        { "type": "checkbox", "id": "use_product_description", "label": "Use product.description", "default": true,
+        { "type": "checkbox", "id": "use_product_description", "label": "Use enrollment_pack.description", "default": true,
           "info": "If checked, the body uses Fluid's product description and ignores the Body field." },
         { "type": "richtext", "id": "body", "label": "Body (if not using product description)" }
       ]
@@ -1409,7 +1192,7 @@
     { "type": "accordion_item", "name": "Accordion Item (below trust strip)",
       "settings": [
         { "type": "text", "id": "title", "label": "Title", "default": "Shipping & delivery" },
-        { "type": "checkbox", "id": "use_product_description", "label": "Use product.description", "default": false,
+        { "type": "checkbox", "id": "use_product_description", "label": "Use enrollment_pack.description", "default": false,
           "info": "If checked, the body uses Fluid's product description and ignores the Body field." },
         { "type": "richtext", "id": "body", "label": "Body" },
         { "type": "checkbox", "id": "open_by_default", "label": "Open by default", "default": false }
@@ -1418,14 +1201,15 @@
   ],
   "presets": [
     {
-      "name": "Product Hero",
+      "name": "Enrollment Pack Hero (Grid Gallery)",
       "blocks": [
         { "type": "details_block", "settings": { "use_product_description": true } },
-        { "type": "trust_item", "settings": { "icon": "truck",  "text": "Free shipping over $50" } },
-        { "type": "trust_item", "settings": { "icon": "rotate", "text": "30-day returns" } },
-        { "type": "trust_item", "settings": { "icon": "shield", "text": "Secure checkout" } },
-        { "type": "accordion_item", "settings": { "title": "Shipping & delivery", "body": "<p>Free standard shipping on orders over $50. Most orders ship within 1 business day.</p>" } },
-        { "type": "accordion_item", "settings": { "title": "Returns",  "body": "<p>30-day returns, no questions asked. Just email us and we’ll send a prepaid label.</p>" } }
+        { "type": "trust_item", "settings": { "icon": "check",  "text": "Commission-eligible from day one" } },
+        { "type": "trust_item", "settings": { "icon": "shield", "text": "30-day satisfaction guarantee" } },
+        { "type": "trust_item", "settings": { "icon": "rotate", "text": "Cancel anytime, no penalties" } },
+        { "type": "accordion_item", "settings": { "title": "What's included", "body": "<p>Everything you need to start earning: starter kit, personal dashboard, training modules, and ongoing support.</p>" } },
+        { "type": "accordion_item", "settings": { "title": "How you earn",    "body": "<p>Earn up to 35% commission on every sale, plus team bonuses when you sponsor new members.</p>" } },
+        { "type": "accordion_item", "settings": { "title": "Support & training", "body": "<p>Dedicated onboarding, weekly live training, a private community, and 24/7 chat support.</p>" } }
       ]
     }
   ]

@@ -1,0 +1,365 @@
+{%- comment -%}
+  blog_index — award-winning blog listing page.
+  - Editorial hero with richtext eyebrow/heading/subhead blocks
+  - Featured post (first post, large card) — toggleable
+  - Rich grid of remaining posts (image, category tag, title, excerpt, author + date + read time)
+  - Pagination (uses the canonical pagination component)
+{%- endcomment -%}
+
+{%- style -%}
+  .blgx.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 0 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 100 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 0 0 100px;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+  }
+
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .blgx.section-{{ section.id }} .blgx__hero {
+    padding: 96px 24px 56px;
+    text-align: {{ section.settings.hero_alignment | default: 'center' }};
+    background: {{ section.settings.hero_background | default: 'transparent' }};
+  }
+  .blgx.section-{{ section.id }} .blgx__hero-content {
+    max-width: 760px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+    text-align: {{ section.settings.hero_alignment | default: 'center' }};
+  }
+  .blgx.section-{{ section.id }} .blgx__hero-content > * { margin: 0; max-width: 640px; {% if section.settings.hero_alignment == 'center' %}margin-left: auto; margin-right: auto;{% endif %} }
+
+  /* ── Container ─────────────────────────────────────────────── */
+  .blgx.section-{{ section.id }} .blgx__container {
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto; padding: 0 64px;
+  }
+  @media (max-width: 991px) { .blgx.section-{{ section.id }} .blgx__container { padding: 0 24px; } }
+  @media (max-width: 767px) { .blgx.section-{{ section.id }} .blgx__container { padding: 0 16px; } }
+
+  /* ── Featured post ─────────────────────────────────────────── */
+  .blgx.section-{{ section.id }} .blgx__featured {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 48px;
+    align-items: center;
+    margin-bottom: 72px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+  }
+  @media (max-width: 991px) {
+    .blgx.section-{{ section.id }} .blgx__featured { grid-template-columns: 1fr; gap: 24px; }
+  }
+  .blgx.section-{{ section.id }} .blgx__featured-image {
+    position: relative;
+    aspect-ratio: {{ section.settings.featured_aspect_ratio | default: '4/3' }};
+    overflow: hidden;
+    border-radius: 16px;
+    background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+  }
+  .blgx.section-{{ section.id }} .blgx__featured-image img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    transition: transform .5s ease;
+  }
+  .blgx.section-{{ section.id }} .blgx__featured-image:hover img { transform: scale(1.03); }
+  .blgx.section-{{ section.id }} .blgx__featured-body { display: flex; flex-direction: column; gap: 14px; }
+  .blgx.section-{{ section.id }} .blgx__featured-title {
+    margin: 0;
+    font-size: clamp(28px, 3.6vw, 48px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.08;
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+  .blgx.section-{{ section.id }} .blgx__featured-title a { color: inherit; text-decoration: none; }
+  .blgx.section-{{ section.id }} .blgx__featured-title a:hover { opacity: 0.8; }
+  .blgx.section-{{ section.id }} .blgx__featured-excerpt {
+    margin: 0;
+    font-size: 16px; line-height: 1.55;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+
+  /* ── Category tag + meta ───────────────────────────────────── */
+  .blgx.section-{{ section.id }} .blgx__category {
+    display: inline-flex; align-items: center;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    background: {{ section.settings.category_background | default: 'var(--clr-light)' }};
+    color: {{ section.settings.category_color | default: 'var(--clr-primary)' }};
+    border-radius: 999px;
+    width: fit-content;
+    text-decoration: none;
+  }
+  .blgx.section-{{ section.id }} .blgx__meta {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 13px; color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    flex-wrap: wrap;
+  }
+  .blgx.section-{{ section.id }} .blgx__meta-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.55; }
+  .blgx.section-{{ section.id }} .blgx__meta strong { font-weight: 600; color: {{ section.settings.body_color | default: 'var(--clr-body)' }}; }
+
+  /* ── Grid ─────────────────────────────────────────────────── */
+  .blgx.section-{{ section.id }} .blgx__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 32 }}px;
+  }
+  @media (max-width: 991px) { .blgx.section-{{ section.id }} .blgx__grid { grid-template-columns: repeat({{ section.settings.columns_tablet | default: 2 }}, minmax(0, 1fr)); } }
+  @media (max-width: 575px) { .blgx.section-{{ section.id }} .blgx__grid { grid-template-columns: 1fr; gap: 24px; } }
+
+  .blgx.section-{{ section.id }} .blgx__card {
+    display: flex; flex-direction: column; gap: 14px;
+    text-decoration: none; color: inherit;
+  }
+  .blgx.section-{{ section.id }} .blgx__card-image {
+    aspect-ratio: {{ section.settings.image_aspect_ratio | default: '3/2' }};
+    overflow: hidden;
+    border-radius: 14px;
+    background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+  }
+  .blgx.section-{{ section.id }} .blgx__card-image img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    transition: transform .5s ease;
+  }
+  .blgx.section-{{ section.id }} .blgx__card:hover .blgx__card-image img { transform: scale(1.05); }
+  .blgx.section-{{ section.id }} .blgx__card-title {
+    margin: 0;
+    font-size: clamp(18px, 1.8vw, 22px);
+    font-weight: 700; letter-spacing: -0.01em; line-height: 1.25;
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+  }
+  .blgx.section-{{ section.id }} .blgx__card-excerpt {
+    margin: 0;
+    font-size: 14.5px; line-height: 1.55;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Empty state ──────────────────────────────────────────── */
+  .blgx.section-{{ section.id }} .blgx__empty {
+    padding: 80px 24px;
+    text-align: center;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    background: var(--clr-light);
+    border-radius: 16px;
+  }
+{%- endstyle -%}
+
+{%- comment -%} Resolve post list: blog.posts (scoped) → posts (global) {%- endcomment -%}
+{%- assign post_list = blog.posts | default: posts -%}
+
+<section class="blgx section-{{ section.id }}" {{ section.fluid_attributes }}>
+
+  {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+  {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+  {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+  {%- assign _any_hero = false -%}
+  {%- if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 -%}{%- assign _any_hero = true -%}{%- endif -%}
+
+  {% if _any_hero %}
+    <div class="blgx__hero">
+      <div class="blgx__hero-content">
+        {% for b in eyebrow_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in heading_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in subhead_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="blgx__container">
+
+    {% if post_list and post_list.size > 0 %}
+      {%- paginate post_list by section.settings.posts_per_page | default: 12 -%}
+
+        {%- assign grid_start = 0 -%}
+        {% if section.settings.show_featured and paginate.current_page == 1 %}
+          {%- assign feat = post_list | first -%}
+          {%- assign feat_url    = feat.preview_url | default: feat.url | default: feat.canonical_url | default: '#' -%}
+          {%- assign feat_img    = feat.image_url -%}
+          {%- if feat_img == blank and feat.image -%}{%- assign feat_img = feat.image | image_url: width: 1600 -%}{%- endif -%}
+          {%- assign feat_cat    = feat.category.title | default: feat.category -%}
+          {%- assign feat_date   = feat.published_at | date: '%b %-d, %Y' -%}
+          {%- assign feat_author = feat.author -%}
+          {%- assign feat_read   = feat.reading_time -%}
+          {%- assign feat_excerpt = feat.excerpt | default: feat.summary -%}
+
+          <article class="blgx__featured">
+            <a class="blgx__featured-image" href="{{ feat_url }}" aria-label="{{ feat.title | escape }}">
+              {% if feat_img != blank %}
+                <img src="{{ feat_img }}" alt="{{ feat.title | escape }}" loading="eager">
+              {% endif %}
+            </a>
+            <div class="blgx__featured-body">
+              {% if feat_cat != blank %}<span class="blgx__category">{{ feat_cat | escape }}</span>{% endif %}
+              <h2 class="blgx__featured-title"><a href="{{ feat_url }}">{{ feat.title | escape }}</a></h2>
+              {% if feat_excerpt != blank %}<p class="blgx__featured-excerpt">{{ feat_excerpt | strip_html | truncate: 180 }}</p>{% endif %}
+              <div class="blgx__meta">
+                {% if feat_author != blank %}<strong>{{ feat_author | escape }}</strong><span class="blgx__meta-dot"></span>{% endif %}
+                {% if feat_date != blank %}<span>{{ feat_date }}</span>{% endif %}
+                {% if feat_read %}<span class="blgx__meta-dot"></span><span>{{ feat_read }} min read</span>{% endif %}
+              </div>
+            </div>
+          </article>
+
+          {%- assign grid_start = 1 -%}
+        {% endif %}
+
+        <div class="blgx__grid">
+          {% for post in post_list offset: grid_start %}
+            {%- assign p_url  = post.preview_url | default: post.url | default: post.canonical_url | default: '#' -%}
+            {%- assign p_img  = post.image_url -%}
+            {%- if p_img == blank and post.image -%}{%- assign p_img = post.image | image_url: width: 900 -%}{%- endif -%}
+            {%- assign p_cat  = post.category.title | default: post.category -%}
+            {%- assign p_date = post.published_at | date: '%b %-d, %Y' -%}
+            {%- assign p_author = post.author -%}
+            {%- assign p_excerpt = post.excerpt | default: post.summary -%}
+
+            <a class="blgx__card" href="{{ p_url }}">
+              <div class="blgx__card-image">
+                {% if p_img != blank %}<img src="{{ p_img }}" alt="{{ post.title | escape }}" loading="lazy">{% endif %}
+              </div>
+              {% if p_cat != blank %}<span class="blgx__category">{{ p_cat | escape }}</span>{% endif %}
+              <h3 class="blgx__card-title">{{ post.title | escape }}</h3>
+              {% if p_excerpt != blank and section.settings.show_excerpt %}<p class="blgx__card-excerpt">{{ p_excerpt | strip_html | truncate: 140 }}</p>{% endif %}
+              <div class="blgx__meta">
+                {% if p_author != blank %}<strong>{{ p_author | escape }}</strong>{% endif %}
+                {% if p_author != blank and p_date != blank %}<span class="blgx__meta-dot"></span>{% endif %}
+                {% if p_date != blank %}<span>{{ p_date }}</span>{% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+
+        {% if paginate.pages > 1 %}
+          {% render 'pagination', paginate: paginate, anchor: '' %}
+        {% endif %}
+
+      {%- endpaginate -%}
+    {% else %}
+      <div class="blgx__empty">{{ section.settings.empty_text | default: 'No posts yet — check back soon.' | escape }}</div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Blog Index",
+  "tag": "section",
+  "class": "blog-index-section",
+  "enabled_on": { "templates": ["post_page"] },
+  "settings": [
+    { "type": "header", "content": "Hero" },
+    { "type": "radio", "id": "hero_alignment", "label": "Hero alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    { "type": "select", "id": "hero_background", "label": "Hero background", "options": "background_colors", "default": "transparent" },
+
+    { "type": "header", "content": "Featured post" },
+    { "type": "checkbox", "id": "show_featured", "label": "Show featured post on page 1", "default": true },
+    { "type": "select",   "id": "featured_aspect_ratio", "label": "Featured image aspect ratio", "default": "4/3",
+      "options": [
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "3/2",  "label": "Classic (3:2)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "1/1",  "label": "Square (1:1)" }
+      ]
+    },
+
+    { "type": "header", "content": "Grid" },
+    { "type": "range", "id": "posts_per_page",  "label": "Posts per page",    "min": 6, "max": 24, "step": 3, "default": 12 },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "range", "id": "columns_tablet",  "label": "Columns (tablet)",  "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "gap",             "label": "Gap (px)",          "min": 12, "max": 48, "step": 4, "default": 32 },
+    { "type": "select","id": "image_aspect_ratio", "label": "Card image aspect ratio", "default": "3/2",
+      "options": [
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "3/2",  "label": "Classic (3:2)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" },
+        { "value": "1/1",  "label": "Square (1:1)" }
+      ]
+    },
+    { "type": "checkbox", "id": "show_excerpt", "label": "Show excerpt on cards", "default": true },
+
+    { "type": "header", "content": "Colors / Fonts" },
+    { "type": "select", "id": "title_font",     "label": "Title font",     "options": "font_families",     "default": "var(--ff-heading)" },
+    { "type": "select", "id": "title_color",    "label": "Title color",    "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "body_color",     "label": "Body / excerpt", "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "muted_color",    "label": "Muted (meta)",   "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "category_background", "label": "Category chip bg",   "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "category_color",      "label": "Category chip text", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "divider_color", "label": "Divider color", "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "image_placeholder_background", "label": "Image placeholder bg", "options": "background_colors", "default": "var(--clr-light)" },
+
+    { "type": "header", "content": "Empty State" },
+    { "type": "text", "id": "empty_text", "label": "Empty text", "default": "No posts yet — check back soon." },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" }
+      ]
+    },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; font-weight: 600;\">The Journal</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h1 style=\"color: var(--clr-primary); font-size: clamp(40px, 6vw, 84px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.02;\">Stories, tips, and ideas.</h1>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: clamp(15px, 1.4vw, 18px); line-height: 1.55; opacity: 0.9;\">Behind-the-scenes, how-to guides, and news from the team.</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog Index",
+      "settings": {
+        "hero_alignment": "center",
+        "show_featured": true,
+        "featured_aspect_ratio": "4/3",
+        "posts_per_page": 12,
+        "columns_desktop": 3,
+        "columns_tablet": 2,
+        "image_aspect_ratio": "3/2",
+        "show_excerpt": true
+      },
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" }
+      ]
+    }
+  ]
+}
+{% endschema %}

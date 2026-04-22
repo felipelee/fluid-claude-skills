@@ -65,7 +65,10 @@ body {
   min-height: 100vh;
   text-rendering: optimizeSpeed;
   line-height: 1.3;
-  overflow-x: hidden;
+  /* overflow-x: hidden would create a new scroll container and break position: sticky
+     for the navbar (and any other sticky elements). `overflow-x: clip` achieves the
+     same visual effect without turning body into a scroll root. */
+  overflow-x: clip;
 }
 
 /* A elements that don't have a class get default styles */

@@ -34,44 +34,39 @@
     display: flex; flex-direction: column; gap: 12px;
   }
 
+  {%- assign col_count = 0 -%}
+  {%- for block in section.blocks -%}{%- if block.type == 'column' -%}{%- assign col_count = col_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+  {%- if col_count < 1 -%}{%- assign col_count = 1 -%}{%- endif -%}
+  {%- if col_count > 4 -%}{%- assign col_count = 4 -%}{%- endif -%}
+
   .pcmp.section-{{ section.id }} .pcmp__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: repeat({{ col_count }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 20 }}px;
+    align-items: stretch;
   }
   @media (max-width: 767px) { .pcmp.section-{{ section.id }} .pcmp__grid { grid-template-columns: 1fr; gap: 16px; } }
 
   .pcmp.section-{{ section.id }} .pcmp__col {
-    padding: 28px 28px 20px;
-    border-radius: 20px;
+    padding: {{ section.settings.card_padding | default: 28 }}px;
+    border-radius: {{ section.settings.card_radius | default: 20 }}px;
     display: flex; flex-direction: column; gap: 14px;
-  }
-  .pcmp.section-{{ section.id }} .pcmp__col--without {
-    background: {{ section.settings.without_background | default: 'var(--clr-light)' }};
-    color: {{ section.settings.without_text | default: 'var(--clr-muted)' }};
-    border: 1px solid {{ section.settings.without_border | default: 'var(--clr-gray)' }};
-  }
-  .pcmp.section-{{ section.id }} .pcmp__col--with {
-    background: {{ section.settings.with_background | default: 'var(--clr-primary)' }};
-    color: {{ section.settings.with_text | default: 'var(--clr-white)' }};
-    border: 1px solid {{ section.settings.with_background | default: 'var(--clr-primary)' }};
   }
 
   .pcmp.section-{{ section.id }} .pcmp__col-header {
     display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
     padding-bottom: 12px;
-    border-bottom: 1px solid currentColor;
-    opacity: 1;
+    border-bottom: 1px solid;
+    border-bottom-color: inherit;
   }
-  .pcmp.section-{{ section.id }} .pcmp__col--without .pcmp__col-header { border-bottom-color: {{ section.settings.without_border | default: 'var(--clr-gray)' }}; }
-  .pcmp.section-{{ section.id }} .pcmp__col--with .pcmp__col-header { border-bottom-color: rgba(255, 255, 255, 0.2); }
-
   .pcmp.section-{{ section.id }} .pcmp__col-label {
     font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
     opacity: 0.7;
   }
   .pcmp.section-{{ section.id }} .pcmp__col-title {
-    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: {{ section.settings.title_font_size | default: 18 }}px;
+    font-weight: 700; letter-spacing: -0.01em;
     font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
   }
 
@@ -82,21 +77,14 @@
     font-size: 14.5px; line-height: 1.5;
   }
   .pcmp.section-{{ section.id }} .pcmp__list svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
-  .pcmp.section-{{ section.id }} .pcmp__col--without .pcmp__list svg {
-    color: {{ section.settings.without_icon | default: 'var(--clr-muted)' }};
-  }
-  .pcmp.section-{{ section.id }} .pcmp__col--with .pcmp__list svg {
-    color: {{ section.settings.with_icon | default: 'var(--clr-success)' }};
-  }
 {%- endstyle -%}
 
 <section class="pcmp section-{{ section.id }}" {{ section.fluid_attributes }}>
   <div class="pcmp__container">
+
     {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
     {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
     {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
-    {%- assign without_blocks = section.blocks | where: 'type', 'without_item' -%}
-    {%- assign with_blocks    = section.blocks | where: 'type', 'with_item' -%}
 
     {% if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 %}
       <div class="pcmp__intro">
@@ -107,36 +95,49 @@
     {% endif %}
 
     <div class="pcmp__grid">
-      <div class="pcmp__col pcmp__col--without">
-        <header class="pcmp__col-header">
-          <span class="pcmp__col-label">{{ section.settings.without_label | default: 'Other brands' | escape }}</span>
-          <span class="pcmp__col-title">{{ section.settings.without_title | default: 'Without us' | escape }}</span>
-        </header>
-        <ul class="pcmp__list">
-          {% for block in without_blocks %}
-            <li {{ block.fluid_attributes }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              <span>{{ block.settings.text | default: 'Missing feature' | escape }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+      {%- assign in_col = false -%}
+      {%- assign current_icon_color = '' -%}
+      {% for block in section.blocks %}
+        {% case block.type %}
 
-      <div class="pcmp__col pcmp__col--with">
-        <header class="pcmp__col-header">
-          <span class="pcmp__col-label">{{ section.settings.with_label | default: 'The difference' | escape }}</span>
-          <span class="pcmp__col-title">{{ section.settings.with_title | default: 'With us' | escape }}</span>
-        </header>
-        <ul class="pcmp__list">
-          {% for block in with_blocks %}
-            <li {{ block.fluid_attributes }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>{{ block.settings.text | default: 'Great feature' | escape }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+          {% when 'column' %}
+            {% if in_col %}</ul></div>{% endif %}
+            {%- assign current_icon_color = block.settings.icon_color | default: 'var(--clr-muted)' -%}
+            {%- capture _col_style -%}
+              background: {{ block.settings.background | default: 'var(--clr-light)' }};
+              color: {{ block.settings.text_color | default: 'var(--clr-body)' }};
+              border: 1px solid {{ block.settings.border_color | default: block.settings.background | default: 'var(--clr-gray)' }};
+            {%- endcapture -%}
+            <div class="pcmp__col" style="{{ _col_style | strip_newlines }}" {{ block.fluid_attributes }}>
+              <header class="pcmp__col-header">
+                {% if block.settings.label != blank %}<span class="pcmp__col-label">{{ block.settings.label | escape }}</span>{% endif %}
+                {% if block.settings.title != blank %}<span class="pcmp__col-title">{{ block.settings.title | escape }}</span>{% endif %}
+              </header>
+              <ul class="pcmp__list" style="color: {{ current_icon_color }};">
+            {% assign in_col = true %}
+
+          {% when 'row' %}
+            {% if in_col %}
+              {%- assign row_icon = block.settings.icon | default: 'check' -%}
+              {%- assign row_icon_color = block.settings.icon_color_override | default: current_icon_color -%}
+              <li {{ block.fluid_attributes }}>
+                <span style="color: {{ row_icon_color }}; display: inline-flex;">
+                  {% case row_icon %}
+                    {% when 'check' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {% when 'x' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    {% when 'dash' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    {% when 'star' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  {% endcase %}
+                </span>
+                <span style="color: inherit;">{{ block.settings.text | default: 'Item text' | escape }}</span>
+              </li>
+            {% endif %}
+
+        {% endcase %}
+      {% endfor %}
+      {% if in_col %}</ul></div>{% endif %}
     </div>
+
   </div>
 </section>
 
@@ -146,30 +147,17 @@
   "tag": "section",
   "class": "product-compare-section",
   "settings": [
-    { "type": "header", "content": "Column Labels" },
-    { "type": "text", "id": "without_label", "label": "Without column \u2014 small label", "default": "The others" },
-    { "type": "text", "id": "without_title", "label": "Without column \u2014 title",       "default": "Without us" },
-    { "type": "text", "id": "with_label",    "label": "With column \u2014 small label",    "default": "Our approach" },
-    { "type": "text", "id": "with_title",    "label": "With column \u2014 title",          "default": "With us" },
-
-    { "type": "header", "content": "Without Column Colors" },
-    { "type": "select", "id": "without_background", "label": "Background", "options": "background_colors", "default": "var(--clr-light)" },
-    { "type": "select", "id": "without_border",     "label": "Border",     "options": "background_colors", "default": "var(--clr-gray)" },
-    { "type": "select", "id": "without_text",       "label": "Text color", "options": "background_colors", "default": "var(--clr-muted)" },
-    { "type": "select", "id": "without_icon",       "label": "Icon color", "options": "background_colors", "default": "var(--clr-muted)" },
-
-    { "type": "header", "content": "With Column Colors" },
-    { "type": "select", "id": "with_background", "label": "Background", "options": "background_colors", "default": "var(--clr-primary)" },
-    { "type": "select", "id": "with_text",       "label": "Text color", "options": "background_colors", "default": "var(--clr-white)" },
-    { "type": "select", "id": "with_icon",       "label": "Icon color", "options": "background_colors", "default": "var(--clr-success)" },
-
-    { "type": "header", "content": "Typography" },
-    { "type": "select", "id": "title_font", "label": "Title font", "options": "font_families", "default": "var(--ff-heading)" },
-
     { "type": "header", "content": "Layout" },
+    { "type": "range",  "id": "gap", "label": "Gap between columns (px)", "min": 8, "max": 40, "step": 2, "default": 20 },
+    { "type": "range",  "id": "card_padding", "label": "Card padding (px)", "min": 16, "max": 48, "step": 2, "default": 28 },
+    { "type": "range",  "id": "card_radius",  "label": "Card corner radius (px)", "min": 0, "max": 40, "step": 2, "default": 20 },
     { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
       "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ]
     },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "range",  "id": "title_font_size", "label": "Column title font size (px)", "min": 14, "max": 28, "step": 1, "default": 18 },
+    { "type": "select", "id": "title_font",      "label": "Column title font", "options": "font_families", "default": "var(--ff-heading)" },
 
     { "type": "header", "content": "Container" },
     { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1080px",
@@ -208,11 +196,34 @@
     { "type": "subhead", "name": "Subhead",
       "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">We obsess over the details others overlook.</p>" } ]
     },
-    { "type": "without_item", "name": "\u2717 Without us (row)",
-      "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "Filler ingredients with no proven benefit" } ]
+
+    { "type": "column", "name": "+ New Column (card)",
+      "settings": [
+        { "type": "paragraph", "content": "Divider block. Opens a new styled card. Add Row blocks AFTER this block — they render inside this column until the next + New Column." },
+        { "type": "header", "content": "Labels" },
+        { "type": "text", "id": "label", "label": "Small label (eyebrow)", "default": "The others" },
+        { "type": "text", "id": "title", "label": "Big title",              "default": "Without us" },
+        { "type": "header", "content": "Card Style" },
+        { "type": "select", "id": "background",   "label": "Card background", "options": "background_colors", "default": "var(--clr-light)" },
+        { "type": "select", "id": "text_color",   "label": "Text color",      "options": "background_colors", "default": "var(--clr-muted)" },
+        { "type": "select", "id": "border_color", "label": "Border color",    "options": "background_colors", "default": "var(--clr-gray)" },
+        { "type": "select", "id": "icon_color",   "label": "Row icon color (default)", "options": "background_colors", "default": "var(--clr-muted)" }
+      ]
     },
-    { "type": "with_item", "name": "\u2713 With us (row)",
-      "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "Clinically-studied ingredients at effective doses" } ]
+
+    { "type": "row", "name": "Row (list item)",
+      "settings": [
+        { "type": "radio", "id": "icon", "label": "Icon", "default": "check",
+          "options": [
+            { "value": "check", "label": "Checkmark \u2713" },
+            { "value": "x",     "label": "Cross \u2717" },
+            { "value": "dash",  "label": "Dash \u2013" },
+            { "value": "star",  "label": "Star \u2605" }
+          ]
+        },
+        { "type": "text",   "id": "text", "label": "Text", "default": "Row text" },
+        { "type": "select", "id": "icon_color_override", "label": "Icon color override (optional)", "options": "background_colors", "default": "" }
+      ]
     }
   ],
   "presets": [
@@ -222,14 +233,34 @@
         { "type": "eyebrow" },
         { "type": "heading" },
         { "type": "subhead" },
-        { "type": "without_item", "settings": { "text": "Filler ingredients with no proven benefit" } },
-        { "type": "without_item", "settings": { "text": "Added sugars and artificial flavors" } },
-        { "type": "without_item", "settings": { "text": "Sourced anonymously from low-quality suppliers" } },
-        { "type": "without_item", "settings": { "text": "One-size-fits-all dosing" } },
-        { "type": "with_item",    "settings": { "text": "Clinically-studied ingredients at effective doses" } },
-        { "type": "with_item",    "settings": { "text": "No added sugar, no artificial anything" } },
-        { "type": "with_item",    "settings": { "text": "Traceable sourcing from trusted partners" } },
-        { "type": "with_item",    "settings": { "text": "Formulated for your needs, tested by professionals" } }
+
+        { "type": "column", "settings": {
+            "label": "The others",
+            "title": "Without us",
+            "background":   "var(--clr-light)",
+            "text_color":   "var(--clr-muted)",
+            "border_color": "var(--clr-gray)",
+            "icon_color":   "var(--clr-muted)"
+          }
+        },
+        { "type": "row", "settings": { "icon": "x", "text": "Filler ingredients with no proven benefit" } },
+        { "type": "row", "settings": { "icon": "x", "text": "Added sugars and artificial flavors" } },
+        { "type": "row", "settings": { "icon": "x", "text": "Sourced anonymously from low-quality suppliers" } },
+        { "type": "row", "settings": { "icon": "x", "text": "One-size-fits-all dosing" } },
+
+        { "type": "column", "settings": {
+            "label": "The difference",
+            "title": "With us",
+            "background":   "var(--clr-primary)",
+            "text_color":   "var(--clr-white)",
+            "border_color": "var(--clr-primary)",
+            "icon_color":   "var(--clr-success)"
+          }
+        },
+        { "type": "row", "settings": { "icon": "check", "text": "Clinically-studied ingredients at effective doses" } },
+        { "type": "row", "settings": { "icon": "check", "text": "No added sugar, no artificial anything" } },
+        { "type": "row", "settings": { "icon": "check", "text": "Traceable sourcing from trusted partners" } },
+        { "type": "row", "settings": { "icon": "check", "text": "Formulated for your needs, tested by professionals" } }
       ]
     }
   ]

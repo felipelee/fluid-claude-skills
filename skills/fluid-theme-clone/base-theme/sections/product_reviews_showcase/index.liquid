@@ -113,20 +113,17 @@
   }
   .prev.section-{{ section.id }} .prev__card-body p { margin: 0; }
 
-  .prev.section-{{ section.id }} .prev__photo {
+  .prev.section-{{ section.id }} .prev__photo-wrap {
     width: 100%;
-    aspect-ratio: 4/3;
     margin-top: 4px;
-    border-radius: 10px;
     overflow: hidden;
-    background: var(--clr-light);
   }
-  .prev.section-{{ section.id }} .prev__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .prev.section-{{ section.id }} .prev__photo-wrap img { width: 100%; height: auto; display: block; object-fit: cover; }
 
   .prev.section-{{ section.id }} .prev__author {
     display: flex; align-items: center; gap: 10px; margin-top: auto;
   }
-  .prev.section-{{ section.id }} .prev__avatar {
+  .prev.section-{{ section.id }} .prev__avatar-wrap {
     width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
     background: var(--clr-gray);
     flex-shrink: 0;
@@ -134,7 +131,7 @@
     font-size: 12px; font-weight: 600;
     color: {{ section.settings.count_color | default: 'var(--clr-muted)' }};
   }
-  .prev.section-{{ section.id }} .prev__avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .prev.section-{{ section.id }} .prev__avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
   .prev.section-{{ section.id }} .prev__author-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .prev.section-{{ section.id }} .prev__author-name {
     font-size: 13px; font-weight: 600;
@@ -152,8 +149,6 @@
 
 <section class="prev section-{{ section.id }}" {{ section.fluid_attributes }}>
   <div class="prev__container">
-
-    {%- assign review_blocks = section.blocks | where: 'type', 'review' -%}
 
     {% if section.settings.show_summary %}
       {%- assign rating = section.settings.overall_rating | default: 4.9 | plus: 0 -%}
@@ -182,36 +177,70 @@
       </div>
     {% endif %}
 
-    {% if review_blocks.size > 0 %}
+    {%- assign review_divider_count = 0 -%}
+    {%- for _b in section.blocks -%}{%- if _b.type == 'review' -%}{%- assign review_divider_count = review_divider_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+
+    {% if review_divider_count > 0 %}
       <div class="prev__grid">
-        {% for block in review_blocks %}
-          {%- assign r = block.settings.rating | default: 5 | plus: 0 -%}
-          {%- if r > 5 -%}{% assign r = 5 %}{%- endif -%}
-          <article class="prev__card" {{ block.fluid_attributes }}>
-            <div class="prev__card-top">
-              <span class="prev__card-stars">{% for i in (1..r) %}{{ star_svg }}{% endfor %}</span>
-              {% if block.settings.date != blank %}<span class="prev__card-date">{{ block.settings.date | escape }}</span>{% endif %}
-            </div>
-            {% if block.settings.title != blank %}<h3 class="prev__card-title">{{ block.settings.title | escape }}</h3>{% endif %}
-            <div class="prev__card-body rte">{{ block.settings.body }}</div>
-            {% if block.settings.photo %}
-              <div class="prev__photo"><img src="{{ block.settings.photo | img_url: '800x' }}" alt="Customer photo" loading="lazy"></div>
-            {% endif %}
-            <div class="prev__author">
-              <div class="prev__avatar">
-                {% if block.settings.avatar %}<img src="{{ block.settings.avatar | img_url: '120x' }}" alt="{{ block.settings.author | escape }}">{% else %}{{ block.settings.author | default: '?' | slice: 0, 1 | upcase }}{% endif %}
+        {% for block in section.blocks %}
+          {% if block.type == 'review' %}
+            {%- assign r = block.settings.rating | default: 5 | plus: 0 -%}
+            {%- if r > 5 -%}{% assign r = 5 %}{%- endif -%}
+            <article class="prev__card" {{ block.fluid_attributes }}>
+              <div class="prev__card-top">
+                <span class="prev__card-stars">{% for i in (1..r) %}{{ star_svg }}{% endfor %}</span>
+                {% if block.settings.date != blank %}<span class="prev__card-date">{{ block.settings.date | escape }}</span>{% endif %}
               </div>
-              <div class="prev__author-info">
-                <div class="prev__author-name">{{ block.settings.author | default: 'Customer' | escape }}</div>
-                {% if block.settings.verified %}
-                  <span class="prev__verified">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.6 3.5-.3.5 3.5L21 9.5l-1.5 3.2 1.5 3.2-2.6 1.7-.5 3.5-3.5-.3L12 22l-2.4-2.6-3.5.3-.5-3.5L3 14.5l1.5-3.2L3 8.1l2.6-1.7.5-3.5 3.5.3L12 2zm-1.2 13.2l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4 3.6 3.6z"/></svg>
-                    Verified
-                  </span>
-                {% endif %}
+
+              {%- assign _avatar_html = '' -%}
+              {%- assign _photo_html = '' -%}
+              {%- assign _title_html = '' -%}
+              {%- assign _body_html = '' -%}
+
+              {% for sub in section.blocks offset: forloop.index %}
+                {% if sub.type == 'review' %}{% break %}{% endif %}
+                {% case sub.type %}
+                  {% when 'review_title' %}
+                    {%- capture _title_html -%}<h3 class="prev__card-title" {{ sub.fluid_attributes }}>{{ sub.settings.text | escape }}</h3>{%- endcapture -%}
+                  {% when 'review_body' %}
+                    {%- capture _body_html -%}<div class="prev__card-body rte" {{ sub.fluid_attributes }}>{{ sub.settings.text }}</div>{%- endcapture -%}
+                  {% when 'image' %}
+                    {% if sub.settings.image %}
+                      {%- capture _img_style -%}
+                        {%- assign _sbr = sub.settings.border_radius -%}{% if _sbr %}border-radius: {{ _sbr.tl }}px {{ _sbr.tr }}px {{ _sbr.br }}px {{ _sbr.bl }}px;{% endif %}
+                        {% if sub.settings.border_width > 0 %}border: {{ sub.settings.border_width }}px solid {{ sub.settings.border_color }};{% endif %}
+                        aspect-ratio: {{ sub.settings.aspect_ratio | default: '4/3' }};
+                      {%- endcapture -%}
+                      {%- assign _alt = sub.settings.alt | default: block.settings.author | default: 'Reviewer' -%}
+                      {% if sub.settings.role == 'avatar' %}
+                        {%- capture _avatar_html -%}<img src="{{ sub.settings.image | img_url: '120x' }}" alt="{{ _alt | escape }}" loading="lazy" {{ sub.fluid_attributes }}>{%- endcapture -%}
+                      {% else %}
+                        {%- capture _photo_html -%}<div class="prev__photo-wrap" style="{{ _img_style | strip_newlines }}" {{ sub.fluid_attributes }}><img src="{{ sub.settings.image | img_url: '800x' }}" alt="{{ _alt | escape }}" loading="lazy" style="object-fit: {{ sub.settings.fit | default: 'cover' }}; object-position: {{ sub.settings.object_position | default: 'center' }};"></div>{%- endcapture -%}
+                      {% endif %}
+                    {% endif %}
+                {% endcase %}
+              {% endfor %}
+
+              {{ _title_html }}
+              {{ _body_html }}
+              {{ _photo_html }}
+
+              <div class="prev__author">
+                <div class="prev__avatar-wrap">
+                  {% if _avatar_html != '' %}{{ _avatar_html }}{% else %}{{ block.settings.author | default: '?' | slice: 0, 1 | upcase }}{% endif %}
+                </div>
+                <div class="prev__author-info">
+                  <div class="prev__author-name">{{ block.settings.author | default: 'Customer' | escape }}</div>
+                  {% if block.settings.verified %}
+                    <span class="prev__verified">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.6 3.5-.3.5 3.5L21 9.5l-1.5 3.2 1.5 3.2-2.6 1.7-.5 3.5-3.5-.3L12 22l-2.4-2.6-3.5.3-.5-3.5L3 14.5l1.5-3.2L3 8.1l2.6-1.7.5-3.5 3.5.3L12 2zm-1.2 13.2l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4 3.6 3.6z"/></svg>
+                      Verified
+                    </span>
+                  {% endif %}
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+          {% endif %}
         {% endfor %}
       </div>
     {% endif %}
@@ -283,16 +312,48 @@
     { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
   ],
   "blocks": [
-    { "type": "review", "name": "Review Card",
+    { "type": "review", "name": "Review (opens card)",
       "settings": [
-        { "type": "range",  "id": "rating",   "label": "Stars", "min": 0, "max": 5, "step": 1, "default": 5 },
-        { "type": "text",   "id": "title",    "label": "Review title", "default": "Exceeded my expectations" },
-        { "type": "richtext","id": "body",    "label": "Review body", "default": "<p>I\u2019ve tried every competitor out there \u2014 this is the first one that actually delivers on what it promises. Packaging, experience, support \u2014 everything premium.</p>" },
-        { "type": "text",   "id": "author",   "label": "Author",  "default": "Alex Morgan" },
-        { "type": "text",   "id": "date",     "label": "Date",    "default": "2 weeks ago" },
-        { "type": "checkbox","id": "verified","label": "Verified purchase", "default": true },
-        { "type": "image_picker", "id": "avatar", "label": "Avatar (optional)" },
-        { "type": "image_picker", "id": "photo",  "label": "Customer photo (optional)" }
+        { "type": "range",   "id": "rating",   "label": "Stars", "min": 0, "max": 5, "step": 1, "default": 5 },
+        { "type": "text",    "id": "author",   "label": "Author",  "default": "Alex Morgan" },
+        { "type": "text",    "id": "date",     "label": "Date",    "default": "2 weeks ago" },
+        { "type": "checkbox","id": "verified", "label": "Verified purchase", "default": true }
+      ]
+    },
+    { "type": "review_title", "name": "Review Title",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Title", "default": "Exceeded my expectations" }
+      ]
+    },
+    { "type": "review_body", "name": "Review Body",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Body", "default": "<p>I\u2019ve tried every competitor out there \u2014 this is the first one that actually delivers on what it promises.</p>" }
+      ]
+    },
+    { "type": "image", "name": "Image (avatar or photo)",
+      "settings": [
+        { "type": "radio", "id": "role", "label": "Role", "default": "photo",
+          "options": [ { "value": "avatar", "label": "Avatar (small, footer)" }, { "value": "photo", "label": "Customer photo (large, body)" } ]
+        },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "alt", "label": "Alt Text" },
+        { "type": "select", "id": "aspect_ratio", "label": "Aspect ratio (photo only)", "default": "4/3",
+          "options": [
+            { "value": "1/1",  "label": "Square (1:1)" },
+            { "value": "4/3",  "label": "Standard (4:3)" },
+            { "value": "4/5",  "label": "Portrait (4:5)" },
+            { "value": "16/9", "label": "Widescreen (16:9)" }
+          ]
+        },
+        { "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+          "options": [ { "value": "cover", "label": "Cover" }, { "value": "contain", "label": "Contain" } ]
+        },
+        { "type": "select", "id": "object_position", "label": "Focal point", "default": "center",
+          "options": [ { "value": "center", "label": "Center" }, { "value": "top", "label": "Top" }, { "value": "bottom", "label": "Bottom" }, { "value": "left", "label": "Left" }, { "value": "right", "label": "Right" } ]
+        },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+        { "type": "range",  "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
       ]
     }
   ],
@@ -300,12 +361,29 @@
     {
       "name": "Product Reviews Showcase",
       "blocks": [
-        { "type": "review", "settings": { "rating": 5, "title": "Honestly the best",            "body": "<p>Took a chance based on the reviews \u2014 no regrets. Quality is top-tier and the little details clearly come from people who care.</p>", "author": "Jamie R.",    "date": "3 days ago" } },
-        { "type": "review", "settings": { "rating": 5, "title": "Every morning, no skipping",   "body": "<p>My whole routine is built around this now. Simple, works, and my energy through the afternoon is night and day.</p>", "author": "Priya D.", "date": "1 week ago" } },
-        { "type": "review", "settings": { "rating": 5, "title": "Finally found my product",      "body": "<p>I had almost given up. This one clicked immediately. Customer service was amazing too.</p>", "author": "Marcus C.", "date": "2 weeks ago" } },
-        { "type": "review", "settings": { "rating": 4, "title": "Really solid",                  "body": "<p>Shipping was fast and packaging was thoughtful. Knock off a half star only because I wish they had more size options.</p>", "author": "Leah A.",  "date": "3 weeks ago" } },
-        { "type": "review", "settings": { "rating": 5, "title": "Beautifully designed",          "body": "<p>It\u2019s the kind of thing where you notice new details a week in. Every choice feels intentional. Recommended.</p>", "author": "Sam P.", "date": "1 month ago" } },
-        { "type": "review", "settings": { "rating": 5, "title": "Worth every penny",             "body": "<p>More expensive than I usually spend but you feel it the moment you open the box. Will buy again.</p>", "author": "Alex N.",   "date": "1 month ago" } }
+        { "type": "review",        "settings": { "rating": 5, "author": "Jamie R.",    "date": "3 days ago",   "verified": true } },
+        { "type": "review_title",  "settings": { "text": "Honestly the best" } },
+        { "type": "review_body",   "settings": { "text": "<p>Took a chance based on the reviews \u2014 no regrets. Quality is top-tier and the little details clearly come from people who care.</p>" } },
+
+        { "type": "review",        "settings": { "rating": 5, "author": "Priya D.",   "date": "1 week ago",   "verified": true } },
+        { "type": "review_title",  "settings": { "text": "Every morning, no skipping" } },
+        { "type": "review_body",   "settings": { "text": "<p>My whole routine is built around this now. Simple, works, and my energy through the afternoon is night and day.</p>" } },
+
+        { "type": "review",        "settings": { "rating": 5, "author": "Marcus C.",  "date": "2 weeks ago",  "verified": true } },
+        { "type": "review_title",  "settings": { "text": "Finally found my product" } },
+        { "type": "review_body",   "settings": { "text": "<p>I had almost given up. This one clicked immediately. Customer service was amazing too.</p>" } },
+
+        { "type": "review",        "settings": { "rating": 4, "author": "Leah A.",    "date": "3 weeks ago",  "verified": false } },
+        { "type": "review_title",  "settings": { "text": "Really solid" } },
+        { "type": "review_body",   "settings": { "text": "<p>Shipping was fast and packaging was thoughtful. Knock off a half star only because I wish they had more size options.</p>" } },
+
+        { "type": "review",        "settings": { "rating": 5, "author": "Sam P.",     "date": "1 month ago",  "verified": true } },
+        { "type": "review_title",  "settings": { "text": "Beautifully designed" } },
+        { "type": "review_body",   "settings": { "text": "<p>It\u2019s the kind of thing where you notice new details a week in. Every choice feels intentional.</p>" } },
+
+        { "type": "review",        "settings": { "rating": 5, "author": "Alex N.",    "date": "1 month ago",  "verified": true } },
+        { "type": "review_title",  "settings": { "text": "Worth every penny" } },
+        { "type": "review_body",   "settings": { "text": "<p>More expensive than I usually spend but you feel it the moment you open the box. Will buy again.</p>" } }
       ]
     }
   ]

@@ -1,0 +1,459 @@
+{%- comment -%}
+  blog_showcase — award-winning single-post page.
+  - Cinematic hero: category tag + title + meta + cover image
+  - Article body (uses post.content / post.body)
+  - Author bio card
+  - Share buttons (native share API + copy link fallback)
+  - Related posts grid (3 cards from the same blog)
+{%- endcomment -%}
+
+{%- style -%}
+  .blgp.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 0 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 100 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 0 0 100px;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+  }
+
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .blgp.section-{{ section.id }} .blgp__hero {
+    padding: 80px 24px 48px;
+    text-align: {{ section.settings.hero_alignment | default: 'center' }};
+    background: {{ section.settings.hero_background | default: 'transparent' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__hero-inner {
+    max-width: 820px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 20px;
+    {% if section.settings.hero_alignment == 'left' %}text-align: left;{% endif %}
+  }
+  .blgp.section-{{ section.id }} .blgp__title {
+    margin: 0;
+    font-size: clamp(32px, 5vw, 64px);
+    font-weight: 700; letter-spacing: -0.025em; line-height: 1.05;
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__subtitle {
+    margin: 0;
+    font-size: clamp(16px, 1.4vw, 20px); line-height: 1.5;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+
+  .blgp.section-{{ section.id }} .blgp__category {
+    display: inline-flex; align-items: center;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    background: {{ section.settings.category_background | default: 'var(--clr-light)' }};
+    color: {{ section.settings.category_color | default: 'var(--clr-primary)' }};
+    border-radius: 999px;
+    width: fit-content;
+    text-decoration: none;
+    {% if section.settings.hero_alignment == 'center' %}margin: 0 auto;{% endif %}
+  }
+
+  .blgp.section-{{ section.id }} .blgp__meta {
+    display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    font-size: 13px;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    {% if section.settings.hero_alignment == 'center' %}justify-content: center;{% endif %}
+  }
+  .blgp.section-{{ section.id }} .blgp__meta-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+  .blgp.section-{{ section.id }} .blgp__meta strong { font-weight: 600; color: {{ section.settings.body_color | default: 'var(--clr-body)' }}; }
+  .blgp.section-{{ section.id }} .blgp__meta-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    object-fit: cover; display: inline-block; margin-right: 2px;
+    vertical-align: middle;
+    background: var(--clr-gray);
+  }
+
+  /* ── Cover ────────────────────────────────────────────────── */
+  .blgp.section-{{ section.id }} .blgp__cover {
+    max-width: {{ section.settings.cover_max_width | default: '1080px' }};
+    margin: 0 auto 48px;
+    padding: 0 24px;
+  }
+  .blgp.section-{{ section.id }} .blgp__cover-inner {
+    aspect-ratio: {{ section.settings.cover_aspect_ratio | default: '16/9' }};
+    overflow: hidden;
+    border-radius: 20px;
+    background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__cover-inner img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    display: block;
+  }
+
+  /* ── Article body ─────────────────────────────────────────── */
+  .blgp.section-{{ section.id }} .blgp__article {
+    max-width: {{ section.settings.article_max_width | default: '720px' }};
+    margin: 0 auto;
+    padding: 0 24px;
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__article h1,
+  .blgp.section-{{ section.id }} .blgp__article h2,
+  .blgp.section-{{ section.id }} .blgp__article h3,
+  .blgp.section-{{ section.id }} .blgp__article h4 {
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+    letter-spacing: -0.015em; line-height: 1.2;
+    margin: 2em 0 0.6em;
+  }
+  .blgp.section-{{ section.id }} .blgp__article h2 { font-size: 1.75em; }
+  .blgp.section-{{ section.id }} .blgp__article h3 { font-size: 1.35em; }
+  .blgp.section-{{ section.id }} .blgp__article p { margin: 0 0 1.1em; }
+  .blgp.section-{{ section.id }} .blgp__article a { color: {{ section.settings.link_color | default: 'var(--clr-primary)' }}; text-decoration: underline; text-underline-offset: 3px; }
+  .blgp.section-{{ section.id }} .blgp__article img { max-width: 100%; height: auto; border-radius: 14px; margin: 1.6em 0; }
+  .blgp.section-{{ section.id }} .blgp__article blockquote {
+    margin: 1.6em 0; padding: 14px 24px;
+    border-left: 3px solid {{ section.settings.accent_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.italic_font | default: 'var(--ff-italic)' }};
+    font-size: 1.15em; font-style: italic; line-height: 1.5;
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__article ul,
+  .blgp.section-{{ section.id }} .blgp__article ol { margin: 0 0 1.2em; padding-left: 1.4em; }
+  .blgp.section-{{ section.id }} .blgp__article li { margin: 0.4em 0; }
+
+  /* ── Share bar ────────────────────────────────────────────── */
+  .blgp.section-{{ section.id }} .blgp__share {
+    max-width: {{ section.settings.article_max_width | default: '720px' }};
+    margin: 56px auto 0;
+    padding: 24px;
+    display: flex; align-items: center; gap: 16px; justify-content: center;
+    border-top: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+    border-bottom: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__share-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__share-btn {
+    width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; border: 1.5px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+    background: transparent;
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color .15s, color .15s, border-color .15s;
+  }
+  .blgp.section-{{ section.id }} .blgp__share-btn:hover {
+    background: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.hero_background | default: 'var(--clr-white)' }};
+    border-color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__share-btn svg { width: 16px; height: 16px; }
+
+  /* ── Author card ──────────────────────────────────────────── */
+  .blgp.section-{{ section.id }} .blgp__author {
+    max-width: {{ section.settings.article_max_width | default: '720px' }};
+    margin: 48px auto 0;
+    padding: 28px 28px;
+    background: {{ section.settings.author_background | default: 'var(--clr-light)' }};
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 20px;
+    flex-wrap: wrap;
+  }
+  .blgp.section-{{ section.id }} .blgp__author-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    overflow: hidden;
+    background: var(--clr-gray);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__author-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .blgp.section-{{ section.id }} .blgp__author-info { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .blgp.section-{{ section.id }} .blgp__author-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }}; }
+  .blgp.section-{{ section.id }} .blgp__author-name  { font-size: 18px; font-weight: 700; color: {{ section.settings.title_color | default: 'var(--clr-primary)' }}; }
+  .blgp.section-{{ section.id }} .blgp__author-bio   { font-size: 14.5px; line-height: 1.55; color: {{ section.settings.body_color | default: 'var(--clr-body)' }}; margin: 0; }
+
+  /* ── Related ──────────────────────────────────────────────── */
+  .blgp.section-{{ section.id }} .blgp__related {
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 96px auto 0;
+    padding: 0 64px;
+  }
+  @media (max-width: 991px) { .blgp.section-{{ section.id }} .blgp__related { padding: 0 24px; } }
+  .blgp.section-{{ section.id }} .blgp__related-title {
+    margin: 0 0 32px;
+    font-size: clamp(22px, 2.5vw, 32px);
+    font-weight: 700; letter-spacing: -0.015em;
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+  @media (max-width: 991px) { .blgp.section-{{ section.id }} .blgp__related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 575px) { .blgp.section-{{ section.id }} .blgp__related-grid { grid-template-columns: 1fr; } }
+
+  .blgp.section-{{ section.id }} .blgp__rcard {
+    display: flex; flex-direction: column; gap: 12px;
+    text-decoration: none; color: inherit;
+  }
+  .blgp.section-{{ section.id }} .blgp__rcard-image {
+    aspect-ratio: 3/2;
+    overflow: hidden;
+    border-radius: 14px;
+    background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__rcard-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+  .blgp.section-{{ section.id }} .blgp__rcard:hover .blgp__rcard-image img { transform: scale(1.05); }
+  .blgp.section-{{ section.id }} .blgp__rcard-title {
+    margin: 0;
+    font-size: 17px; font-weight: 700; letter-spacing: -0.005em; line-height: 1.3;
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+  .blgp.section-{{ section.id }} .blgp__rcard-meta {
+    font-size: 12.5px; color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+  }
+{%- endstyle -%}
+
+{%- comment -%} Resolve post + related posts {%- endcomment -%}
+{%- assign cover_img = post.image_url -%}
+{%- if cover_img == blank and post.image -%}{%- assign cover_img = post.image | image_url: width: 1800 -%}{%- endif -%}
+{%- assign cat_title = post.category.title | default: post.category -%}
+{%- assign pub_date  = post.published_at | date: '%B %-d, %Y' -%}
+{%- assign read_time = post.reading_time -%}
+{%- assign author_name = post.author -%}
+{%- assign author_avatar = post.author_avatar -%}
+{%- assign body_html = post.content | default: post.body -%}
+
+{%- assign related = null -%}
+{%- if blog.posts and blog.posts.size > 1 -%}{%- assign related = blog.posts -%}
+{%- elsif posts and posts.size > 1 -%}{%- assign related = posts -%}
+{%- endif -%}
+
+<section class="blgp section-{{ section.id }}" {{ section.fluid_attributes }}>
+
+  <div class="blgp__hero">
+    <div class="blgp__hero-inner">
+      {% if cat_title != blank %}<span class="blgp__category">{{ cat_title | escape }}</span>{% endif %}
+      <h1 class="blgp__title">{{ post.title | default: 'Post title' | escape }}</h1>
+      {% if post.subtitle != blank %}<p class="blgp__subtitle">{{ post.subtitle }}</p>{% endif %}
+      <div class="blgp__meta">
+        {% if author_avatar != blank %}<img class="blgp__meta-avatar" src="{{ author_avatar | image_url: width: 80 }}" alt="{{ author_name | escape }}">{% endif %}
+        {% if author_name != blank %}<strong>{{ author_name | escape }}</strong>{% endif %}
+        {% if author_name != blank and pub_date != blank %}<span class="blgp__meta-dot"></span>{% endif %}
+        {% if pub_date != blank %}<time datetime="{{ post.published_at | date: '%Y-%m-%d' }}">{{ pub_date }}</time>{% endif %}
+        {% if read_time %}<span class="blgp__meta-dot"></span><span>{{ read_time }} min read</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if section.settings.show_cover and cover_img != blank %}
+    <div class="blgp__cover">
+      <div class="blgp__cover-inner">
+        <img src="{{ cover_img }}" alt="{{ post.title | escape }}" loading="eager">
+      </div>
+    </div>
+  {% endif %}
+
+  {% if body_html != blank %}
+    <article class="blgp__article rte">{{ body_html }}</article>
+  {% endif %}
+
+  {% if section.settings.show_share %}
+    <div class="blgp__share" data-blgp-share>
+      <span class="blgp__share-label">Share</span>
+      <a class="blgp__share-btn" data-share="twitter" href="#" aria-label="Share on X / Twitter">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.53 8.625L22.25 22h-6.765l-5.3-6.91L4.09 22H.83l8.04-9.2L.75 2h6.92l4.78 6.33L18.244 2zm-1.184 18h1.87L6.97 4H4.99l12.07 16z"/></svg>
+      </a>
+      <a class="blgp__share-btn" data-share="facebook" href="#" aria-label="Share on Facebook">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 22v-8h3l.5-4H13V7.5c0-1.2.3-2 2-2H16.5V2h-3C10.8 2 9 3.7 9 6.5V10H6v4h3v8z"/></svg>
+      </a>
+      <a class="blgp__share-btn" data-share="linkedin" href="#" aria-label="Share on LinkedIn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5c0 1.38-1.12 2.5-2.5 2.5s-2.5-1.12-2.5-2.5S1.1 1 2.48 1s2.5 1.12 2.5 2.5zM.5 8h4V22h-4V8zm7 0h3.8v1.9h.05c.53-1 1.83-2.05 3.76-2.05C19.53 7.85 20.5 10.3 20.5 13.4V22h-4v-7.4c0-1.76-.03-4-2.45-4-2.45 0-2.82 1.9-2.82 3.87V22h-4V8z"/></svg>
+      </a>
+      <button type="button" class="blgp__share-btn" data-share="copy" aria-label="Copy link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l4-4a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-4 4a5 5 0 0 0 7 7l1-1"/></svg>
+      </button>
+    </div>
+  {% endif %}
+
+  {% if section.settings.show_author and author_name != blank %}
+    <div class="blgp__author">
+      <div class="blgp__author-avatar">
+        {% if author_avatar != blank %}<img src="{{ author_avatar | image_url: width: 160 }}" alt="{{ author_name | escape }}">{% else %}{{ author_name | slice: 0, 1 | upcase }}{% endif %}
+      </div>
+      <div class="blgp__author-info">
+        <span class="blgp__author-label">{{ section.settings.author_label | default: 'Written by' | escape }}</span>
+        <span class="blgp__author-name">{{ author_name | escape }}</span>
+        {% if section.settings.author_bio != blank %}<p class="blgp__author-bio">{{ section.settings.author_bio | escape }}</p>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if section.settings.show_related and related %}
+    {%- assign rendered_related = 0 -%}
+    <div class="blgp__related">
+      <h2 class="blgp__related-title">{{ section.settings.related_title | default: 'Keep reading' | escape }}</h2>
+      <div class="blgp__related-grid">
+        {% for rp in related %}
+          {%- if rp.id == post.id -%}{%- continue -%}{%- endif -%}
+          {%- if rendered_related >= 3 -%}{%- break -%}{%- endif -%}
+          {%- assign rp_url = rp.preview_url | default: rp.url | default: rp.canonical_url | default: '#' -%}
+          {%- assign rp_img = rp.image_url -%}
+          {%- if rp_img == blank and rp.image -%}{%- assign rp_img = rp.image | image_url: width: 900 -%}{%- endif -%}
+          {%- assign rp_date = rp.published_at | date: '%b %-d, %Y' -%}
+          <a class="blgp__rcard" href="{{ rp_url }}">
+            <div class="blgp__rcard-image">
+              {% if rp_img != blank %}<img src="{{ rp_img }}" alt="{{ rp.title | escape }}" loading="lazy">{% endif %}
+            </div>
+            <h3 class="blgp__rcard-title">{{ rp.title | escape }}</h3>
+            <span class="blgp__rcard-meta">{{ rp_date }}</span>
+          </a>
+          {%- assign rendered_related = rendered_related | plus: 1 -%}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</section>
+
+<script>
+(function () {
+  function init(root) {
+    var share = root.querySelector('[data-blgp-share]');
+    if (!share) return;
+    var url = window.location.href;
+    var title = document.title;
+    share.querySelectorAll('[data-share]').forEach(function (el) {
+      var kind = el.getAttribute('data-share');
+      if (kind === 'twitter')  el.setAttribute('href', 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(title));
+      if (kind === 'facebook') el.setAttribute('href', 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url));
+      if (kind === 'linkedin') el.setAttribute('href', 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url));
+      if (kind === 'twitter' || kind === 'facebook' || kind === 'linkedin') {
+        el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener noreferrer');
+      }
+      if (kind === 'copy') {
+        el.addEventListener('click', function () {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(function () {
+              var orig = el.getAttribute('aria-label');
+              el.setAttribute('aria-label', 'Link copied');
+              setTimeout(function () { el.setAttribute('aria-label', orig); }, 2000);
+            });
+          }
+        });
+      }
+    });
+  }
+  function boot() { document.querySelectorAll('.section-{{ section.id }}').forEach(init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Blog Post Showcase",
+  "tag": "section",
+  "class": "blog-showcase-section",
+  "enabled_on": { "templates": ["post"] },
+  "settings": [
+    { "type": "header", "content": "Hero" },
+    { "type": "radio", "id": "hero_alignment", "label": "Hero alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    { "type": "select", "id": "hero_background", "label": "Hero background", "options": "background_colors", "default": "transparent" },
+
+    { "type": "header", "content": "Cover image" },
+    { "type": "checkbox", "id": "show_cover", "label": "Show cover image", "default": true },
+    { "type": "select", "id": "cover_aspect_ratio", "label": "Cover aspect ratio", "default": "16/9",
+      "options": [
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "3/2",  "label": "Classic (3:2)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "21/9", "label": "Ultra-wide (21:9)" }
+      ]
+    },
+    { "type": "select", "id": "cover_max_width", "label": "Cover max width", "default": "1080px",
+      "options": [
+        { "value": "900px",  "label": "Tight (900px)" },
+        { "value": "1080px", "label": "Default (1080px)" },
+        { "value": "1280px", "label": "Wide (1280px)" },
+        { "value": "100%",   "label": "Full width" }
+      ]
+    },
+
+    { "type": "header", "content": "Article body" },
+    { "type": "select", "id": "article_max_width", "label": "Article max width", "default": "720px",
+      "options": [
+        { "value": "640px",  "label": "Tight (640px)" },
+        { "value": "720px",  "label": "Default (720px)" },
+        { "value": "820px",  "label": "Wide (820px)" }
+      ]
+    },
+
+    { "type": "header", "content": "Share bar" },
+    { "type": "checkbox", "id": "show_share", "label": "Show share buttons", "default": true },
+
+    { "type": "header", "content": "Author card" },
+    { "type": "checkbox", "id": "show_author", "label": "Show author card", "default": true },
+    { "type": "text",     "id": "author_label", "label": "Label", "default": "Written by" },
+    { "type": "textarea", "id": "author_bio",   "label": "Fallback author bio (shown when post has no bio)" },
+
+    { "type": "header", "content": "Related posts" },
+    { "type": "checkbox", "id": "show_related",  "label": "Show related posts", "default": true },
+    { "type": "text",     "id": "related_title", "label": "Section title",      "default": "Keep reading" },
+
+    { "type": "header", "content": "Colors / Fonts" },
+    { "type": "select", "id": "title_font",   "label": "Title font",   "options": "font_families",     "default": "var(--ff-heading)" },
+    { "type": "select", "id": "italic_font",  "label": "Blockquote font", "options": "font_families",  "default": "var(--ff-italic)" },
+    { "type": "select", "id": "title_color",  "label": "Title / heading color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "body_color",   "label": "Body text",    "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "muted_color",  "label": "Muted (meta)", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "link_color",   "label": "Body link",    "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "accent_color", "label": "Blockquote accent", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "divider_color","label": "Divider",      "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "category_background", "label": "Category chip bg",   "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "category_color",      "label": "Category chip text", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "author_background",   "label": "Author card bg", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "image_placeholder_background", "label": "Image placeholder bg", "options": "background_colors", "default": "var(--clr-light)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" }
+      ]
+    },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "presets": [
+    {
+      "name": "Blog Post Showcase",
+      "settings": {
+        "hero_alignment": "center",
+        "show_cover": true,
+        "cover_aspect_ratio": "16/9",
+        "show_share": true,
+        "show_author": true,
+        "show_related": true
+      }
+    }
+  ]
+}
+{% endschema %}

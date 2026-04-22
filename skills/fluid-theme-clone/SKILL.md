@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 3.1.0
+  version: 4.0.0
 ---
 
 # Fluid Theme Clone
@@ -408,18 +408,33 @@ All sections use 1280px max-width with theme variable horizontal padding:
 
 Standardized breakpoints: `991px` (tablet), `767px` (mobile). Never use 749px, 768px, or 1023px.
 
-#### Images — always through `blocks/image`
+#### Images — always through `blocks/image` (NON-NEGOTIABLE)
 
-Never use a local `image_picker` inside a section schema. All user-uploaded images come through the canonical `blocks/image` block, which provides consistent aspect ratio, fit, object position, overlay, border, and border-radius controls across every section.
+Never use `image_picker` for a content image. Ever. All user-uploaded content images come through the canonical `blocks/image` block, which ships aspect ratio, fit, object position, overlay, border width/color, and corner radius. When you inline an `image_picker` directly, merchants lose every one of those controls and the block can't be duplicated independently.
 
-When a section needs an image, inline the canonical image block settings into the section's `blocks` array:
+**ALLOWED uses of `image_picker`:**
+- Section shell: `background_image` (decorative full-section bg)
+- Container: `container_background_image` (decorative container bg)
+- Inside the canonical `image` block itself: `image` (the one control)
+- Inside data-driven wrappers like `blocks/post_image`: fallback when the resource's own image is blank
+
+**FORBIDDEN uses of `image_picker`** — all of these are wrong and must be refactored to a canonical `image` block:
+- Section-level content images (`hero_image`, `logo_image`, `before_image`, `after_image`)
+- Image fields on other blocks (`avatar` on a review card, `photo` on a testimonial, `logo_image` on a press card)
+- "Image override" fields on resource-picker blocks (instead, a canonical image block added alongside)
+
+When a section needs one image, inline the canonical image settings into `blocks` and add `{ "type": "image" }` to the preset:
 ```json
-{ "type": "image", "name": "Image", "settings": [ /* full canonical image settings */ ] }
+{ "type": "image", "name": "Image", "limit": 1, "settings": [ /* full canonical image settings */ ] }
 ```
 
-Data-driven images (product.images, post.image) are the exception — those use `| image_url` directly in the section Liquid, since the user isn't picking them.
+When a section needs **images per card** (review grid, testimonial grid, logo bar, step list, before/after, ingredient list): use the **divider block pattern** — a divider block with no image field (e.g. `review`, `logo_item`, `step`) plus canonical `image` block instances that render inside the current divider's scope via a stateful walk. See product_how_to_use for the reference implementation.
+
+Data-driven images (product.images, post.image) are the only exception — those use `| image_url` directly in the section Liquid, since the merchant isn't picking them.
 
 For Fluid Media (video / UGC), use `blocks/fluid_media` — and handle both shapes the `media_picker` returns (Fluid Media object with `fluid_media_id` vs plain image upload). See [fluid-theme-refine](../fluid-theme-refine/SKILL.md#media_picker-returns-two-shapes--fall-back-to--image_url) for the fallback pattern.
+
+**Pre-push checklist:** grep the section for `"type": "image_picker"`. Every match must be `background_image`, `container_background_image`, the `image` field inside a canonical `image` block, or a data-driven fallback. If any match is a content image, stop and convert it to a canonical `image` block before pushing.
 
 #### Dynamic Product Data — Never Static Blocks
 
@@ -481,7 +496,20 @@ Some patterns live in `base-theme/components/` because they're rendered via `{% 
 
 ### Canonical section library
 
-The base theme ships a standard library of award-winning ecommerce sections. Compose home pages from these — do not rebuild from scratch:
+The base theme ships a standard library of award-winning ecommerce sections — **40+ gold-standard sections** covering every surface of a modern ecommerce store. Compose pages from these; do not rebuild from scratch.
+
+Library coverage by surface:
+
+- **Home** — 3 heroes, 14 content/conversion sections (see below)
+- **Product PDP** — `product_hero`, `product_hero_2` (Seed-style grid gallery), `product_benefits`, `product_ingredients`, `product_how_to_use`, `product_compare`, `product_press`, `product_reviews_showcase`, `related_products`
+- **Collection** — `collection_showcase` (single collection) + `collection_index` (all collections grid)
+- **Category** — `category_showcase` + `category_index`
+- **Shop** — `shop_showcase`
+- **Blog** — `blog_index` (listing with featured post + grid + pagination) + `blog_showcase` (single post with hero, body, author card, share bar, related posts)
+- **Enrollment (MLM)** — `enrollment_pack_hero`, `enrollment_whats_included`, `enrollment_compensation` (rank-tier cards + FTC disclaimer), `enrollment_success_stories`, `enrollment_showcase` (all-packs index)
+- **Layout** — `main_navbar`, `main_footer`
+
+Every one of these ships with Section Shell + Container + theme-token colors + canonical block-based content. Build new sections in the same style; retire any legacy `main_*` that still uses hex defaults, splide, or ignores theme tokens.
 
 **Heroes (3)**
 
@@ -511,6 +539,77 @@ The base theme ships a standard library of award-winning ecommerce sections. Com
 | `collection_tiles`   | Shop-by-category tiles with hover zoom, overlay gradient, CTA chip, auto-fills from Fluid collection. Uses `collection.canonical_url` for link, `image_url → image_path → first product image` fallback chain. |
 
 All 17 use the Section Shell (6) + Container (9) pattern and reference `background_colors` / `font_families` option groups exclusively. Heroes additionally use the **canonical block primacy** pattern for hero images — the image is added as a `blocks/image` instance (not a section setting), with CSS `aspect-ratio: unset !important` override to fill the column.
+
+### Gotchas locked from production builds — read these before writing a new section
+
+These are all paid-in-time lessons from shipping this base theme. Violating any of them silently breaks something real.
+
+**1. `{% render 'snippet' %}` resolves ONLY from `components/`, not `blocks/`.**
+`blocks/cart_button/index.liquid` is a canonical REFERENCE file. You cannot `{% render 'cart_button' %}` to use it — Fluid won't find it. When a section needs the cart button (navbar), **inline the markup + settings** directly in the section. Applies to every file in `blocks/`. Only `components/*` are legal render targets.
+
+**2. Canonical image block wrapper must ALWAYS render when the block exists.**
+Put `block.fluid_attributes` on the OUTER wrapper, swap the inner content (image vs placeholder) based on whether `block.settings.image` is set. Otherwise, the editor can't click the empty image slot to upload one.
+
+```liquid
+{% if image_block %}
+  <div class="media-wrap" {{ image_block.fluid_attributes }}>
+    {% if image_block.settings.image %}
+      <img src="{{ image_block.settings.image | img_url: '1600x' }}" ...>
+    {% else %}
+      <div class="placeholder">…</div>
+    {% endif %}
+  </div>
+{% endif %}
+```
+
+**3. Image-picker return shape varies — resolve defensively.**
+`block.settings.image` can be: an object with `.url`, an object with `.src`, a Fluid media object that needs `| img_url:'Nx'`, or a raw URL string. Try each in order:
+```liquid
+{%- if img.url != blank -%}{%- assign _u = img.url -%}
+{%- elsif img.src != blank -%}{%- assign _u = img.src -%}
+{%- else -%}{%- assign _u = img | img_url: '600x' -%}
+{%- endif -%}
+{%- if _u == blank -%}{%- assign _u = img -%}{%- endif -%}
+```
+
+**4. Fluid's `link_list` Liquid shape uses `menu.menu_items` — NOT `menu.links`.**
+When rendering a merchant-picked menu (nav, footer columns): iterate `block.settings.menu.menu_items` and read `item.url` / `item.title`. Fluid's own `navbar_primary_nav` uses this shape.
+
+**5. The `collections` global in Liquid ≠ the REST API shape.**
+- REST `/api/company/v1/collections` returns `image_url`, `image_path`, `canonical_url`, `product_collections` etc.
+- Liquid `{% for c in collections %}` returns `{id, handle, title, description, image (often null), url, products (inlined), position}` — no `image_url`, no `product_collections`.
+
+Image fallback for collection cards: `c.image` → `c.image_url` (rare) → `c.image_path` (rare) → `c.products[0].image_url`. **Never** rely on `.product_collections` in the Liquid iteration context.
+
+**6. `position: sticky` dies silently if any ancestor has `overflow-x/y: hidden`.**
+The default reset stylesheet had `body { overflow-x: hidden }`. Switch to `overflow-x: clip` — same visual effect, doesn't create a new scroll container, so sticky keeps working against the viewport. Also override Fluid's template/section wrapper `overflow:` to `visible` + `contain: none` + `transform: none` on the sticky section's CSS for belt-and-suspenders.
+
+**7. Font CSS variables must be populated for EVERY slot in settings_data.json.**
+Defaults in `config/settings_schema.json` don't auto-apply if the key is missing from `settings_data.json`. If you ship new font slots (e.g. `font_family_italic`, `font_family_handwriting`), also seed them in `settings_data.json`. Do not hardcode font values in `assets/config.css` — dynamic values in `layouts/theme.liquid` would be shadowed by the static `:root` rule.
+
+**8. Editor drafts aren't persisted — the live render reads saved state.**
+When the user uploads an image in the visual editor but the HTML output still shows `image: null`, they haven't clicked **Save** in the editor. The draft lives in the iframe's local state only. Build a debug-echo (`{{ block.settings.image | json }}` in an HTML comment) as the diagnostic tool when images "don't appear."
+
+**9. Template preset expansion only fires on FRESH template creation.**
+Editing a section's preset doesn't retroactively add blocks to existing templates. Workflow: `DELETE /api/application_theme_templates/{id}` then `PUT /api/application_themes/{theme}/resources` on the template file → preset re-expands on the new template id. (Templates live in a different table than resources — deleting a resource doesn't drop the template.) Fluid auto-reissues a new numeric id each time; update preview links accordingly.
+
+**10. Navbar overflow: hamburger beats "More" dropdown.**
+When nav items can't fit, the expert pattern (Apple, Shopify, Gucci, Aesop) is to collapse the whole menu into the mobile hamburger — not spill overflow into a "More ▾" popover. Provide both as an option, default to hamburger. Measuring for "More" requires forcing the trigger to temporarily `visibility: hidden` and measuring its `getBoundingClientRect()` width BEFORE deciding which items overflow — otherwise you'll miss the reserve space and clip a link.
+
+**11. Pagination snippet: always `| plus: 1` on `current_offset`.**
+`paginate.current_offset` is 0-indexed. Rendering it raw gives "Showing 0 to 10 of N" — humanize with `| plus: 1`, and clamp the "to" value with `paginate.items` so the last page doesn't overshoot.
+
+**12. Heavy `c.products.size` iteration on collection lists is slow.**
+The collection_index page calling `c.products.size` for each of 800+ collections will time out Fluid (10+ seconds). Either gate with a toggle (default off) or don't render counts. Also cap `collections_limit` (default 24) — a global merchant-facing setting for large stores.
+
+**13. Navbar preserves Fluid's JS hooks — never rewrite them.**
+The `#show-cart` + `#fluid-cart-count` + `#show-language-country-dropdown` + `.saveLocaleBtn` + `.country-selector` + `.language-selector` IDs/classes are wired up by `header.js` and Fluid's cart/locale widgets. Keep all of them when rebuilding the navbar. The three canonical component renders (`navbar_primary_nav`, `navbar_locale_dropdown`, `navbar_mobile_menu`) own these hooks internally — render them verbatim.
+
+**14. Logo / canonical image blocks need reserved min dimensions so they're selectable.**
+When a block has no image and no company fallback set, the slot collapses to zero width and becomes impossible to click in the editor. Reserve `min-width` and `min-height` on the block's wrapper, plus render a dashed-border placeholder with an icon + "Your logo" label (or similar) as the final fallback.
+
+**15. Edge-to-edge split sections don't use a max-width container.**
+For full-bleed split layouts (image hero with half-width text): remove `.section__container { max-width: 1440px }`. Instead, let the split grid span 100% and cap text readability with an INNER `.section__text-inner { max-width: 560px }` anchored to the inner edge (`justify-content: flex-end` when image is on the right). The background colors of each half are flush to the viewport edge, the text stays readable.
 
 ### The Compare -> Code -> Preview -> Refine Loop
 

@@ -1349,58 +1349,67 @@ button.slide-arrow.arrow-next-btn {
  Pagination
 =========== */
 .pagination {
-  flex-wrap: wrap;
-  justify-content: center;
-  flex-direction: column;
-}
-
-@media (min-width: 768px) {
-  .pagination {
-    flex-wrap: nowrap;
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
-.pagination .pagination-list a,
-.pagination .pagination-list span {
-  height: 40px;
-  width: 40px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  flex-direction: column;
-  background-color: var(--clr-white);
-  transition: all 0.5s ease-in;
-  border: 1px solid #d0d5dd;
-  font-size: var(--fs-sm);
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 56px;
+  padding: 24px 0;
+  flex-wrap: wrap;
+}
+@media (max-width: 767px) {
+  .pagination { flex-direction: column; gap: 16px; }
 }
 
-.pagination .pagination-list a:not(:last-child),
-.pagination .pagination-list span:not(:last-child) {
-  border-right: 0;
+.pagination-summary {
+  font-size: 14px;
+  color: var(--clr-muted);
+  letter-spacing: 0.01em;
 }
+.pagination-summary span { color: var(--clr-primary); font-weight: 600; }
 
-.pagination .pagination-list a.pagination-next svg,
-.pagination .pagination-list span.pagination-next svg {
-  transform: rotate(180deg);
+.pagination-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-
-.pagination .pagination-list a.is-active,
-.pagination .pagination-list a:hover,
-.pagination .pagination-list span.is-active,
-.pagination .pagination-list span:hover {
-  background-color: var(--clr-primary);
+.pagination-list a,
+.pagination-list span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--clr-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.pagination-list a:hover {
+  border-color: var(--clr-gray);
+}
+.pagination-list .pagination-arrow {
+  border-color: var(--clr-gray);
+}
+.pagination-list .pagination-arrow:hover {
+  background: var(--clr-primary);
   color: var(--clr-white);
   border-color: var(--clr-primary);
 }
-
-.pagination .pagination-list a.is-active svg path,
-.pagination .pagination-list a:hover svg path,
-.pagination .pagination-list span.is-active svg path,
-.pagination .pagination-list span:hover svg path {
-  fill: currentColor;
+.pagination-list .is-active {
+  background: var(--clr-primary);
+  color: var(--clr-white);
 }
+.pagination-list .pagination-gap {
+  border: none;
+  color: var(--clr-muted);
+}
+.pagination-list svg { width: 16px; height: 16px; }
 
 /*****************End: Pagination****************/
 

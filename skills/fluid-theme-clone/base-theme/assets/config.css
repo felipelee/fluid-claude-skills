@@ -1,7 +1,8 @@
 :root {
-  /* font family */
-  --ff-body: "Roboto", sans-serif;
-  --ff-heading: "Roboto", sans-serif;
+  /* font-family CSS variables are defined dynamically in layouts/theme.liquid
+     (see the {% style %} block that outputs --ff-body / --ff-heading /
+     --ff-accent / --ff-italic / --ff-handwriting from the theme settings).
+     Do NOT hardcode them here — static values would shadow merchant selections. */
   --fw-body: 400;
 
   /* §6a: Desktop font sizes (base — new spec defaults) */

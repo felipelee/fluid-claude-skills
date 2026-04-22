@@ -231,7 +231,7 @@
 
       <div class="he__image-slot">
         {%- assign image_block = section.blocks | where: 'type', 'image' | first -%}
-        {% if image_block and image_block.settings.image %}
+        {% if image_block %}
           {%- assign _ar = image_block.settings.aspect_ratio | default: '4/5' -%}
           {%- assign _alt = image_block.settings.alt | default: image_block.settings.image.alt | default: '' -%}
           {%- capture _wrap_style -%}
@@ -244,15 +244,17 @@
             object-position: {{ image_block.settings.object_position | default: 'center' }};
           {%- endcapture -%}
           <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ image_block.fluid_attributes }}>
-            <img src="{{ image_block.settings.image | img_url: '1600x' }}" alt="{{ _alt | escape }}" loading="eager" style="{{ _img_style | strip_newlines }}">
-            {% if image_block.settings.overlay_color != blank and image_block.settings.overlay_opacity > 0 %}
-              {%- assign _ov = image_block.settings.overlay_opacity | divided_by: 100.0 -%}
-              <div class="media-wrap__overlay" style="position:absolute;inset:0;background:{{ image_block.settings.overlay_color }};opacity:{{ _ov }};pointer-events:none;"></div>
+            {% if image_block.settings.image %}
+              <img src="{{ image_block.settings.image | img_url: '1600x' }}" alt="{{ _alt | escape }}" loading="eager" style="{{ _img_style | strip_newlines }}">
+              {% if image_block.settings.overlay_color != blank and image_block.settings.overlay_opacity > 0 %}
+                {%- assign _ov = image_block.settings.overlay_opacity | divided_by: 100.0 -%}
+                <div class="media-wrap__overlay" style="position:absolute;inset:0;background:{{ image_block.settings.overlay_color }};opacity:{{ _ov }};pointer-events:none;"></div>
+              {% endif %}
+            {% else %}
+              <div class="he__image-placeholder">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="56" height="56"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+              </div>
             {% endif %}
-          </div>
-        {% else %}
-          <div class="he__image-placeholder">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="56" height="56"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
           </div>
         {% endif %}
         {% if section.settings.image_caption != blank %}

@@ -44,10 +44,16 @@
     display: grid;
     grid-template-columns: minmax(200px, 1.4fr) 1fr 1fr;
     border-radius: {{ section.settings.table_radius | default: 16 }}px;
-    overflow: hidden;
     background: {{ section.settings.table_background | default: 'var(--clr-white)' }};
     box-shadow: 0 12px 40px -16px rgba(17, 24, 39, 0.15);
+    position: relative;
+    {%- comment -%} overflow removed so the floating "Recommended" badge isn't clipped — each corner cell rounds its own edges below. {%- endcomment -%}
   }
+  {%- assign _tr = section.settings.table_radius | default: 16 -%}
+  .cmp.section-{{ section.id }} .cmp__table > *:nth-child(1) { border-top-left-radius: {{ _tr }}px; }
+  .cmp.section-{{ section.id }} .cmp__table > *:nth-child(3) { border-top-right-radius: {{ _tr }}px; }
+  .cmp.section-{{ section.id }} .cmp__table > *:nth-last-child(3) { border-bottom-left-radius: {{ _tr }}px; }
+  .cmp.section-{{ section.id }} .cmp__table > *:nth-last-child(1) { border-bottom-right-radius: {{ _tr }}px; }
   .cmp.section-{{ section.id }} .cmp__head,
   .cmp.section-{{ section.id }} .cmp__cell {
     padding: 20px 24px;

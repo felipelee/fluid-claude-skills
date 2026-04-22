@@ -1,0 +1,312 @@
+{%- comment -%}
+  enrollment_compensation — award-winning compensation-plan section for MLM enrollment.
+  - Eyebrow / heading / subhead hero blocks
+  - Tier cards: rank / earnings range / requirements, with a "featured" tier callout
+  - FTC-required income disclaimer pinned at the bottom
+{%- endcomment -%}
+
+{%- style -%}
+  .ecomp.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 100 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 100 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 100px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'var(--clr-light)' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+  }
+  .ecomp.section-{{ section.id }} .ecomp__container {
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto; padding: 0 64px;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- endif -%}
+  }
+  @media (max-width: 991px) { .ecomp.section-{{ section.id }} .ecomp__container { padding: 0 24px; } }
+  @media (max-width: 767px) { .ecomp.section-{{ section.id }} .ecomp__container { padding: 0 16px; } }
+
+  .ecomp.section-{{ section.id }} .ecomp__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 56px;
+    {% if section.settings.intro_alignment == 'center' %}max-width: 720px; margin-left: auto; margin-right: auto;{% endif %}
+  }
+  .ecomp.section-{{ section.id }} .ecomp__intro > * { margin: 0; }
+
+  .ecomp.section-{{ section.id }} .ecomp__tiers {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 4 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 20 }}px;
+    align-items: stretch;
+  }
+  @media (max-width: 1199px) { .ecomp.section-{{ section.id }} .ecomp__tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 575px)  { .ecomp.section-{{ section.id }} .ecomp__tiers { grid-template-columns: 1fr; } }
+
+  .ecomp.section-{{ section.id }} .ecomp__tier {
+    position: relative;
+    display: flex; flex-direction: column;
+    padding: 32px 26px;
+    background: {{ section.settings.tier_background | default: 'var(--clr-white)' }};
+    border: 1.5px solid {{ section.settings.tier_border | default: 'var(--clr-gray)' }};
+    border-radius: 18px;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .ecomp.section-{{ section.id }} .ecomp__tier:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px -16px rgba(0,0,0,0.18);
+    border-color: {{ section.settings.featured_border | default: 'var(--clr-primary)' }};
+  }
+  .ecomp.section-{{ section.id }} .ecomp__tier--featured {
+    border-color: {{ section.settings.featured_border | default: 'var(--clr-primary)' }};
+    box-shadow: 0 12px 32px -12px rgba(0,0,0,0.18);
+  }
+  .ecomp.section-{{ section.id }} .ecomp__badge {
+    position: absolute; top: -12px; left: 24px;
+    padding: 4px 12px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    background: {{ section.settings.featured_border | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.featured_badge_color | default: 'var(--clr-white)' }};
+    border-radius: 999px;
+  }
+
+  .ecomp.section-{{ section.id }} .ecomp__rank {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 12px;
+    background: {{ section.settings.rank_background | default: 'var(--clr-light)' }};
+    color: {{ section.settings.rank_color | default: 'var(--clr-primary)' }};
+    border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    width: fit-content;
+  }
+  .ecomp.section-{{ section.id }} .ecomp__rank svg { width: 13px; height: 13px; }
+
+  .ecomp.section-{{ section.id }} .ecomp__earnings {
+    margin-top: 20px;
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .ecomp.section-{{ section.id }} .ecomp__earnings-amount {
+    font-size: clamp(30px, 3.4vw, 44px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1;
+    color: {{ section.settings.amount_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.amount_font | default: 'var(--ff-heading)' }};
+  }
+  .ecomp.section-{{ section.id }} .ecomp__earnings-suffix {
+    font-size: 13px;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+  }
+  .ecomp.section-{{ section.id }} .ecomp__earnings-label {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    margin-top: 4px;
+  }
+
+  .ecomp.section-{{ section.id }} .ecomp__divider { height: 1px; margin: 24px 0; background: {{ section.settings.divider_color | default: 'var(--clr-gray)' }}; }
+
+  .ecomp.section-{{ section.id }} .ecomp__reqs {
+    display: flex; flex-direction: column; gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex: 1 1 auto;
+  }
+  .ecomp.section-{{ section.id }} .ecomp__req {
+    display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start;
+    font-size: 14px;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .ecomp.section-{{ section.id }} .ecomp__req svg {
+    width: 18px; height: 18px; margin-top: 2px;
+    color: {{ section.settings.icon_color | default: 'var(--clr-success)' }};
+  }
+
+  .ecomp.section-{{ section.id }} .ecomp__disclaimer {
+    margin-top: 48px;
+    padding: 20px 24px;
+    border-radius: 14px;
+    background: {{ section.settings.disclaimer_background | default: 'transparent' }};
+    border: 1px dashed {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+    font-size: 12.5px; line-height: 1.55;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    text-align: center;
+  }
+  .ecomp.section-{{ section.id }} .ecomp__disclaimer strong { color: {{ section.settings.body_color | default: 'var(--clr-body)' }}; }
+{%- endstyle -%}
+
+{%- capture check_svg -%}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{%- endcapture -%}
+
+<section class="ecomp section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ecomp__container">
+
+    {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+    {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+    {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+    {% if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 %}
+      <div class="ecomp__intro">
+        {% for b in eyebrow_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in heading_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in subhead_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    {%- assign tier_blocks = section.blocks | where: 'type', 'tier' -%}
+    {% if tier_blocks.size > 0 %}
+      <div class="ecomp__tiers">
+        {% for block in tier_blocks %}
+          <article class="ecomp__tier{% if block.settings.featured %} ecomp__tier--featured{% endif %}" {{ block.fluid_attributes }}>
+            {% if block.settings.featured and block.settings.featured_label != blank %}
+              <span class="ecomp__badge">{{ block.settings.featured_label | escape }}</span>
+            {% endif %}
+            {% if block.settings.rank != blank %}
+              <span class="ecomp__rank">
+                {% case block.settings.rank_icon %}
+                  {% when 'star' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  {% when 'trophy' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 3h12v7a6 6 0 0 1-12 0z"/><path d="M12 16v5"/><path d="M8 21h8"/></svg>
+                  {% when 'crown' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7l4 4 6-6 6 6 4-4v12H2z"/></svg>
+                  {% when 'gem' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12l4 6-10 12L2 9z"/></svg>
+                  {% else %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+                {% endcase %}
+                {{ block.settings.rank | escape }}
+              </span>
+            {% endif %}
+
+            <div class="ecomp__earnings">
+              <span class="ecomp__earnings-amount">{{ block.settings.earnings | escape }}</span>
+              {% if block.settings.earnings_suffix != blank %}<span class="ecomp__earnings-suffix">{{ block.settings.earnings_suffix | escape }}</span>{% endif %}
+            </div>
+            {% if block.settings.earnings_label != blank %}<div class="ecomp__earnings-label">{{ block.settings.earnings_label | escape }}</div>{% endif %}
+
+            <div class="ecomp__divider"></div>
+
+            {% if block.settings.requirements != blank %}
+              <ul class="ecomp__reqs">
+                {% assign lines = block.settings.requirements | split: "\n" %}
+                {% for line in lines %}
+                  {%- assign _l = line | strip -%}
+                  {% if _l != '' %}
+                    <li class="ecomp__req">{{ check_svg }}<span>{{ _l | escape }}</span></li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if section.settings.disclaimer != blank %}
+      <div class="ecomp__disclaimer rte">{{ section.settings.disclaimer }}</div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Enrollment Compensation",
+  "tag": "section",
+  "class": "enrollment-compensation-section",
+  "settings": [
+    { "type": "header", "content": "Intro" },
+    { "type": "radio", "id": "intro_alignment", "label": "Intro alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+
+    { "type": "header", "content": "Grid" },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 2, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "gap",             "label": "Gap (px)",         "min": 12, "max": 40, "step": 4, "default": 20 },
+
+    { "type": "header", "content": "Tier card colors" },
+    { "type": "select", "id": "tier_background",  "label": "Tier background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "tier_border",      "label": "Tier border",     "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "featured_border",  "label": "Featured tier border", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "featured_badge_color", "label": "Featured badge text", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "rank_background",  "label": "Rank chip bg",   "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "rank_color",       "label": "Rank chip text", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "amount_color",     "label": "Earnings amount color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "amount_font",      "label": "Earnings font", "options": "font_families", "default": "var(--ff-heading)" },
+    { "type": "select", "id": "muted_color",      "label": "Muted (labels, disclaimer)", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "body_color",       "label": "Body text", "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "icon_color",       "label": "Requirement icon color", "options": "background_colors", "default": "var(--clr-success)" },
+    { "type": "select", "id": "divider_color",    "label": "Divider color", "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Income Disclaimer (FTC)" },
+    { "type": "richtext", "id": "disclaimer", "label": "Disclaimer",
+      "default": "<p><strong>Income disclaimer:</strong> Earnings figures shown are not typical and depend on effort, skill, and market. Most members earn modestly. See our income disclosure for full details.</p>" },
+    { "type": "select", "id": "disclaimer_background", "label": "Disclaimer background", "options": "background_colors", "default": "transparent" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container padding" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; font-weight: 600;\">Earning potential</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary); font-size: clamp(32px, 4.5vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;\">Earn more as you grow.</h2>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: clamp(15px, 1.3vw, 17px); line-height: 1.55;\">Our transparent compensation plan rewards consistent effort \u2014 no ceilings, no quotas you can't hit.</p>" }
+      ]
+    },
+    { "type": "tier", "name": "Rank Tier",
+      "settings": [
+        { "type": "text",   "id": "rank",            "label": "Rank name", "default": "Starter" },
+        { "type": "radio",  "id": "rank_icon",       "label": "Rank icon", "default": "star",
+          "options": [
+            { "value": "star",   "label": "Star" },
+            { "value": "trophy", "label": "Trophy" },
+            { "value": "crown",  "label": "Crown" },
+            { "value": "gem",    "label": "Gem" }
+          ]
+        },
+        { "type": "text",   "id": "earnings",        "label": "Earnings amount", "default": "$500" },
+        { "type": "text",   "id": "earnings_suffix", "label": "Earnings suffix", "default": "/mo avg" },
+        { "type": "text",   "id": "earnings_label",  "label": "Earnings label",  "default": "Typical monthly range" },
+        { "type": "textarea","id": "requirements",   "label": "Requirements (one per line)",
+          "default": "100 PV monthly\nActive product user\nComplete onboarding" },
+        { "type": "checkbox","id": "featured",       "label": "Featured (accent border + badge)", "default": false },
+        { "type": "text",   "id": "featured_label",  "label": "Featured badge text", "default": "Most popular" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Enrollment Compensation",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "tier", "settings": { "rank": "Starter", "rank_icon": "star",   "earnings": "$300",  "earnings_suffix": "/mo avg", "earnings_label": "Typical monthly range", "requirements": "100 PV monthly\nActive product user\nComplete onboarding", "featured": false } },
+        { "type": "tier", "settings": { "rank": "Builder", "rank_icon": "trophy", "earnings": "$1,200","earnings_suffix": "/mo avg", "earnings_label": "Typical monthly range", "requirements": "500 PV monthly\n3 active team members\nAttend weekly training", "featured": true,  "featured_label": "Most popular" } },
+        { "type": "tier", "settings": { "rank": "Leader",  "rank_icon": "crown",  "earnings": "$4,500","earnings_suffix": "/mo avg", "earnings_label": "Typical monthly range", "requirements": "2,000 PV monthly\n10 active team members\nSponsor 2+ Builders", "featured": false } },
+        { "type": "tier", "settings": { "rank": "Diamond", "rank_icon": "gem",    "earnings": "$15K+", "earnings_suffix": "/mo avg", "earnings_label": "Top 1% of members",       "requirements": "10,000 PV team volume\n4 Leader-rank legs\nAnnual retreat attendance", "featured": false } }
+      ]
+    }
+  ]
+}
+{% endschema %}

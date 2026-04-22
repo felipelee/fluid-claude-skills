@@ -1,0 +1,304 @@
+{%- comment -%}
+  enrollment_success_stories — award-winning member testimonials + proof stats for MLM enrollment.
+  - Eyebrow / heading / subhead hero blocks
+  - Stats strip (3-4 big numbers, e.g. 100k+ members, $50M paid out, 4.9* rating)
+  - Story cards — hover-reveal longer quote, member photo, rank, tenure
+  - All blocks editable, canonical image block for photos
+{%- endcomment -%}
+
+{%- style -%}
+  .ess.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 100 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 100 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 100px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+  }
+  .ess.section-{{ section.id }} .ess__container {
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto; padding: 0 64px;
+  }
+  @media (max-width: 991px) { .ess.section-{{ section.id }} .ess__container { padding: 0 24px; } }
+  @media (max-width: 767px) { .ess.section-{{ section.id }} .ess__container { padding: 0 16px; } }
+
+  .ess.section-{{ section.id }} .ess__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 48px;
+    {% if section.settings.intro_alignment == 'center' %}max-width: 720px; margin-left: auto; margin-right: auto;{% endif %}
+  }
+  .ess.section-{{ section.id }} .ess__intro > * { margin: 0; }
+
+  .ess.section-{{ section.id }} .ess__stats {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.stats_columns | default: 4 }}, minmax(0, 1fr));
+    gap: 32px;
+    margin-bottom: 64px;
+    padding: 32px 40px;
+    background: {{ section.settings.stats_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.stats_color | default: 'var(--clr-white)' }};
+    border-radius: 20px;
+  }
+  @media (max-width: 991px) { .ess.section-{{ section.id }} .ess__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding: 28px 24px; } }
+  .ess.section-{{ section.id }} .ess__stat { text-align: center; }
+  .ess.section-{{ section.id }} .ess__stat-amount {
+    font-size: clamp(34px, 3.6vw, 48px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1;
+    font-family: {{ section.settings.stat_font | default: 'var(--ff-heading)' }};
+  }
+  .ess.section-{{ section.id }} .ess__stat-label {
+    margin-top: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    opacity: 0.82;
+  }
+
+  .ess.section-{{ section.id }} .ess__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 20 }}px;
+  }
+  @media (max-width: 991px) { .ess.section-{{ section.id }} .ess__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 575px) { .ess.section-{{ section.id }} .ess__grid { grid-template-columns: 1fr; } }
+
+  .ess.section-{{ section.id }} .ess__card {
+    display: flex; flex-direction: column;
+    padding: 28px 26px;
+    background: {{ section.settings.card_background | default: 'var(--clr-white)' }};
+    border: 1.5px solid {{ section.settings.card_border | default: 'var(--clr-gray)' }};
+    border-radius: 18px;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .ess.section-{{ section.id }} .ess__card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px -14px rgba(0,0,0,0.18);
+    border-color: {{ section.settings.accent_color | default: 'var(--clr-primary)' }};
+  }
+
+  .ess.section-{{ section.id }} .ess__quote {
+    font-size: 16px; line-height: 1.55;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+    margin: 0;
+    position: relative;
+    padding-top: 22px;
+  }
+  .ess.section-{{ section.id }} .ess__quote::before {
+    content: "\201C";
+    position: absolute; top: -8px; left: -2px;
+    font-family: {{ section.settings.stat_font | default: 'var(--ff-heading)' }};
+    font-size: 48px; line-height: 1;
+    color: {{ section.settings.accent_color | default: 'var(--clr-primary)' }};
+    opacity: 0.25;
+  }
+
+  .ess.section-{{ section.id }} .ess__member {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+  }
+  .ess.section-{{ section.id }} .ess__photo {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--clr-gray);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+  }
+  .ess.section-{{ section.id }} .ess__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .ess.section-{{ section.id }} .ess__member-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
+  .ess.section-{{ section.id }} .ess__name {
+    font-size: 14.5px; font-weight: 700; letter-spacing: -0.005em;
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+  .ess.section-{{ section.id }} .ess__meta {
+    font-size: 12px;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .ess.section-{{ section.id }} .ess__meta-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+
+  .ess.section-{{ section.id }} .ess__rank-badge {
+    padding: 3px 9px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    background: {{ section.settings.accent_background | default: 'rgba(17, 24, 39, 0.06)' }};
+    color: {{ section.settings.accent_color | default: 'var(--clr-primary)' }};
+    border-radius: 999px;
+  }
+{%- endstyle -%}
+
+<section class="ess section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ess__container">
+
+    {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+    {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+    {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+    {% if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 %}
+      <div class="ess__intro">
+        {% for b in eyebrow_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in heading_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in subhead_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    {%- assign stat_blocks = section.blocks | where: 'type', 'stat' -%}
+    {% if stat_blocks.size > 0 %}
+      <div class="ess__stats">
+        {% for block in stat_blocks %}
+          <div class="ess__stat" {{ block.fluid_attributes }}>
+            <div class="ess__stat-amount">{{ block.settings.amount | default: '0' | escape }}</div>
+            <div class="ess__stat-label">{{ block.settings.label | default: 'Label' | escape }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {%- assign story_blocks = section.blocks | where: 'type', 'story' -%}
+    {% if story_blocks.size > 0 %}
+      <div class="ess__grid">
+        {% for block in story_blocks %}
+          <article class="ess__card" {{ block.fluid_attributes }}>
+            <p class="ess__quote">{{ block.settings.quote | default: 'Share a member story.' | escape }}</p>
+            <div class="ess__member">
+              <div class="ess__photo">
+                {% if block.settings.photo %}
+                  <img src="{{ block.settings.photo | img_url: '120x' }}" alt="{{ block.settings.name | escape }}">
+                {% else %}
+                  {{ block.settings.name | default: '?' | slice: 0, 1 | upcase }}
+                {% endif %}
+              </div>
+              <div class="ess__member-info">
+                <span class="ess__name">{{ block.settings.name | default: 'Member name' | escape }}</span>
+                <span class="ess__meta">
+                  {% if block.settings.tenure != blank %}{{ block.settings.tenure | escape }}{% endif %}
+                  {% if block.settings.tenure != blank and block.settings.earnings != blank %}<span class="ess__meta-dot"></span>{% endif %}
+                  {% if block.settings.earnings != blank %}{{ block.settings.earnings | escape }}{% endif %}
+                </span>
+              </div>
+              {% if block.settings.rank != blank %}<span class="ess__rank-badge">{{ block.settings.rank | escape }}</span>{% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Enrollment Success Stories",
+  "tag": "section",
+  "class": "enrollment-success-stories-section",
+  "settings": [
+    { "type": "header", "content": "Intro" },
+    { "type": "radio", "id": "intro_alignment", "label": "Intro alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+
+    { "type": "header", "content": "Stats bar" },
+    { "type": "range", "id": "stats_columns", "label": "Stats columns", "min": 2, "max": 5, "step": 1, "default": 4 },
+    { "type": "select", "id": "stats_background", "label": "Stats background", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "stats_color",      "label": "Stats text",       "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "stat_font",        "label": "Stats font",       "options": "font_families",     "default": "var(--ff-heading)" },
+
+    { "type": "header", "content": "Story grid" },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "range", "id": "gap",             "label": "Gap (px)",          "min": 12, "max": 40, "step": 4, "default": 20 },
+
+    { "type": "header", "content": "Card colors" },
+    { "type": "select", "id": "card_background",  "label": "Card background",  "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "card_border",      "label": "Card border",      "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "title_color",      "label": "Name color",       "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "body_color",       "label": "Quote text",       "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "muted_color",      "label": "Muted (meta)",     "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "accent_color",     "label": "Accent (rank + quote mark)", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "accent_background","label": "Rank chip bg",     "default": "rgba(17, 24, 39, 0.06)",
+      "options": [
+        { "value": "rgba(17, 24, 39, 0.06)", "label": "Soft gray" },
+        { "value": "rgba(16, 185, 129, 0.12)", "label": "Soft green" },
+        { "value": "rgba(245, 158, 11, 0.12)", "label": "Soft amber" },
+        { "value": "var(--clr-light)", "label": "Theme light" }
+      ]
+    },
+    { "type": "select", "id": "divider_color",    "label": "Divider color",    "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" }
+      ]
+    },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; font-weight: 600;\">Real members, real results</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h2 style=\"color: var(--clr-primary); font-size: clamp(32px, 4.5vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;\">Meet the people crushing it.</h2>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: clamp(15px, 1.3vw, 17px); line-height: 1.55;\">Stories from members who started with the same pack you're about to grab.</p>" }
+      ]
+    },
+    { "type": "stat", "name": "Stat",
+      "settings": [
+        { "type": "text", "id": "amount", "label": "Amount",  "default": "100k+" },
+        { "type": "text", "id": "label",  "label": "Label",   "default": "Active members" }
+      ]
+    },
+    { "type": "story", "name": "Member story",
+      "settings": [
+        { "type": "textarea",     "id": "quote",    "label": "Quote", "default": "I started with the Builder pack, followed the playbook, and hit rank within 90 days. The community is unreal." },
+        { "type": "text",         "id": "name",     "label": "Name",  "default": "Jordan Blake" },
+        { "type": "text",         "id": "rank",     "label": "Rank chip",  "default": "Leader" },
+        { "type": "text",         "id": "tenure",   "label": "Tenure",     "default": "Member since 2022" },
+        { "type": "text",         "id": "earnings", "label": "Earnings meta (optional)", "default": "$6,200/mo" },
+        { "type": "image_picker", "id": "photo",    "label": "Photo (optional)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Enrollment Success Stories",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "stat",  "settings": { "amount": "100k+",   "label": "Active members" } },
+        { "type": "stat",  "settings": { "amount": "$48M+",   "label": "Paid to members" } },
+        { "type": "stat",  "settings": { "amount": "4.9\u2605", "label": "Avg member rating" } },
+        { "type": "stat",  "settings": { "amount": "62 hrs",  "label": "Avg to first commission" } },
+        { "type": "story", "settings": { "name": "Jordan B.",  "rank": "Leader",  "tenure": "Member since 2022", "earnings": "$6,200 / mo", "quote": "I started with the Builder pack, followed the playbook, and hit Leader rank in 90 days. The community is unreal." } },
+        { "type": "story", "settings": { "name": "Priya R.",   "rank": "Builder", "tenure": "Member since 2023", "earnings": "$2,400 / mo", "quote": "The training is what sold me. I watched the first five modules and made my first sale the same weekend." } },
+        { "type": "story", "settings": { "name": "Marcus T.",  "rank": "Diamond", "tenure": "Member since 2019", "earnings": "$22k / mo",   "quote": "This is the only program I've tried that actually treats you like a real business owner. Six years in and still growing." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

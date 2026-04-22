@@ -1,0 +1,442 @@
+{%- comment -%}
+  enrollment_showcase — premium join / enrollment page.
+  - Editorial hero with block-based eyebrow / heading / subhead
+  - Grid of enrollment pack cards (merchant picks via enrollment_list setting)
+  - Each card: image, title, price, highlights, "Most popular" badge, CTA
+  - Trust strip at the bottom
+{%- endcomment -%}
+
+{%- style -%}
+  .enr.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 0 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 100 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 0 0 100px;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+  }
+
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .enr.section-{{ section.id }} .enr__hero {
+    padding: 96px 24px 56px;
+    background: {{ section.settings.hero_background | default: 'transparent' }};
+    text-align: {{ section.settings.hero_alignment | default: 'center' }};
+  }
+  .enr.section-{{ section.id }} .enr__hero-content {
+    max-width: 800px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+    text-align: {{ section.settings.hero_alignment | default: 'center' }};
+  }
+  .enr.section-{{ section.id }} .enr__hero-content > * { margin: 0; max-width: 640px; {% if section.settings.hero_alignment == 'center' %}margin-left: auto; margin-right: auto;{% endif %} }
+
+  /* ── Container ─────────────────────────────────────────────── */
+  .enr.section-{{ section.id }} .enr__container {
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    padding: 0 64px;
+  }
+  @media (max-width: 991px) { .enr.section-{{ section.id }} .enr__container { padding: 0 24px; } }
+  @media (max-width: 767px) { .enr.section-{{ section.id }} .enr__container { padding: 0 16px; } }
+
+  /* ── Grid ─────────────────────────────────────────────────── */
+  .enr.section-{{ section.id }} .enr__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 24 }}px;
+    align-items: stretch;
+  }
+  @media (max-width: 991px) { .enr.section-{{ section.id }} .enr__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 767px) { .enr.section-{{ section.id }} .enr__grid { grid-template-columns: 1fr; gap: 16px; } }
+
+  /* ── Card ─────────────────────────────────────────────────── */
+  .enr.section-{{ section.id }} .enr__card {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: {{ section.settings.card_background | default: 'var(--clr-white)' }};
+    border: 1.5px solid {{ section.settings.card_border | default: 'var(--clr-gray)' }};
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  .enr.section-{{ section.id }} .enr__card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px -14px rgba(0,0,0,0.2);
+    border-color: {{ section.settings.card_hover_border | default: 'var(--clr-primary)' }};
+  }
+  .enr.section-{{ section.id }} .enr__card--featured {
+    border-color: {{ section.settings.featured_border | default: 'var(--clr-primary)' }};
+    box-shadow: 0 12px 32px -12px rgba(0,0,0,0.18);
+  }
+  .enr.section-{{ section.id }} .enr__badge {
+    position: absolute; top: 16px; right: 16px; z-index: 2;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    background: {{ section.settings.featured_border | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.featured_badge_color | default: 'var(--clr-white)' }};
+    border-radius: 999px;
+  }
+  .enr.section-{{ section.id }} .enr__img-wrap {
+    aspect-ratio: {{ section.settings.image_aspect_ratio | default: '4/3' }};
+    background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+    overflow: hidden;
+    position: relative;
+  }
+  .enr.section-{{ section.id }} .enr__img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+  }
+  .enr.section-{{ section.id }} .enr__card:hover .enr__img-wrap img { transform: scale(1.04); }
+  .enr.section-{{ section.id }} .enr__img-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--clr-muted); opacity: 0.4;
+    background: repeating-linear-gradient(45deg, var(--clr-gray) 0 14px, var(--clr-light) 14px 28px);
+  }
+  .enr.section-{{ section.id }} .enr__body {
+    padding: 28px 24px 24px;
+    display: flex; flex-direction: column; flex: 1 1 auto;
+    gap: 12px;
+  }
+  .enr.section-{{ section.id }} .enr__title {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2;
+    color: {{ section.settings.card_title_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.card_title_font | default: 'var(--ff-heading)' }};
+    margin: 0;
+  }
+  .enr.section-{{ section.id }} .enr__price {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-top: 2px;
+  }
+  .enr.section-{{ section.id }} .enr__price-amount {
+    font-size: clamp(32px, 3vw, 44px);
+    font-weight: 700; letter-spacing: -0.02em;
+    color: {{ section.settings.price_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.price_font | default: 'var(--ff-heading)' }};
+    line-height: 1;
+  }
+  .enr.section-{{ section.id }} .enr__price-suffix {
+    font-size: 13px;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+  }
+  .enr.section-{{ section.id }} .enr__description {
+    font-size: 14px; line-height: 1.55;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .enr.section-{{ section.id }} .enr__features {
+    margin: 8px 0 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    flex: 1 1 auto;
+  }
+  .enr.section-{{ section.id }} .enr__feature {
+    display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start;
+    font-size: 14px;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .enr.section-{{ section.id }} .enr__feature svg {
+    width: 18px; height: 18px; margin-top: 2px;
+    color: {{ section.settings.feature_icon_color | default: 'var(--clr-success)' }};
+  }
+  .enr.section-{{ section.id }} .enr__cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 15px 24px;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    background: {{ section.settings.cta_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.cta_color | default: 'var(--clr-white)' }};
+    border: none; border-radius: 999px;
+    cursor: pointer; text-decoration: none;
+    transition: opacity .15s, transform .1s;
+    margin-top: auto;
+  }
+  .enr.section-{{ section.id }} .enr__cta:hover { opacity: 0.92; }
+  .enr.section-{{ section.id }} .enr__cta:active { transform: translateY(1px); }
+  .enr.section-{{ section.id }} .enr__card--featured .enr__cta {
+    background: {{ section.settings.featured_cta_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.featured_cta_color | default: 'var(--clr-white)' }};
+  }
+
+  /* ── Trust bar ────────────────────────────────────────────── */
+  .enr.section-{{ section.id }} .enr__trust {
+    margin-top: 64px;
+    padding: 32px 40px;
+    border-top: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 32px;
+    text-align: center;
+  }
+  .enr.section-{{ section.id }} .enr__trust-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
+    max-width: 220px;
+  }
+  .enr.section-{{ section.id }} .enr__trust-item strong { font-size: 14px; font-weight: 700; letter-spacing: 0.02em; }
+  .enr.section-{{ section.id }} .enr__trust-item span { font-size: 13px; color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }}; }
+  .enr.section-{{ section.id }} .enr__trust-item svg { width: 22px; height: 22px; color: {{ section.settings.feature_icon_color | default: 'var(--clr-success)' }}; }
+
+  /* ── Empty ────────────────────────────────────────────────── */
+  .enr.section-{{ section.id }} .enr__empty {
+    padding: 80px 24px;
+    text-align: center;
+    color: {{ section.settings.muted_color | default: 'var(--clr-muted)' }};
+    background: var(--clr-light);
+    border-radius: 16px;
+  }
+{%- endstyle -%}
+
+{%- capture check_svg -%}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{%- endcapture -%}
+
+<section class="enr section-{{ section.id }}" {{ section.fluid_attributes }}>
+
+  {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+  {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+  {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+  {%- assign _has_hero = false -%}
+  {%- if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 -%}{%- assign _has_hero = true -%}{%- endif -%}
+
+  {% if _has_hero %}
+    <div class="enr__hero">
+      <div class="enr__hero-content">
+        {% for b in eyebrow_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in heading_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+        {% for b in subhead_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="enr__container">
+
+    {%- assign pack_blocks = section.blocks | where: 'type', 'pack' -%}
+
+    {% if pack_blocks.size > 0 %}
+      <div class="enr__grid">
+        {% for block in pack_blocks %}
+          {%- assign pack = block.settings.pack -%}
+          {%- assign _title = block.settings.title_override | default: pack.title | default: block.settings.title_fallback | default: 'Enrollment Pack' -%}
+          {%- assign _price = block.settings.price_override | default: pack.price -%}
+          {%- assign _img   = block.settings.image -%}
+          {%- if _img == blank and pack.images and pack.images.size > 0 -%}{%- assign _img = pack.images[0].src -%}{%- endif -%}
+          {%- if _img == blank and pack.image_url != blank -%}{%- assign _img = pack.image_url -%}{%- endif -%}
+          {%- assign _cta_href = block.settings.cta_url -%}
+          {%- if _cta_href == blank -%}{%- assign _cta_href = company.join_page_url | default: '#' -%}{%- endif -%}
+          {%- assign _is_featured = block.settings.featured -%}
+
+          <article class="enr__card{% if _is_featured %} enr__card--featured{% endif %}" {{ block.fluid_attributes }}>
+            {% if _is_featured and block.settings.featured_label != blank %}
+              <span class="enr__badge">{{ block.settings.featured_label | escape }}</span>
+            {% endif %}
+            <div class="enr__img-wrap">
+              {% if _img != blank %}
+                {% if block.settings.image %}
+                  <img src="{{ _img | img_url: '1200x' }}" alt="{{ _title | escape }}" loading="lazy">
+                {% else %}
+                  <img src="{{ _img }}" alt="{{ _title | escape }}" loading="lazy">
+                {% endif %}
+              {% else %}
+                <div class="enr__img-placeholder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="44" height="44"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+                </div>
+              {% endif %}
+            </div>
+            <div class="enr__body">
+              <h3 class="enr__title">{{ _title | escape }}</h3>
+              {% if _price != blank %}
+                <div class="enr__price">
+                  <span class="enr__price-amount">{{ _price }}</span>
+                  {% if block.settings.price_suffix != blank %}<span class="enr__price-suffix">{{ block.settings.price_suffix | escape }}</span>{% endif %}
+                </div>
+              {% endif %}
+              {% if block.settings.description != blank %}
+                <div class="enr__description rte">{{ block.settings.description }}</div>
+              {% endif %}
+              {% if block.settings.features != blank %}
+                <ul class="enr__features">
+                  {% assign lines = block.settings.features | split: "\n" %}
+                  {% for line in lines %}
+                    {%- assign _l = line | strip -%}
+                    {% if _l != '' %}
+                      <li class="enr__feature">
+                        {{ check_svg }}
+                        <span>{{ _l | escape }}</span>
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              {% endif %}
+              {% if pack.id %}
+                <button type="button" class="enr__cta" data-fluid-add-enrollment-pack="{{ pack.id }}">{{ block.settings.cta_label | default: 'Join now' | escape }}</button>
+              {% else %}
+                <a href="{{ _cta_href }}" class="enr__cta">{{ block.settings.cta_label | default: 'Join now' | escape }}</a>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="enr__empty">{{ section.settings.empty_text | default: 'Add enrollment pack blocks to get started.' | escape }}</div>
+    {% endif %}
+
+    {%- assign trust_blocks = section.blocks | where: 'type', 'trust_item' -%}
+    {% if trust_blocks.size > 0 %}
+      <div class="enr__trust">
+        {% for block in trust_blocks %}
+          <div class="enr__trust-item" {{ block.fluid_attributes }}>
+            {% case block.settings.icon %}
+              {% when 'shield' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              {% when 'clock' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {% when 'star' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              {% when 'users' %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              {% else %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            {% endcase %}
+            <strong>{{ block.settings.title | default: 'Trusted' | escape }}</strong>
+            {% if block.settings.subtitle != blank %}<span>{{ block.settings.subtitle | escape }}</span>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Enrollment Showcase",
+  "tag": "section",
+  "class": "enrollment-showcase-section",
+  "enabled_on": { "templates": ["join_page"] },
+  "settings": [
+    { "type": "header", "content": "Hero" },
+    { "type": "radio", "id": "hero_alignment", "label": "Hero alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    { "type": "select", "id": "hero_background", "label": "Hero background", "options": "background_colors", "default": "transparent" },
+
+    { "type": "header", "content": "Grid" },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 1, "max": 4, "step": 1, "default": 3 },
+    { "type": "range", "id": "gap", "label": "Gap (px)", "min": 8, "max": 40, "step": 2, "default": 24 },
+
+    { "type": "header", "content": "Card" },
+    { "type": "select", "id": "image_aspect_ratio", "label": "Image aspect ratio", "default": "4/3",
+      "options": [
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "3/2",  "label": "Classic (3:2)" }
+      ]
+    },
+    { "type": "select", "id": "image_placeholder_background", "label": "Placeholder bg", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "card_background",     "label": "Card background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "card_border",         "label": "Card border (idle)", "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "card_hover_border",   "label": "Card border (hover)", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "featured_border",     "label": "Featured border", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "featured_badge_color","label": "Featured badge text", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "card_title_color",    "label": "Title color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "card_title_font",     "label": "Title font", "options": "font_families", "default": "var(--ff-heading)" },
+    { "type": "select", "id": "price_color",         "label": "Price color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "price_font",          "label": "Price font", "options": "font_families", "default": "var(--ff-heading)" },
+    { "type": "select", "id": "body_color",          "label": "Body text", "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "muted_color",         "label": "Muted text", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "feature_icon_color",  "label": "Feature checkmark color", "options": "background_colors", "default": "var(--clr-success)" },
+    { "type": "select", "id": "divider_color",       "label": "Divider color", "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "CTA" },
+    { "type": "select", "id": "cta_background",          "label": "Idle card CTA bg",   "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "cta_color",               "label": "Idle card CTA text", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "featured_cta_background", "label": "Featured CTA bg",    "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "featured_cta_color",      "label": "Featured CTA text",  "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Empty State" },
+    { "type": "text", "id": "empty_text", "label": "Empty text", "default": "Add enrollment pack blocks to get started." },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" }
+      ]
+    },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; font-weight: 600;\">Join us</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h1 style=\"color: var(--clr-primary); font-size: clamp(40px, 5.5vw, 72px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;\">Start earning with the pack that fits you.</h1>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-primary); font-size: clamp(15px, 1.4vw, 18px); line-height: 1.55; opacity: 0.85;\">Choose your starter pack and get everything you need to hit the ground running.</p>" }
+      ]
+    },
+    { "type": "pack", "name": "Enrollment Pack",
+      "settings": [
+        { "type": "enrollment_pack", "id": "pack", "label": "Fluid Enrollment Pack",
+          "info": "Pick a pack from Fluid to auto-fill title, price, and image." },
+        { "type": "image_picker", "id": "image", "label": "Image override (optional)",
+          "info": "Leave blank to use the pack's image." },
+        { "type": "text",      "id": "title_override",   "label": "Title override (optional)" },
+        { "type": "text",      "id": "title_fallback",   "label": "Title fallback (if no pack picked)", "default": "Starter Pack" },
+        { "type": "text",      "id": "price_override",   "label": "Price override (optional)" },
+        { "type": "text",      "id": "price_suffix",     "label": "Price suffix", "default": "one-time" },
+        { "type": "richtext",  "id": "description",      "label": "Short description",
+          "default": "<p>Everything you need to get started and earn from day one.</p>" },
+        { "type": "textarea",  "id": "features",         "label": "Features (one per line)",
+          "default": "Full starter kit\nPersonal dashboard\n30-day support\nCommission eligibility" },
+        { "type": "checkbox",  "id": "featured",         "label": "Featured (adds border + badge)", "default": false },
+        { "type": "text",      "id": "featured_label",   "label": "Featured badge text", "default": "Most popular" },
+        { "type": "text",      "id": "cta_label",        "label": "CTA button label", "default": "Join now" },
+        { "type": "url",       "id": "cta_url",          "label": "CTA URL (fallback when no pack is picked)" }
+      ]
+    },
+    { "type": "trust_item", "name": "Trust Strip Item",
+      "settings": [
+        { "type": "radio", "id": "icon", "label": "Icon", "default": "shield",
+          "options": [
+            { "value": "shield", "label": "Shield" },
+            { "value": "clock",  "label": "Clock" },
+            { "value": "star",   "label": "Star" },
+            { "value": "users",  "label": "Users" }
+          ]
+        },
+        { "type": "text", "id": "title",    "label": "Title",    "default": "Trusted worldwide" },
+        { "type": "text", "id": "subtitle", "label": "Subtitle", "default": "Join 100k+ active members" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Enrollment Showcase",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "pack", "settings": { "title_fallback": "Starter",  "price_override": "$99",  "featured": false, "features": "Full starter kit\nPersonal dashboard\n30-day support\nCommission eligibility" } },
+        { "type": "pack", "settings": { "title_fallback": "Pro",      "price_override": "$249", "featured": true,  "features": "Everything in Starter\nAdvanced training\nPriority support\nExtra product samples\nLead-gen tools" } },
+        { "type": "pack", "settings": { "title_fallback": "Elite",    "price_override": "$499", "featured": false, "features": "Everything in Pro\nVIP onboarding\nCo-op advertising\nEarly product access\nTeam-building tools" } },
+        { "type": "trust_item", "settings": { "icon": "users",  "title": "100k+ members",  "subtitle": "Growing every day" } },
+        { "type": "trust_item", "settings": { "icon": "star",   "title": "4.9★ on Trustpilot", "subtitle": "From 12,000+ reviews" } },
+        { "type": "trust_item", "settings": { "icon": "shield", "title": "Secure checkout", "subtitle": "256-bit SSL, PCI compliant" } },
+        { "type": "trust_item", "settings": { "icon": "clock",  "title": "Cancel anytime", "subtitle": "No long-term contracts" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,13 +1,18 @@
-{% section 'main_enrollment', id: 'main_enrollment' %}
+{% section 'enrollment_pack_hero',       id: 'enrollment_pack_hero'       %}
+{% section 'enrollment_whats_included',  id: 'enrollment_whats_included'  %}
+{% section 'enrollment_compensation',    id: 'enrollment_compensation'    %}
+{% section 'enrollment_success_stories', id: 'enrollment_success_stories' %}
+{% section 'faq_accordion',              id: 'enrollment_faq'             %}
 
 {% schema %}
 {
   "name": "Enrollment Pack",
   "sections": {
-    "main_enrollment": {
-      "type": "main_enrollment"
-    }
+    "enrollment_pack_hero":      { "type": "enrollment_pack_hero" },
+    "enrollment_whats_included": { "type": "enrollment_whats_included" },
+    "enrollment_compensation":   { "type": "enrollment_compensation" },
+    "enrollment_success_stories":{ "type": "enrollment_success_stories" },
+    "enrollment_faq":            { "type": "faq_accordion" }
   }
 }
 {% endschema %}
-

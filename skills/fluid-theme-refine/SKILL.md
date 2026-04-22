@@ -8,7 +8,7 @@ description: >-
   "compare and fix," "tighten up," "QA the theme," "visual diff," "side by side
   comparison," "it doesn't look right," "make it exact," or "closer to the original."
 metadata:
-  version: 1.5.0
+  version: 2.0.0
 ---
 
 # Fluid Theme Refine
@@ -266,6 +266,59 @@ For EVERY section, check all of these:
 - [ ] Scroll animations match (timing, easing, direction)
 - [ ] Carousel behavior matches
 - [ ] Accordion behavior matches
+
+---
+
+## Step 4b: Gold-Standard Theme QA (structural — not visual)
+
+Beyond visual parity, every section must also pass these structural rules. These are the things that fail SILENTLY — a section can look identical to the source but still be broken in the editor or on stores with different content. Walk through each section and check:
+
+**Block editability**
+- [ ] Every block (image, text, trust item, etc.) selectable in the Layers panel AND directly clickable in the visual preview — this requires `{{ block.fluid_attributes }}` on the rendered element
+- [ ] Canonical image blocks are ALWAYS wrapped (not hidden by empty-image `{% else %}` branch) so the editor can select the slot before uploading
+- [ ] Logo / canonical image blocks have `min-width` + `min-height` so empty slots remain clickable
+- [ ] Placeholder rendered (dashed-border, striped bg, "Your image" label) when no image AND no data-fallback is set
+
+**Theme tokens (must use, never hardcode)**
+- [ ] Every color control is `select` pointed at `background_colors` option group — no raw hex defaults
+- [ ] Every font-family control is `select` pointed at `font_families` — no `font_picker` in section settings
+- [ ] Values like `var(--clr-primary)`, `var(--ff-heading)` ship as defaults (not literal hex or font names)
+
+**Section Shell + Container pattern**
+- [ ] Shell has `section_padding` (padding control), `section_border_radius` (corner_radius), `background_color`, `background_image`, `section_border_width` + `section_border_color`
+- [ ] Container has `container_max_width` (select), `container_padding`, `container_border_radius`, `container_background_color`, `container_background_image`, `container_overlay_color` + `container_overlay_opacity`, `container_border_width` + `container_border_color`
+- [ ] Vertical padding only on the shell (`padding: Npx 0`) so the background bleeds edge-to-edge
+- [ ] Content lives inside the container (`max-width: 1080-1440px; margin: 0 auto; padding: 0 64px`)
+
+**Hero text pattern**
+- [ ] Eyebrow / heading / subhead are richtext BLOCKS (editable in editor), not hard-coded section settings
+- [ ] Richtext defaults include inline `style="color: var(--clr-primary); font-size: …;"` so the first-paint looks intentional
+
+**Forbidden patterns — grep to detect**
+- [ ] `"type": "image_picker"` — only allowed on `background_image` / `container_background_image` / `blocks/image.image` / data-driven fallback wrappers. If it appears on a content image, refactor to a canonical `image` block.
+- [ ] `"type": "font_picker"` — only allowed in `config/settings_schema.json`. Never in a section schema.
+- [ ] `splide` — forbidden. CSS scroll-snap + vanilla JS instead.
+- [ ] Raw hex colors in schema defaults — should be CSS vars (`var(--clr-*)`).
+- [ ] `{% render 'cart_button' %}` / any render targeting `blocks/*` — Fluid only resolves from `components/*`. Inline the markup instead.
+
+**Fluid-specific data access**
+- [ ] `block.settings.menu.menu_items` (NOT `.links`) when iterating a `link_list` picker
+- [ ] Collection-list image fallback: `c.image` → `c.image_url` → `c.image_path` → `c.products[0].image_url` (NOT `c.product_collections` — that field doesn't exist on the Liquid `collections` global)
+- [ ] Pagination summary: `{{ paginate.current_offset | plus: 1 }}` (not raw `current_offset` — that's 0-indexed)
+- [ ] For sticky navbars / headers: confirm no ancestor has `overflow: hidden` on either axis. If reset.css has `body { overflow-x: hidden }`, change it to `overflow-x: clip`.
+
+**Preset expansion**
+- [ ] Presets only fire on FRESH template creation. After editing a section's preset, `DELETE /api/application_theme_templates/{id}` then re-`PUT` the template file to trigger re-expansion.
+- [ ] Template schema does NOT contain `blocks` — blocks come from section presets only. Including blocks in a template schema breaks `fluid_attributes` bindings.
+
+**Navbar overflow**
+- [ ] Long nav menus collapse cleanly. Default to hamburger collapse (`is-hamburger` class → hide primary-menu, show mobile-toggle even on desktop) vs a "More ▾" dropdown fallback.
+- [ ] Never clip nav items mid-word (`overflow: hidden` on `.primary-menu` is forbidden; rely on JS `display: none` via `.is-hidden` class instead).
+
+**Image uploads not rendering**
+- [ ] Check block state: image upload often sits in editor draft state. Fetch the live page and grep for the image URL — if it's not there, tell the user to click **Save** in the editor. The draft doesn't persist on its own.
+
+Anything that fails the above → not gold standard → must be fixed before marking the section complete.
 
 ---
 

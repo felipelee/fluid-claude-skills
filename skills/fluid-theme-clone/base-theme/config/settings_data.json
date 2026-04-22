@@ -7,8 +7,11 @@
     "color_black": "#000000",
     "color_body": "#000000",
     
-    "font_family_body": "Roboto",
-    "font_family_heading": "Roboto",
+    "font_family_body":        "Roboto",
+    "font_family_heading":     "Roboto",
+    "font_family_accent":      "Roboto",
+    "font_family_italic":      "Playfair Display",
+    "font_family_handwriting": "Caveat",
 
     "font_size_body":16,
     "font_size_small":  14,

@@ -1,20 +1,12 @@
-{% section 'page_hero_banner', id: 'page_hero_banner' %}
-{%  section 'main_shop', id: 'main_shop' %}
-{% section 'cta_banner', id: 'cta_banner' %}
+{% section 'shop_showcase',    id: 'shop_showcase'    %}
+{% section 'related_products', id: 'related_products' %}
+
 {% schema %}
 {
   "name": "Shop Page",
   "sections": {
-    "page_hero_banner": {
-      "type": "page_hero_banner"
-    },
-    "main_shop": {
-      "type": "main_shop"
-    },
-   
-    "cta_banner": {
-      "type": "cta_banner"
-    }
+    "shop_showcase":    { "type": "shop_showcase" },
+    "related_products": { "type": "related_products" }
   }
 }
 {% endschema %}
