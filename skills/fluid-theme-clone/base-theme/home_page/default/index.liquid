@@ -1,4 +1,6 @@
-{% section 'image_text_split',  id: 'hero'            %}
+{% section 'hero_centered',     id: 'hero_main'       %}
+{% section 'hero_split_stats',  id: 'hero_split'      %}
+{% section 'hero_editorial',    id: 'hero_editorial'  %}
 {% section 'collection_tiles',  id: 'shop_by'         %}
 {% section 'logo_bar',          id: 'press'           %}
 {% section 'feature_grid',      id: 'benefits'        %}
@@ -18,7 +20,9 @@
 {
   "name": "Home Page",
   "sections": {
-    "hero":            { "type": "image_text_split" },
+    "hero_main":       { "type": "hero_centered" },
+    "hero_split":      { "type": "hero_split_stats" },
+    "hero_editorial":  { "type": "hero_editorial" },
     "shop_by":         { "type": "collection_tiles" },
     "press":           { "type": "logo_bar" },
     "benefits":        { "type": "feature_grid" },

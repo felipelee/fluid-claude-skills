@@ -1,0 +1,110 @@
+{% comment %}
+  Canonical Cart Button block — Fluid base theme pattern.
+
+  A theme-driven, icon-first cart trigger. Renders an <a href="{{ cart_url }}">
+  with an SVG icon and optional count badge. Preserves Fluid's existing cart
+  JS hooks (#show-cart, #fluid-cart-count) so no JS changes are needed.
+
+  14 settings, 3 groups:
+
+    Icon:
+      1. icon             — radio: bag | cart | basket | minimal
+      2. icon_size        — range 14–32 px
+
+    Style:
+      3. style            — radio: filled | outline | text (icon only)
+      4. padding          — padding control
+      5. border_radius    — corner_radius control (default 999px pill)
+      6. border_width     — range 0–4 px
+      7. background_color — select → background_colors
+      8. icon_color       — select → background_colors
+      9. border_color     — select → background_colors
+
+    Cart Count Badge:
+     10. show_count       — checkbox
+     11. count_font_size  — range 9–14 px
+     12. count_background — select → background_colors
+     13. count_text_color — select → background_colors
+
+  Output:
+    <a href="{{ cart_url }}" id="show-cart" class="cart-btn" aria-label="Cart">
+      <svg> … chosen icon … </svg>
+      <span class="cart-count" id="fluid-cart-count">0</span>
+    </a>
+
+  USAGE — this file is canonical reference. Navbar inlines its schema as a
+  block type. See sections/main_navbar/index.liquid → "cart_button" block.
+{% endcomment %}
+
+{%- assign _icon      = block.settings.icon      | default: 'bag' -%}
+{%- assign _icon_size = block.settings.icon_size | default: 20 -%}
+{%- assign _style     = block.settings.style     | default: 'outline' -%}
+
+{%- capture _cart_style -%}
+  color: {{ block.settings.icon_color | default: 'var(--clr-primary)' }};
+  {% if _style == 'filled' %}background-color: {{ block.settings.background_color | default: 'var(--clr-primary)' }};{% elsif _style == 'outline' %}background-color: {{ block.settings.background_color | default: 'transparent' }};{% else %}background-color: transparent;{% endif %}
+  {% assign cp = block.settings.padding %}{% if cp %}padding: {{ cp.top }}px {{ cp.right }}px {{ cp.bottom }}px {{ cp.left }}px;{% else %}padding: 8px 12px;{% endif %}
+  {% assign cbr = block.settings.border_radius %}{% if cbr %}border-radius: {{ cbr.tl }}px {{ cbr.tr }}px {{ cbr.br }}px {{ cbr.bl }}px;{% else %}border-radius: 999px;{% endif %}
+  {% if _style == 'text' %}border: none;{% elsif block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color | default: 'var(--clr-primary)' }};{% else %}border: 1px solid {{ block.settings.border_color | default: 'var(--clr-primary)' }};{% endif %}
+{%- endcapture -%}
+
+<a href="{{ cart_url }}" id="show-cart" class="cart-btn" style="{{ _cart_style | strip_newlines }}" aria-label="Cart" {{ block.fluid_attributes }}>
+  {% case _icon %}
+    {% when 'bag' %}
+      <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    {% when 'cart' %}
+      <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    {% when 'basket' %}
+      <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4-7"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/></svg>
+    {% when 'minimal' %}
+      <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 13a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7L4 7z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
+  {% endcase %}
+
+  {% if block.settings.show_count %}
+    {% capture _count_style %}
+      background: {{ block.settings.count_background | default: 'var(--clr-accent)' }};
+      color: {{ block.settings.count_text_color | default: 'var(--clr-white)' }};
+      font-size: {{ block.settings.count_font_size | default: 11 }}px;
+    {% endcapture %}
+    <span class="cart-count" id="fluid-cart-count" style="{{ _count_style | strip_newlines }}">0</span>
+  {% endif %}
+</a>
+
+{% schema %}
+{
+  "name": "Cart Button",
+  "settings": [
+    { "type": "header", "content": "Icon" },
+    { "type": "radio", "id": "icon", "label": "Icon style", "default": "bag",
+      "options": [
+        { "value": "bag",     "label": "Shopping Bag" },
+        { "value": "cart",    "label": "Shopping Cart" },
+        { "value": "basket",  "label": "Basket" },
+        { "value": "minimal", "label": "Minimal (bag outline)" }
+      ]
+    },
+    { "type": "range", "id": "icon_size", "label": "Icon size (px)", "min": 14, "max": 32, "step": 1, "default": 20 },
+
+    { "type": "header", "content": "Style" },
+    { "type": "radio", "id": "style", "label": "Button style", "default": "outline",
+      "options": [
+        { "value": "filled",  "label": "Filled" },
+        { "value": "outline", "label": "Outline" },
+        { "value": "text",    "label": "Icon only (no background)" }
+      ]
+    },
+    { "type": "padding",       "id": "padding",       "label": "Padding" },
+    { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+    { "type": "range",  "id": "border_width",    "label": "Border width (px)", "min": 0, "max": 4, "step": 1, "default": 1 },
+    { "type": "select", "id": "background_color","label": "Background color",  "options": "background_colors", "default": "transparent" },
+    { "type": "select", "id": "icon_color",      "label": "Icon color",        "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "border_color",    "label": "Border color",      "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Cart Count Badge" },
+    { "type": "checkbox", "id": "show_count",    "label": "Show count badge",      "default": true },
+    { "type": "range",    "id": "count_font_size","label": "Badge font size (px)", "min": 9, "max": 14, "step": 1, "default": 11 },
+    { "type": "select",   "id": "count_background","label": "Badge background",    "options": "background_colors", "default": "var(--clr-accent)" },
+    { "type": "select",   "id": "count_text_color","label": "Badge text",          "options": "background_colors", "default": "var(--clr-white)" }
+  ]
+}
+{% endschema %}

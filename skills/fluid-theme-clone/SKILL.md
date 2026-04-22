@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 3.0.0
+  version: 3.1.0
 ---
 
 # Fluid Theme Clone
@@ -436,6 +436,27 @@ Static product blocks disappear on editor save. Dynamic data never does.
 - Use `video_picker` or `url` — NOT `video` or `video_url` (unsupported)
 - Use `| default:` fallbacks on all Liquid variable access
 
+### Documenting Liquid in setting values
+
+If you ever quote Liquid syntax (`{% for %}`, `{{ x }}`, `{# #}`, `{% comment %}`) inside a setting value (e.g. for a docs page), Fluid will **re-evaluate** that text as Liquid when the value is read — typed `html` and `richtext` settings both trigger re-eval. Symptom: page errors with "Liquid syntax error" pointing to a tag inside what's supposed to be inert text.
+
+**Fix:** escape the Liquid delimiters as HTML entities in the stored value, then output without `| escape` so the browser decodes them back for display.
+
+```
+{% → &#123;%
+%} → %&#125;
+{{ → &#123;&#123;
+}} → &#125;&#125;
+{# → &#123;#
+#} → #&#125;
+```
+
+```liquid
+<pre><code>{{ block.settings.snippet }}</code></pre>
+```
+
+The browser sees `&#123;%` and renders `{%` for the user. Liquid never sees the tag.
+
 Read [references/section-template.md](references/section-template.md) for the full section boilerplate.
 Read [references/schema-settings-reference.md](references/schema-settings-reference.md) for all setting types.
 Read [references/css-js-patterns.md](references/css-js-patterns.md) for CSS/JS patterns.
@@ -447,32 +468,49 @@ The base theme ships with a small number of **canonical block files** in `base-t
 - `blocks/image` — user-uploaded image with aspect ratio, fit, object position, overlay, border, corner radius
 - `blocks/button` — 10 settings: text, link, font_family (select → font_families), open_new_tab, style (filled/outline/text), font_size, padding, background_color, text_color, border_width/color, border_radius
 - `blocks/fluid_media` — `<fluid-media-widget>` wrapper with embed_type (auto/inline/popover/modal), aspect ratio, placeholder fallback to `| image_url` for non-Fluid assets
+- `blocks/cart_button` — icon-first cart trigger with 14 theme-driven settings (icon: bag/cart/basket/minimal · style: filled/outline/text · padding · radius · border · count badge with own colors). Preserves Fluid's existing cart JS hooks `#show-cart` + `#fluid-cart-count`.
 - `blocks/schema_entry` — reference card used by the schema-reference page
 
 **Rule:** `image_picker` only lives on `blocks/image` (and data-driven wrappers like `blocks/post_image`). `font_picker` only lives on `config/settings_schema.json`. Never in section settings.
 
+### Canonical components
+
+Some patterns live in `base-theme/components/` because they're rendered via `{% render '<name>' %}` from a section (not added as block instances). They're still theme-driven and reusable:
+
+- `components/navbar_locale_dropdown` — single component renders both desktop popover AND mobile slide-in sheet for country/language selection. 23 theme-driven settings (display mode: flag+code/flag-only/code-only/flag+name · panel colors · save button colors). Preserves Fluid's existing locale JS hooks (`#show-language-country-dropdown`, `#mobile-country-language`, `.saveLocaleBtn`, `.country-selector`, `.language-selector`, `.locale-selector`) so the built-in locale-switch logic keeps working without touching `header.js`.
+
 ### Canonical section library
 
 The base theme ships a standard library of award-winning ecommerce sections. Compose home pages from these — do not rebuild from scratch:
+
+**Heroes (3)**
+
+| Section | Purpose |
+|---|---|
+| `hero_centered`     | Full-bleed background with centered content, dual CTAs, status-pill badge, trust bar with stars, animated scroll cue. 80vh min-height. Style: Allbirds / Athletic Greens. |
+| `hero_split_stats`  | 50/50 split (text + canonical image block, flippable) with bottom dark stats strip (4 stat blocks). Style: Tesla / Liquid Death. |
+| `hero_editorial`    | 3-column magazine: vertical rotated meta column + main text (uses `var(--ff-italic)` Playfair) + portrait canonical image with caption pill, tag pills + byline. Style: Aesop / Aimé Leon Dore. |
+
+**Content & conversion (14)**
 
 | Section | Purpose |
 |---|---|
 | `image_text_split`   | Hero / story — 50/50 with flip, accepts canonical image + heading + text + button blocks |
 | `logo_bar`           | Press / partner logos grid, canonical image blocks |
 | `feature_grid`       | Benefits grid — divider + canonical image + heading + text + button (one card per divider) |
-| `featured_products`  | Collection-driven product grid (collection picker + products_to_show range) |
+| `featured_products`  | Collection-driven product grid (collection picker + products_to_show range). Uses `product.images[0].src → image_url → image \| image_url` fallback chain. |
 | `stats_bar`          | Numbers row (prefix/value/suffix/label per stat block) |
 | `cta_banner_v2`      | Final full-width CTA |
 | `faq_accordion`      | Native `<details>`/`<summary>` with bordered or card style |
 | `rich_content`       | Flexible single-column composer (eyebrow/heading/text/image/fluid_media/button) |
-| `ugc_carousel`       | Scroll-snap carousel of fluid_media blocks with UGC defaults (9:16, popover embed) |
+| `ugc_carousel`       | CSS scroll-snap carousel of fluid_media blocks with UGC defaults (9:16, popover embed) — Splide-free |
 | `comparison_table`   | Us-vs-Them table with check/X/text per row, "Recommended" badge |
 | `testimonial_grid`   | Masonry or grid with divider-block testimonial cards (rating + image + quote + author sub-blocks) |
 | `before_after`       | Drag slider with configurable initial position, labels, aspect ratio |
-| `process_steps`      | Horizontal or vertical steps with divider + number + image + heading + text sub-blocks, connector line |
-| `collection_tiles`   | Shop-by-category tiles with hover zoom, overlay gradient, CTA chip, auto-fills from Fluid collection |
+| `process_steps`      | Horizontal or vertical steps with divider + number (own block) + image + heading + text sub-blocks, connector line |
+| `collection_tiles`   | Shop-by-category tiles with hover zoom, overlay gradient, CTA chip, auto-fills from Fluid collection. Uses `collection.canonical_url` for link, `image_url → image_path → first product image` fallback chain. |
 
-All 14 use the Section Shell (6) + Container (9) pattern and reference `background_colors` / `font_families` option groups exclusively.
+All 17 use the Section Shell (6) + Container (9) pattern and reference `background_colors` / `font_families` option groups exclusively. Heroes additionally use the **canonical block primacy** pattern for hero images — the image is added as a `blocks/image` instance (not a section setting), with CSS `aspect-ratio: unset !important` override to fill the column.
 
 ### The Compare -> Code -> Preview -> Refine Loop
 

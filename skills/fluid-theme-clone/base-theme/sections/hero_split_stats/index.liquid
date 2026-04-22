@@ -1,0 +1,387 @@
+{%- style -%}
+  .hs.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 0 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 0 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'var(--clr-light)' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    overflow: hidden;
+  }
+
+  .hs.section-{{ section.id }} .hs__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1440px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 0 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 0 }}px;{%- else -%}padding: 0;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+
+  .hs.section-{{ section.id }} .hs__split {
+    display: grid;
+    grid-template-columns: {% if section.settings.image_position == 'left' %}1fr 1fr{% else %}1fr 1fr{% endif %};
+    min-height: {{ section.settings.min_height | default: 78 }}vh;
+  }
+  @media (max-width: 991px) {
+    .hs.section-{{ section.id }} .hs__split { grid-template-columns: 1fr; min-height: auto; }
+  }
+
+  .hs.section-{{ section.id }} .hs__text {
+    {% if section.settings.image_position == 'left' %}order: 2;{% else %}order: 1;{% endif %}
+    background-color: {{ section.settings.text_background | default: 'var(--clr-white)' }};
+    color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
+    padding: clamp(40px, 6vw, 88px);
+    display: flex; flex-direction: column; gap: 20px;
+    justify-content: center;
+    text-align: {{ section.settings.text_alignment | default: 'left' }};
+    align-items: {% case section.settings.text_alignment %}{% when 'center' %}center{% when 'right' %}flex-end{% else %}flex-start{% endcase %};
+  }
+
+  .hs.section-{{ section.id }} .hs__image-slot {
+    {% if section.settings.image_position == 'left' %}order: 1;{% else %}order: 2;{% endif %}
+    position: relative;
+    overflow: hidden;
+    min-height: 360px;
+    align-self: stretch;
+    background: var(--clr-gray);
+  }
+  /* Stretch the canonical image block to fill the hero column */
+  .hs.section-{{ section.id }} .hs__image-slot .media-wrap {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    aspect-ratio: unset !important;
+    margin: 0 !important;
+  }
+  .hs.section-{{ section.id }} .hs__image-slot .media-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .hs.section-{{ section.id }} .hs__image-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--clr-muted); opacity: 0.5;
+    background: repeating-linear-gradient(45deg, var(--clr-gray) 0 18px, var(--clr-light) 18px 36px);
+  }
+
+  .hs.section-{{ section.id }} .hs__badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: {{ section.settings.badge_text_color | default: 'var(--clr-white)' }};
+    background: {{ section.settings.badge_background | default: 'var(--clr-accent)' }};
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .hs.section-{{ section.id }} .hs__heading,
+  .hs.section-{{ section.id }} .hs__heading * { line-height: 1.05; letter-spacing: -0.025em; }
+
+  .hs.section-{{ section.id }} .hs__buttons {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-top: 8px;
+    justify-content: {% case section.settings.text_alignment %}{% when 'center' %}center{% when 'right' %}flex-end{% else %}flex-start{% endcase %};
+  }
+
+  .hs.section-{{ section.id }} .hs__stats {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.stats_columns | default: 4 }}, minmax(0, 1fr));
+    background-color: {{ section.settings.stats_background | default: 'var(--clr-dark)' }};
+    color: {{ section.settings.stats_color | default: 'var(--clr-white)' }};
+    padding: 20px clamp(16px, 4vw, 56px);
+    gap: 16px;
+  }
+  @media (max-width: 767px) {
+    .hs.section-{{ section.id }} .hs__stats { grid-template-columns: repeat(2, 1fr); padding: 18px 16px; gap: 12px; }
+  }
+  .hs.section-{{ section.id }} .hs__stat {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 4px 0;
+    border-left: 1px solid {{ section.settings.stats_divider | default: 'rgba(255,255,255,0.18)' }};
+    padding-left: 16px;
+  }
+  .hs.section-{{ section.id }} .hs__stat:first-child { border-left: none; padding-left: 0; }
+  @media (max-width: 767px) {
+    .hs.section-{{ section.id }} .hs__stat { border-left: none; padding-left: 0; }
+  }
+  .hs.section-{{ section.id }} .hs__stat-value {
+    font-size: clamp(20px, 2.4vw, 28px);
+    font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-family: {{ section.settings.stats_font_family | default: 'var(--ff-heading)' }};
+  }
+  .hs.section-{{ section.id }} .hs__stat-label {
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    opacity: 0.8;
+  }
+{%- endstyle -%}
+
+<section class="hs section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="hs__container">
+
+    <div class="hs__split">
+
+      <div class="hs__text">
+        {%- assign badge_blocks   = section.blocks | where: 'type', 'badge'   -%}
+        {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+        {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+        {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+        {%- assign button_blocks  = section.blocks | where: 'type', 'button'  -%}
+
+        {% for block in badge_blocks %}<div class="hs__badge" {{ block.fluid_attributes }}>{{ block.settings.text | default: 'Editor\u2019s pick' | escape }}</div>{% endfor %}
+        {% for block in eyebrow_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in heading_blocks %}<div class="rte hs__heading" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in subhead_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+
+        {% if button_blocks.size > 0 %}
+          <div class="hs__buttons">
+            {% for block in button_blocks %}
+              {% capture _btn_style %}
+                {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+                {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+                {% if block.settings.font_size %}font-size: {{ block.settings.font_size }}px;{% endif %}
+                {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+                {% assign bp = block.settings.padding %}{% if bp %}padding: {{ bp.top }}px {{ bp.right }}px {{ bp.bottom }}px {{ bp.left }}px;{% else %}padding: 14px 28px;{% endif %}
+                {% assign bbr = block.settings.border_radius %}{% if bbr %}border-radius: {{ bbr.tl }}px {{ bbr.tr }}px {{ bbr.br }}px {{ bbr.bl }}px;{% else %}border-radius: 999px;{% endif %}
+                {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+              {% endcapture %}
+              <a href="{{ block.settings.link | default: '#' }}"
+                 class="btn btn--{{ block.settings.style | default: 'filled' }}"
+                 style="{{ _btn_style | strip_newlines }}"
+                 {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                 {{ block.fluid_attributes }}>
+                {{ block.settings.text | escape }}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="hs__image-slot">
+        {%- assign image_block = section.blocks | where: 'type', 'image' | first -%}
+        {% if image_block and image_block.settings.image %}
+          {%- assign _ar = image_block.settings.aspect_ratio | default: 'auto' -%}
+          {%- assign _alt = image_block.settings.alt | default: image_block.settings.image.alt | default: '' -%}
+          {%- capture _wrap_style -%}
+            {%- assign br = image_block.settings.border_radius -%}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+            {% if image_block.settings.border_width > 0 %}border: {{ image_block.settings.border_width }}px solid {{ image_block.settings.border_color }};{% endif %}
+          {%- endcapture -%}
+          {%- capture _img_style -%}
+            object-fit: {{ image_block.settings.fit | default: 'cover' }};
+            object-position: {{ image_block.settings.object_position | default: 'center' }};
+          {%- endcapture -%}
+          <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ image_block.fluid_attributes }}>
+            <img src="{{ image_block.settings.image | img_url: '1800x' }}" alt="{{ _alt | escape }}" loading="eager" style="{{ _img_style | strip_newlines }}">
+            {% if image_block.settings.overlay_color != blank and image_block.settings.overlay_opacity > 0 %}
+              {%- assign _ov = image_block.settings.overlay_opacity | divided_by: 100.0 -%}
+              <div class="media-wrap__overlay" style="position:absolute;inset:0;background:{{ image_block.settings.overlay_color }};opacity:{{ _ov }};pointer-events:none;"></div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="hs__image-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="64" height="64"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    {%- assign stat_blocks = section.blocks | where: 'type', 'stat' -%}
+    {% if stat_blocks.size > 0 %}
+      <div class="hs__stats">
+        {% for block in stat_blocks %}
+          <div class="hs__stat" {{ block.fluid_attributes }}>
+            <div class="hs__stat-value">
+              {%- if block.settings.prefix != blank -%}{{ block.settings.prefix | escape }}{%- endif -%}{{ block.settings.value | default: '100' | escape }}{%- if block.settings.suffix != blank -%}{{ block.settings.suffix | escape }}{%- endif -%}
+            </div>
+            <div class="hs__stat-label">{{ block.settings.label | default: 'Stat' | escape }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero — Split + Stats",
+  "tag": "section",
+  "class": "hero-split-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "radio", "id": "image_position", "label": "Image position", "default": "right",
+      "options": [
+        { "value": "left",  "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "info": "The hero image itself is added as an Image block (canonical) below."
+    },
+    { "type": "range", "id": "min_height", "label": "Min height (vh, desktop)", "min": 50, "max": 100, "step": 5, "default": 78 },
+    { "type": "radio", "id": "text_alignment", "label": "Text alignment", "default": "left",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Text Side" },
+    { "type": "select", "id": "text_background", "label": "Text background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "text_color",      "label": "Text color",      "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Badge" },
+    { "type": "select", "id": "badge_background", "label": "Badge background", "options": "background_colors", "default": "var(--clr-accent)" },
+    { "type": "select", "id": "badge_text_color", "label": "Badge text",       "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Stats Strip" },
+    { "type": "range",  "id": "stats_columns", "label": "Stats columns (desktop)", "min": 2, "max": 6, "step": 1, "default": 4 },
+    { "type": "select", "id": "stats_background", "label": "Stats background", "options": "background_colors", "default": "var(--clr-dark)" },
+    { "type": "select", "id": "stats_color",      "label": "Stats text color", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "stats_divider",    "label": "Stats divider color", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "stats_font_family","label": "Stats value font",   "options": "font_families",    "default": "var(--ff-heading)" },
+
+    { "type": "header", "content": "Background (whole section)" },
+    { "type": "image_picker", "id": "background_image", "label": "Section background image (behind everything)" },
+    { "type": "select", "id": "background_color", "label": "Section background color", "options": "background_colors", "default": "var(--clr-light)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1440px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "badge", "name": "Badge",
+      "settings": [{ "type": "text", "id": "text", "label": "Text", "default": "Editor\u2019s pick" }]
+    },
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-muted); text-transform: uppercase; letter-spacing: 0.18em; font-size: 13px;\">Bestseller</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h1 style=\"color: var(--clr-primary); font-size: clamp(36px, 5.5vw, 72px);\">The everyday upgrade your closet deserves.</h1>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 18px; max-width: 480px;\">Engineered fabric, considered fit, made to wear every day. Loved by thousands.</p>" }
+      ]
+    },
+    { "type": "button", "name": "Button",
+      "settings": [
+        { "type": "header", "content": "Content" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Shop now" },
+        { "type": "url",  "id": "link", "label": "Link" },
+        { "type": "checkbox", "id": "open_new_tab", "label": "Open in new tab", "default": false },
+        { "type": "select", "id": "font_family", "label": "Font Family", "options": "font_families", "default": "var(--ff-body)" },
+        { "type": "header", "content": "Style" },
+        { "type": "radio", "id": "style", "label": "Style", "default": "filled",
+          "options": [
+            { "value": "filled",  "label": "Filled" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "text",    "label": "Text only" }
+          ]
+        },
+        { "type": "range",  "id": "font_size", "label": "Font Size", "min": 12, "max": 24, "step": 1, "default": 15, "unit": "px" },
+        { "type": "padding","id": "padding", "label": "Padding" },
+        { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "select", "id": "text_color",       "label": "Text Color",       "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "header", "content": "Shape" },
+        { "type": "range", "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" }
+      ]
+    },
+    { "type": "stat", "name": "Stat",
+      "settings": [
+        { "type": "text", "id": "prefix", "label": "Prefix" },
+        { "type": "text", "id": "value",  "label": "Value",  "default": "10K" },
+        { "type": "text", "id": "suffix", "label": "Suffix", "default": "+" },
+        { "type": "text", "id": "label",  "label": "Label",  "default": "Happy customers" }
+      ]
+    },
+    { "type": "image", "name": "Hero Image", "limit": 1,
+      "settings": [
+        { "type": "header", "content": "Content" },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "alt", "label": "Alt Text" },
+        { "type": "header", "content": "Sizing" },
+        { "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+          "options": [
+            { "value": "cover",   "label": "Cover" },
+            { "value": "contain", "label": "Contain" }
+          ]
+        },
+        { "type": "select", "id": "object_position", "label": "Focal point", "default": "center",
+          "options": [
+            { "value": "center", "label": "Center" },
+            { "value": "top",    "label": "Top" },
+            { "value": "bottom", "label": "Bottom" },
+            { "value": "left",   "label": "Left" },
+            { "value": "right",  "label": "Right" }
+          ]
+        },
+        { "type": "header", "content": "Overlay" },
+        { "type": "select", "id": "overlay_color",   "label": "Overlay color",   "options": "background_colors", "default": "transparent" },
+        { "type": "range",  "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+        { "type": "header", "content": "Shape" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+        { "type": "range",  "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero — Split + Stats",
+      "blocks": [
+        { "type": "badge" },
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "button", "settings": { "text": "Shop now",  "style": "filled",  "background_color": "var(--clr-primary)", "text_color": "var(--clr-white)" } },
+        { "type": "button", "settings": { "text": "Learn more","style": "outline", "background_color": "transparent",        "text_color": "var(--clr-primary)", "border_width": 1, "border_color": "var(--clr-primary)" } },
+        { "type": "image" },
+        { "type": "stat", "settings": { "value": "4.9", "suffix": "\u2605", "label": "Avg rating" } },
+        { "type": "stat", "settings": { "value": "120K", "suffix": "+", "label": "Sold worldwide" } },
+        { "type": "stat", "settings": { "prefix": "$", "value": "0",   "suffix": "",  "label": "Free shipping" } },
+        { "type": "stat", "settings": { "value": "30",   "suffix": "d",  "label": "Returns" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,442 @@
+{%- style -%}
+  .he.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 96 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 96 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 96px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'var(--clr-light)' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+
+  .he.section-{{ section.id }} .he__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .he.section-{{ section.id }} .he__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .he.section-{{ section.id }} .he__container > * { position: relative; }
+  @media (max-width: 991px) { .he.section-{{ section.id }} .he__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .he.section-{{ section.id }} .he__container { padding-left: 16px; padding-right: 16px; } }
+
+  .he.section-{{ section.id }} .he__grid {
+    display: grid;
+    {% if section.settings.image_position == 'right' %}
+      grid-template-columns: 80px 1fr 1fr;
+      grid-template-areas: "meta text image";
+    {% else %}
+      grid-template-columns: 1fr 1fr 80px;
+      grid-template-areas: "image text meta";
+    {% endif %}
+    gap: clamp(24px, 4vw, 64px);
+    align-items: center;
+  }
+  @media (max-width: 991px) {
+    .he.section-{{ section.id }} .he__grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "meta"
+        "text"
+        "image";
+      gap: 32px;
+    }
+  }
+
+  /* Vertical meta column */
+  .he.section-{{ section.id }} .he__meta {
+    grid-area: meta;
+    display: flex; flex-direction: column; gap: 18px;
+    align-self: stretch;
+    padding-top: 8px;
+  }
+  @media (min-width: 992px) {
+    .he.section-{{ section.id }} .he__meta {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      align-items: flex-start; justify-content: flex-start;
+      gap: 24px;
+      padding-top: 0;
+    }
+  }
+  .he.section-{{ section.id }} .he__meta-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: {{ section.settings.meta_color | default: 'var(--clr-muted)' }};
+    line-height: 1.2;
+  }
+  .he.section-{{ section.id }} .he__meta-line {
+    width: 32px; height: 1px;
+    background: {{ section.settings.meta_color | default: 'var(--clr-muted)' }};
+    opacity: 0.4;
+  }
+  @media (min-width: 992px) {
+    .he.section-{{ section.id }} .he__meta-line { width: 1px; height: 32px; }
+  }
+
+  /* Text column */
+  .he.section-{{ section.id }} .he__text {
+    grid-area: text;
+    display: flex; flex-direction: column; gap: 22px;
+    color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
+  }
+  .he.section-{{ section.id }} .he__tags {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .he.section-{{ section.id }} .he__tag {
+    display: inline-flex; align-items: center;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: {{ section.settings.tag_color | default: 'var(--clr-primary)' }};
+    background: {{ section.settings.tag_background | default: 'transparent' }};
+    border: 1px solid {{ section.settings.tag_border | default: 'var(--clr-primary)' }};
+    border-radius: 999px;
+  }
+  .he.section-{{ section.id }} .he__heading,
+  .he.section-{{ section.id }} .he__heading * {
+    font-family: {{ section.settings.heading_font | default: 'var(--ff-italic)' }};
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+  }
+  .he.section-{{ section.id }} .he__byline {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px;
+    color: {{ section.settings.byline_color | default: 'var(--clr-muted)' }};
+    margin-top: 4px;
+  }
+  .he.section-{{ section.id }} .he__byline-divider {
+    width: 24px; height: 1px;
+    background: currentColor; opacity: 0.4;
+  }
+  .he.section-{{ section.id }} .he__buttons {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-top: 6px;
+  }
+
+  /* Image column — wraps the canonical image block */
+  .he.section-{{ section.id }} .he__image-slot {
+    grid-area: image;
+    position: relative;
+    background: var(--clr-gray);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .he.section-{{ section.id }} .he__image-slot .media-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .he.section-{{ section.id }} .he__image-slot .media-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .he.section-{{ section.id }} .he__image-placeholder {
+    width: 100%;
+    aspect-ratio: 4/5;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--clr-muted); opacity: 0.5;
+    background: repeating-linear-gradient(45deg, var(--clr-gray) 0 18px, var(--clr-light) 18px 36px);
+  }
+  .he.section-{{ section.id }} .he__image-caption {
+    position: absolute; left: 12px; bottom: 12px; z-index: 2;
+    padding: 6px 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    background: {{ section.settings.caption_background | default: 'var(--clr-white)' }};
+    color: {{ section.settings.caption_color | default: 'var(--clr-primary)' }};
+    border-radius: 999px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+{%- endstyle -%}
+
+<section class="he section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="he__container">
+
+    {%- assign meta_blocks    = section.blocks | where: 'type', 'meta'    -%}
+    {%- assign tag_blocks     = section.blocks | where: 'type', 'tag'     -%}
+    {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+    {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+    {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+    {%- assign byline_blocks  = section.blocks | where: 'type', 'byline'  -%}
+    {%- assign button_blocks  = section.blocks | where: 'type', 'button'  -%}
+
+    <div class="he__grid">
+
+      {% if meta_blocks.size > 0 %}
+        <aside class="he__meta">
+          {% for block in meta_blocks %}
+            <span class="he__meta-label" {{ block.fluid_attributes }}>{{ block.settings.text | default: 'Meta' | escape }}</span>
+            {% unless forloop.last %}<span class="he__meta-line"></span>{% endunless %}
+          {% endfor %}
+        </aside>
+      {% endif %}
+
+      <div class="he__text">
+        {% if tag_blocks.size > 0 %}
+          <div class="he__tags">
+            {% for block in tag_blocks %}
+              <span class="he__tag" {{ block.fluid_attributes }}>{{ block.settings.text | default: 'Tag' | escape }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% for block in eyebrow_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in heading_blocks %}<div class="rte he__heading" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in subhead_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+
+        {% for block in byline_blocks %}
+          <div class="he__byline" {{ block.fluid_attributes }}>
+            <span>{{ block.settings.label | default: 'By the editors' | escape }}</span>
+            <span class="he__byline-divider"></span>
+            <span>{{ block.settings.detail | default: '4 min read' | escape }}</span>
+          </div>
+        {% endfor %}
+
+        {% if button_blocks.size > 0 %}
+          <div class="he__buttons">
+            {% for block in button_blocks %}
+              {% capture _btn_style %}
+                {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+                {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+                {% if block.settings.font_size %}font-size: {{ block.settings.font_size }}px;{% endif %}
+                {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+                {% assign bp = block.settings.padding %}{% if bp %}padding: {{ bp.top }}px {{ bp.right }}px {{ bp.bottom }}px {{ bp.left }}px;{% else %}padding: 14px 28px;{% endif %}
+                {% assign bbr = block.settings.border_radius %}{% if bbr %}border-radius: {{ bbr.tl }}px {{ bbr.tr }}px {{ bbr.br }}px {{ bbr.bl }}px;{% else %}border-radius: 999px;{% endif %}
+                {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+              {% endcapture %}
+              <a href="{{ block.settings.link | default: '#' }}"
+                 class="btn btn--{{ block.settings.style | default: 'filled' }}"
+                 style="{{ _btn_style | strip_newlines }}"
+                 {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+                 {{ block.fluid_attributes }}>
+                {{ block.settings.text | escape }}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="he__image-slot">
+        {%- assign image_block = section.blocks | where: 'type', 'image' | first -%}
+        {% if image_block and image_block.settings.image %}
+          {%- assign _ar = image_block.settings.aspect_ratio | default: '4/5' -%}
+          {%- assign _alt = image_block.settings.alt | default: image_block.settings.image.alt | default: '' -%}
+          {%- capture _wrap_style -%}
+            {% if _ar != 'auto' %}aspect-ratio: {{ _ar }};{% endif %}
+            {%- assign br = image_block.settings.border_radius -%}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+            {% if image_block.settings.border_width > 0 %}border: {{ image_block.settings.border_width }}px solid {{ image_block.settings.border_color }};{% endif %}
+          {%- endcapture -%}
+          {%- capture _img_style -%}
+            object-fit: {{ image_block.settings.fit | default: 'cover' }};
+            object-position: {{ image_block.settings.object_position | default: 'center' }};
+          {%- endcapture -%}
+          <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ image_block.fluid_attributes }}>
+            <img src="{{ image_block.settings.image | img_url: '1600x' }}" alt="{{ _alt | escape }}" loading="eager" style="{{ _img_style | strip_newlines }}">
+            {% if image_block.settings.overlay_color != blank and image_block.settings.overlay_opacity > 0 %}
+              {%- assign _ov = image_block.settings.overlay_opacity | divided_by: 100.0 -%}
+              <div class="media-wrap__overlay" style="position:absolute;inset:0;background:{{ image_block.settings.overlay_color }};opacity:{{ _ov }};pointer-events:none;"></div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="he__image-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="56" height="56"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+          </div>
+        {% endif %}
+        {% if section.settings.image_caption != blank %}
+          <span class="he__image-caption">{{ section.settings.image_caption | escape }}</span>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero — Editorial",
+  "tag": "section",
+  "class": "hero-editorial-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "radio", "id": "image_position", "label": "Image position", "default": "right",
+      "options": [
+        { "value": "left",  "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "info": "The hero image itself is added as an Image block (canonical) below."
+    },
+    { "type": "text",   "id": "image_caption", "label": "Image caption pill (optional)", "default": "Spring 2026" },
+    { "type": "select", "id": "caption_background", "label": "Caption pill background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "caption_color",      "label": "Caption pill text",       "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "select", "id": "heading_font", "label": "Heading font", "options": "font_families", "default": "var(--ff-italic)" },
+    { "type": "select", "id": "text_color",   "label": "Text color",    "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "meta_color",   "label": "Meta column color", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "byline_color", "label": "Byline color",  "options": "background_colors", "default": "var(--clr-muted)" },
+
+    { "type": "header", "content": "Tag Pills" },
+    { "type": "select", "id": "tag_background", "label": "Tag background", "options": "background_colors", "default": "transparent" },
+    { "type": "select", "id": "tag_color",      "label": "Tag text",       "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "tag_border",     "label": "Tag border",     "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Background" },
+    { "type": "image_picker", "id": "background_image", "label": "Section background image" },
+    { "type": "select", "id": "background_color", "label": "Section background color", "options": "background_colors", "default": "var(--clr-light)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "meta", "name": "Meta Label",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "Issue 04" }
+      ]
+    },
+    { "type": "tag", "name": "Tag Pill",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "New arrival" }
+      ]
+    },
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-muted); text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px;\">The Studio Series</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h1 style=\"color: var(--clr-primary); font-size: clamp(48px, 7vw, 96px); font-style: italic;\">An ode to the everyday object.</h1>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-body); font-size: 17px; line-height: 1.7; max-width: 480px;\">A study in form, restraint, and material. Hand-finished, numbered, and made in small batches.</p>" }
+      ]
+    },
+    { "type": "byline", "name": "Byline",
+      "settings": [
+        { "type": "text", "id": "label",  "label": "Label",  "default": "By the editors" },
+        { "type": "text", "id": "detail", "label": "Detail", "default": "4 min read" }
+      ]
+    },
+    { "type": "image", "name": "Hero Image", "limit": 1,
+      "settings": [
+        { "type": "header", "content": "Content" },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "alt", "label": "Alt Text" },
+        { "type": "header", "content": "Sizing" },
+        { "type": "select", "id": "aspect_ratio", "label": "Aspect Ratio", "default": "4/5",
+          "options": [
+            { "value": "auto", "label": "Auto (natural)" },
+            { "value": "1/1",  "label": "Square (1:1)" },
+            { "value": "4/5",  "label": "Portrait (4:5)" },
+            { "value": "3/4",  "label": "Portrait (3:4)" },
+            { "value": "4/3",  "label": "Standard (4:3)" },
+            { "value": "16/9", "label": "Widescreen (16:9)" }
+          ]
+        },
+        { "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+          "options": [
+            { "value": "cover",   "label": "Cover" },
+            { "value": "contain", "label": "Contain" }
+          ]
+        },
+        { "type": "select", "id": "object_position", "label": "Focal point", "default": "center",
+          "options": [
+            { "value": "center", "label": "Center" },
+            { "value": "top",    "label": "Top" },
+            { "value": "bottom", "label": "Bottom" }
+          ]
+        },
+        { "type": "header", "content": "Overlay" },
+        { "type": "select", "id": "overlay_color",   "label": "Overlay color",   "options": "background_colors", "default": "transparent" },
+        { "type": "range",  "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+        { "type": "header", "content": "Shape" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+        { "type": "range",  "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+      ]
+    },
+    { "type": "button", "name": "Button",
+      "settings": [
+        { "type": "header", "content": "Content" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Read the story" },
+        { "type": "url",  "id": "link", "label": "Link" },
+        { "type": "checkbox", "id": "open_new_tab", "label": "Open in new tab", "default": false },
+        { "type": "select", "id": "font_family", "label": "Font Family", "options": "font_families", "default": "var(--ff-body)" },
+        { "type": "header", "content": "Style" },
+        { "type": "radio", "id": "style", "label": "Style", "default": "filled",
+          "options": [
+            { "value": "filled",  "label": "Filled" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "text",    "label": "Text only" }
+          ]
+        },
+        { "type": "range",  "id": "font_size", "label": "Font Size", "min": 12, "max": 24, "step": 1, "default": 14, "unit": "px" },
+        { "type": "padding","id": "padding", "label": "Padding" },
+        { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "select", "id": "text_color",       "label": "Text Color",       "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "header", "content": "Shape" },
+        { "type": "range", "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero — Editorial",
+      "blocks": [
+        { "type": "meta", "settings": { "text": "Issue 04" } },
+        { "type": "meta", "settings": { "text": "Spring 2026" } },
+        { "type": "tag",  "settings": { "text": "New arrival" } },
+        { "type": "tag",  "settings": { "text": "Limited" } },
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "byline" },
+        { "type": "image" },
+        { "type": "button", "settings": { "text": "Read the story", "style": "filled" } },
+        { "type": "button", "settings": { "text": "Shop the look",  "style": "outline", "background_color": "transparent", "text_color": "var(--clr-primary)", "border_width": 1, "border_color": "var(--clr-primary)" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -165,9 +165,10 @@
       <div class="ct__grid">
         {% for block in tiles %}
           {%- assign _col = block.settings.collection -%}
+
           {%- assign _href = block.settings.link -%}
           {%- if _href == blank and _col -%}
-            {%- assign _href = _col.url | default: '#' -%}
+            {%- assign _href = _col.canonical_url | default: _col.url -%}
           {%- endif -%}
           {%- if _href == blank -%}{%- assign _href = '#' -%}{%- endif -%}
 
@@ -178,10 +179,18 @@
           {%- assign _img_url = '' -%}
           {%- if block.settings.image -%}
             {%- assign _img_url = block.settings.image | img_url: '1600x' -%}
-          {%- elsif _col.image -%}
-            {%- assign _img_url = _col.image | image_url -%}
-          {%- elsif _col.image_url -%}
+          {%- elsif _col.image_url != blank -%}
             {%- assign _img_url = _col.image_url -%}
+          {%- elsif _col.image_path != blank -%}
+            {%- assign _img_url = _col.image_path -%}
+          {%- elsif _col.product_collections -%}
+            {%- for pc in _col.product_collections limit: 1 -%}
+              {%- if pc.product.image_url != blank -%}{%- assign _img_url = pc.product.image_url -%}{%- endif -%}
+            {%- endfor -%}
+          {%- elsif _col.products -%}
+            {%- for p in _col.products limit: 1 -%}
+              {%- if p.image_url != blank -%}{%- assign _img_url = p.image_url -%}{%- elsif p.images and p.images.size > 0 -%}{%- assign _img_url = p.images[0].src -%}{%- endif -%}
+            {%- endfor -%}
           {%- endif -%}
 
           <a class="ct__tile" href="{{ _href }}" {{ block.fluid_attributes }}>
@@ -344,9 +353,9 @@
         { "type": "eyebrow" },
         { "type": "heading" },
         { "type": "subhead" },
-        { "type": "tile", "settings": { "subtitle": "New", "title": "Bestsellers" } },
-        { "type": "tile", "settings": { "subtitle": "Season",  "title": "Spring Drop" } },
-        { "type": "tile", "settings": { "subtitle": "Limited", "title": "The Archive" } }
+        { "type": "tile", "settings": { "subtitle": "New" } },
+        { "type": "tile", "settings": { "subtitle": "Season" } },
+        { "type": "tile", "settings": { "subtitle": "Limited" } }
       ]
     }
   ]

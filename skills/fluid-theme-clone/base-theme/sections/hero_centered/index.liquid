@@ -1,0 +1,336 @@
+{%- style -%}
+  .hc.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 120 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 120 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 120px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'var(--clr-dark)' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: {{ section.settings.background_position | default: 'center' }}; background-repeat: no-repeat;
+    {%- endif -%}
+    position: relative;
+    overflow: hidden;
+    min-height: {{ section.settings.min_height | default: 80 }}vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  {%- if section.settings.overlay_color != blank and section.settings.overlay_opacity > 0 -%}
+    {%- assign _ov = section.settings.overlay_opacity | divided_by: 100.0 -%}
+    .hc.section-{{ section.id }}::before {
+      content: ""; position: absolute; inset: 0;
+      background: {% if section.settings.overlay_style == 'gradient' %}linear-gradient(180deg, transparent 0%, {{ section.settings.overlay_color }} 100%){% else %}{{ section.settings.overlay_color }}{% endif %};
+      opacity: {{ _ov }}; pointer-events: none; z-index: 0;
+    }
+  {%- endif -%}
+
+  .hc.section-{{ section.id }} .hc__container {
+    position: relative; z-index: 1;
+    max-width: {{ section.settings.container_max_width | default: '900px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 32 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 32 }}px;{%- else -%}padding: 0 32px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+    text-align: {{ section.settings.alignment | default: 'center' }};
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .hc.section-{{ section.id }} .hc__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .hc.section-{{ section.id }} .hc__container > * { position: relative; }
+
+  .hc.section-{{ section.id }} .hc__flow {
+    display: flex; flex-direction: column; gap: 20px;
+    align-items: {% case section.settings.alignment %}{% when 'left' %}flex-start{% when 'right' %}flex-end{% else %}center{% endcase %};
+  }
+  .hc.section-{{ section.id }} .hc__badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: {{ section.settings.badge_text_color | default: 'var(--clr-white)' }};
+    background: {{ section.settings.badge_background | default: 'rgba(255,255,255,0.15)' }};
+    border-radius: 999px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .hc.section-{{ section.id }} .hc__badge::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: {{ section.settings.badge_dot_color | default: 'var(--clr-success)' }};
+  }
+  .hc.section-{{ section.id }} .hc__heading,
+  .hc.section-{{ section.id }} .hc__heading * {
+    line-height: 1.05; letter-spacing: -0.03em;
+  }
+  .hc.section-{{ section.id }} .hc__buttons {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-top: 12px;
+    justify-content: {% case section.settings.alignment %}{% when 'left' %}flex-start{% when 'right' %}flex-end{% else %}center{% endcase %};
+  }
+  .hc.section-{{ section.id }} .hc__trust {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 18px;
+    color: {{ section.settings.trust_color | default: 'var(--clr-white)' }};
+    opacity: 0.85;
+    font-size: 13px;
+    justify-content: {% case section.settings.alignment %}{% when 'left' %}flex-start{% when 'right' %}flex-end{% else %}center{% endcase %};
+  }
+  .hc.section-{{ section.id }} .hc__stars { display: inline-flex; gap: 1px; color: {{ section.settings.trust_star_color | default: 'var(--clr-warning)' }}; }
+  .hc.section-{{ section.id }} .hc__stars svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .hc.section-{{ section.id }} .hc__scroll {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    z-index: 2;
+    color: {{ section.settings.scroll_color | default: 'var(--clr-white)' }};
+    opacity: 0.7;
+    display: {% if section.settings.show_scroll_indicator %}flex{% else %}none{% endif %};
+    flex-direction: column; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    animation: hc-bounce-{{ section.id }} 2.4s infinite ease-in-out;
+  }
+  .hc.section-{{ section.id }} .hc__scroll svg { width: 18px; height: 18px; }
+  @keyframes hc-bounce-{{ section.id }} {
+    0%, 100% { transform: translate(-50%, 0); }
+    50%      { transform: translate(-50%, 6px); }
+  }
+
+  @media (max-width: 991px) {
+    .hc.section-{{ section.id }} { min-height: {{ section.settings.min_height_mobile | default: 70 }}vh; padding-top: 80px; padding-bottom: 80px; }
+  }
+  @media (max-width: 767px) {
+    .hc.section-{{ section.id }} { padding-top: 64px; padding-bottom: 64px; }
+    .hc.section-{{ section.id }} .hc__container { padding-left: 20px; padding-right: 20px; }
+  }
+{%- endstyle -%}
+
+<section class="hc section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="hc__container">
+    <div class="hc__flow">
+
+      {%- assign badge_blocks   = section.blocks | where: 'type', 'badge'   -%}
+      {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+      {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+      {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+      {%- assign trust_blocks   = section.blocks | where: 'type', 'trust'   -%}
+      {%- assign button_blocks  = section.blocks | where: 'type', 'button'  -%}
+
+      {% for block in badge_blocks %}
+        <div class="hc__badge" {{ block.fluid_attributes }}>{{ block.settings.text | default: 'New drop' | escape }}</div>
+      {% endfor %}
+
+      {% for block in eyebrow_blocks %}
+        <div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+      {% endfor %}
+
+      {% for block in heading_blocks %}
+        <div class="rte hc__heading" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+      {% endfor %}
+
+      {% for block in subhead_blocks %}
+        <div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>
+      {% endfor %}
+
+      {% if button_blocks.size > 0 %}
+        <div class="hc__buttons">
+          {% for block in button_blocks %}
+            {% capture _btn_style %}
+              {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
+              {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
+              {% if block.settings.font_size %}font-size: {{ block.settings.font_size }}px;{% endif %}
+              {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
+              {% assign bp = block.settings.padding %}{% if bp %}padding: {{ bp.top }}px {{ bp.right }}px {{ bp.bottom }}px {{ bp.left }}px;{% else %}padding: 14px 28px;{% endif %}
+              {% assign bbr = block.settings.border_radius %}{% if bbr %}border-radius: {{ bbr.tl }}px {{ bbr.tr }}px {{ bbr.br }}px {{ bbr.bl }}px;{% else %}border-radius: 999px;{% endif %}
+              {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+            {% endcapture %}
+            <a href="{{ block.settings.link | default: '#' }}"
+               class="btn btn--{{ block.settings.style | default: 'filled' }}"
+               style="{{ _btn_style | strip_newlines }}"
+               {% if block.settings.open_new_tab %}target="_blank" rel="noopener"{% endif %}
+               {{ block.fluid_attributes }}>
+              {{ block.settings.text | escape }}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% for block in trust_blocks %}
+        {%- assign rating = block.settings.rating | default: 5 | plus: 0 -%}
+        <div class="hc__trust" {{ block.fluid_attributes }}>
+          {% if block.settings.show_stars %}
+            <span class="hc__stars">
+              {% for i in (1..rating) %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              {% endfor %}
+            </span>
+          {% endif %}
+          <span>{{ block.settings.text | default: '4.9 from 2,400+ reviews' | escape }}</span>
+        </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  {% if section.settings.show_scroll_indicator %}
+    <div class="hc__scroll">
+      <span>{{ section.settings.scroll_label | default: 'Scroll' | escape }}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+    </div>
+  {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Hero — Centered",
+  "tag": "section",
+  "class": "hero-centered-section",
+  "settings": [
+    { "type": "header", "content": "Background" },
+    { "type": "image_picker", "id": "background_image", "label": "Background image" },
+    { "type": "select", "id": "background_position", "label": "Background position", "default": "center",
+      "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "top",    "label": "Top" },
+        { "value": "bottom", "label": "Bottom" }
+      ]
+    },
+    { "type": "select", "id": "background_color", "label": "Background fallback color", "options": "background_colors", "default": "var(--clr-dark)" },
+
+    { "type": "header", "content": "Overlay" },
+    { "type": "select", "id": "overlay_color", "label": "Overlay color", "options": "background_colors", "default": "var(--clr-dark)" },
+    { "type": "range",  "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 100, "step": 5, "default": 35, "unit": "%" },
+    { "type": "radio",  "id": "overlay_style", "label": "Overlay style", "default": "solid",
+      "options": [
+        { "value": "solid",    "label": "Solid color" },
+        { "value": "gradient", "label": "Bottom gradient (transparent → color)" }
+      ]
+    },
+
+    { "type": "header", "content": "Layout" },
+    { "type": "range", "id": "min_height",         "label": "Min height (vh, desktop)", "min": 50, "max": 100, "step": 5, "default": 80 },
+    { "type": "range", "id": "min_height_mobile",  "label": "Min height (vh, mobile)",  "min": 40, "max": 100, "step": 5, "default": 70 },
+    { "type": "radio", "id": "alignment", "label": "Content alignment", "default": "center",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ]
+    },
+
+    { "type": "header", "content": "Badge" },
+    { "type": "select", "id": "badge_background", "label": "Badge background", "options": "background_colors", "default": "transparent" },
+    { "type": "select", "id": "badge_text_color", "label": "Badge text color", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "badge_dot_color",  "label": "Badge dot color",  "options": "background_colors", "default": "var(--clr-success)" },
+
+    { "type": "header", "content": "Trust Bar" },
+    { "type": "select", "id": "trust_color",        "label": "Trust text color",  "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "trust_star_color",   "label": "Trust star color",  "options": "background_colors", "default": "var(--clr-warning)" },
+
+    { "type": "header", "content": "Scroll Indicator" },
+    { "type": "checkbox", "id": "show_scroll_indicator", "label": "Show scroll indicator", "default": true },
+    { "type": "text",     "id": "scroll_label", "label": "Scroll label", "default": "Scroll" },
+    { "type": "select",   "id": "scroll_color", "label": "Scroll indicator color", "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "900px",
+      "options": [
+        { "value": "720px",  "label": "Extra narrow (720px)" },
+        { "value": "900px",  "label": "Hero comfy (900px)" },
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "badge", "name": "Badge",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "New drop" }
+      ]
+    },
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h5 style=\"color: var(--clr-white); text-transform: uppercase; letter-spacing: 0.18em; font-size: 13px; opacity: 0.85;\">Spring 2026</h5>" }
+      ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<h1 style=\"color: var(--clr-white); font-size: clamp(40px, 7vw, 88px);\">Built different.<br>Worn forever.</h1>" }
+      ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "default": "<p style=\"color: var(--clr-white); font-size: 19px; max-width: 560px; opacity: 0.92;\">Premium materials, considered details, made to outlast trends. Free shipping on every order.</p>" }
+      ]
+    },
+    { "type": "button", "name": "Button",
+      "settings": [
+        { "type": "header", "content": "Content" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Shop the drop" },
+        { "type": "url",  "id": "link", "label": "Link" },
+        { "type": "checkbox", "id": "open_new_tab", "label": "Open in new tab", "default": false },
+        { "type": "select", "id": "font_family", "label": "Font Family", "options": "font_families", "default": "var(--ff-body)" },
+        { "type": "header", "content": "Style" },
+        { "type": "radio", "id": "style", "label": "Style", "default": "filled",
+          "options": [
+            { "value": "filled",  "label": "Filled" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "text",    "label": "Text only" }
+          ]
+        },
+        { "type": "range",  "id": "font_size", "label": "Font Size", "min": 12, "max": 24, "step": 1, "default": 15, "unit": "px" },
+        { "type": "padding","id": "padding", "label": "Padding" },
+        { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "select", "id": "text_color",       "label": "Text Color",       "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "header", "content": "Shape" },
+        { "type": "range", "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+        { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" }
+      ]
+    },
+    { "type": "trust", "name": "Trust Bar (rating + text)",
+      "settings": [
+        { "type": "checkbox", "id": "show_stars", "label": "Show stars", "default": true },
+        { "type": "range", "id": "rating", "label": "Stars filled", "min": 0, "max": 5, "step": 1, "default": 5 },
+        { "type": "text",  "id": "text",   "label": "Text",          "default": "4.9 from 2,400+ verified reviews" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero — Centered",
+      "blocks": [
+        { "type": "badge" },
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "button", "settings": { "text": "Shop the drop",  "style": "filled",  "background_color": "var(--clr-white)", "text_color": "var(--clr-primary)" } },
+        { "type": "button", "settings": { "text": "Learn more",      "style": "outline", "background_color": "transparent",       "text_color": "var(--clr-white)",  "border_width": 1, "border_color": "var(--clr-white)" } },
+        { "type": "trust" }
+      ]
+    }
+  ]
+}
+{% endschema %}

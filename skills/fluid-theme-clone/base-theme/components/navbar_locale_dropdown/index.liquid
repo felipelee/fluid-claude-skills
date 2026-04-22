@@ -1,55 +1,266 @@
-<div class='language-country-selection-section flex flex-end align-center' id="show-language-country-dropdown" {% if block %}{{ block.fluid_attributes }}{% endif %}>
-  <div class='flex align-center gap-3'>
-    <div class='flex align-center gap-3'>
-      <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
-      <span>{{ current_country_iso | upcase }}</span>
+{% comment %}
+  Canonical Locale Dropdown — unified desktop + mobile.
+
+  Preserves the Fluid JS hook IDs/classes used by header.js:
+    • #show-language-country-dropdown  (trigger — toggles .active + opens desktop panel via CSS)
+    • #mobile-country-language         (mobile slide-in sheet — toggled via .show class)
+    • #close-language-and-country      (mobile back button)
+    • .saveLocaleBtn                   (submit handler)
+    • .locale-selector                 (scope wrapper for save handler)
+    • .country-selector / .language-selector (read selected values on save)
+
+  Theme-driven throughout — no hex pickers.
+{% endcomment %}
+
+{%- assign display_mode    = block.settings.display_mode    | default: 'flag_code' -%}
+{%- assign show_language   = block.settings.show_language   -%}
+{%- assign show_separator  = block.settings.show_separator  -%}
+{%- assign show_arrow      = block.settings.show_arrow      -%}
+{%- assign save_label      = block.settings.save_label      | default: 'Save & close' -%}
+{%- assign header_label    = block.settings.header_label    | default: 'Country & language' -%}
+
+{%- assign trigger_color          = block.settings.trigger_color          | default: 'var(--clr-body)' -%}
+{%- assign trigger_border_color   = block.settings.trigger_border_color   | default: 'var(--clr-gray)' -%}
+{%- assign trigger_border_width   = block.settings.trigger_border_width   | default: 1 -%}
+{%- assign trigger_radius         = block.settings.trigger_radius         | default: 999 -%}
+{%- assign trigger_font_size      = block.settings.trigger_font_size      | default: 13 -%}
+
+{%- assign panel_background       = block.settings.panel_background       | default: 'var(--clr-white)' -%}
+{%- assign panel_text_color       = block.settings.panel_text_color       | default: 'var(--clr-primary)' -%}
+{%- assign panel_border_color     = block.settings.panel_border_color     | default: 'var(--clr-gray)' -%}
+{%- assign panel_width            = block.settings.panel_width            | default: 320 -%}
+{%- assign panel_radius           = block.settings.panel_radius           | default: 16 -%}
+
+{%- assign save_background        = block.settings.save_background        | default: 'var(--clr-primary)' -%}
+{%- assign save_text_color        = block.settings.save_text_color        | default: 'var(--clr-white)' -%}
+{%- assign separator_color        = block.settings.separator_color        | default: 'var(--clr-gray)' -%}
+
+{% style %}
+  /* ===== Trigger ===== */
+  .ld-{{ block.id }} { position: relative; display: inline-flex; align-items: center; }
+
+  .ld-{{ block.id }} .ld__trigger {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px;
+    font-size: {{ trigger_font_size }}px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: {{ trigger_color }};
+    background: transparent;
+    border: {{ trigger_border_width }}px solid {{ trigger_border_color }};
+    border-radius: {{ trigger_radius }}px;
+    cursor: pointer;
+    transition: border-color .15s, background-color .15s, transform .15s;
+    line-height: 1;
+  }
+  .ld-{{ block.id }} .ld__trigger:hover { border-color: {{ panel_text_color }}; }
+  .ld-{{ block.id }} .ld__trigger.active { border-color: {{ panel_text_color }}; }
+
+  .ld-{{ block.id }} .ld__trigger .flag-icon {
+    width: 18px; height: 13px;
+    border-radius: 2px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .ld-{{ block.id }} .ld__trigger .ld__sep {
+    width: 1px; height: 12px; background: {{ separator_color }};
+    display: inline-block;
+  }
+  .ld-{{ block.id }} .ld__arrow {
+    width: 10px; height: 10px;
+    transition: transform .2s;
+    opacity: 0.6;
+  }
+  .ld-{{ block.id }} .ld__trigger.active .ld__arrow { transform: rotate(180deg); }
+
+  /* ===== Desktop Popover ===== */
+  .ld-{{ block.id }} .ld__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: {{ panel_width }}px;
+    max-width: calc(100vw - 32px);
+    background: {{ panel_background }};
+    color: {{ panel_text_color }};
+    border: 1px solid {{ panel_border_color }};
+    border-radius: {{ panel_radius }}px;
+    box-shadow: 0 20px 48px -20px rgba(17, 24, 39, 0.25), 0 4px 12px -4px rgba(17, 24, 39, 0.08);
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .18s, transform .18s, visibility .18s;
+    z-index: 1000;
+    padding: 18px 18px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .ld-{{ block.id }} .ld__trigger.active + .ld__panel { opacity: 1; visibility: visible; transform: translateY(0); }
+
+  .ld-{{ block.id }} .ld__panel .ld__field { display: flex; flex-direction: column; gap: 6px; }
+  .ld-{{ block.id }} .ld__panel .ld__label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: {{ panel_text_color }}; opacity: 0.6;
+  }
+  .ld-{{ block.id }} .ld__panel select {
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
+    padding: 10px 32px 10px 12px;
+    font-size: 14px; font-family: inherit;
+    color: {{ panel_text_color }};
+    background: transparent;
+    border: 1px solid {{ panel_border_color }};
+    border-radius: 10px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .ld-{{ block.id }} .ld__panel select:hover,
+  .ld-{{ block.id }} .ld__panel select:focus { border-color: {{ panel_text_color }}; outline: none; }
+
+  .ld-{{ block.id }} .ld__save {
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    color: {{ save_text_color }};
+    background: {{ save_background }};
+    border: none; border-radius: 10px;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    margin-top: 2px;
+  }
+  .ld-{{ block.id }} .ld__save:hover  { opacity: 0.9; }
+  .ld-{{ block.id }} .ld__save:active { transform: translateY(1px); }
+
+  /* ===== Mobile Slide-in Sheet ===== */
+  @media (max-width: 991px) {
+    .ld-{{ block.id }} .ld__panel { display: none; }
+  }
+  @media (min-width: 992px) {
+    #mobile-country-language.ld__mobile-sheet { display: none; }
+  }
+
+  .ld__mobile-sheet {
+    position: fixed; inset: 0;
+    background: {{ panel_background }};
+    color: {{ panel_text_color }};
+    z-index: 9999;
+    transform: translateX(100%);
+    transition: transform .25s ease;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .ld__mobile-sheet.show { transform: translateX(0); }
+
+  .ld__mobile-sheet .ld__m-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid {{ panel_border_color }};
+  }
+  .ld__mobile-sheet .ld__m-back {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none;
+    color: inherit; cursor: pointer;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .ld__mobile-sheet .ld__m-back:hover { background: {{ panel_border_color }}; }
+  .ld__mobile-sheet .ld__m-back svg { width: 22px; height: 22px; }
+  .ld__mobile-sheet h5 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; }
+
+  .ld__mobile-sheet .ld__m-body {
+    padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 18px;
+    flex: 1; overflow-y: auto;
+  }
+
+  .ld__mobile-sheet .ld__m-footer {
+    padding: 16px; border-top: 1px solid {{ panel_border_color }};
+  }
+{% endstyle %}
+
+{%- comment -%} Desktop Trigger + Popover {%- endcomment -%}
+<div class="ld ld-{{ block.id }}" {% if block %}{{ block.fluid_attributes }}{% endif %}>
+  <button class="ld__trigger" id="show-language-country-dropdown" type="button" aria-haspopup="true" aria-label="Select country and language">
+    {% case display_mode %}
+      {% when 'flag_code' %}
+        <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
+        <span>{{ current_country_iso | upcase }}</span>
+        {% if show_language %}
+          {% if show_separator %}<span class="ld__sep" aria-hidden="true"></span>{% endif %}
+          <span>{{ current_selected_locale | upcase }}</span>
+        {% endif %}
+      {% when 'flag_only' %}
+        <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
+      {% when 'code_only' %}
+        <span>{{ current_country_iso | upcase }}</span>
+        {% if show_language %}
+          {% if show_separator %}<span class="ld__sep" aria-hidden="true"></span>{% endif %}
+          <span>{{ current_selected_locale | upcase }}</span>
+        {% endif %}
+      {% when 'flag_name' %}
+        <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
+        <span>{{ current_country_name }}</span>
+      {% else %}
+        <span class="flag-icon fi fi-{{ current_country_iso }}"></span>
+        <span>{{ current_country_iso | upcase }}</span>
+    {% endcase %}
+    {% if show_arrow %}
+      <svg class="ld__arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    {% endif %}
+  </button>
+
+  <div class="ld__panel language-country-dropdown-menu locale-selector">
+    <div class="ld__field">
+      <span class="ld__label">{{ 'navbar.select_country' | t }}</span>
+      <select id="countries" class="country-selector" name="country">
+        {% for country in countries %}
+          <option value="{{ country.iso }}" data-flag="{{ country.iso }}" {% if country.selected %}selected{% endif %}>{{ country.name }}</option>
+        {% endfor %}
+      </select>
     </div>
+    <div class="ld__field">
+      <span class="ld__label">{{ 'navbar.select_language' | t }}</span>
+      <select id="languages" class="language-dropdown language-selector" name="language">
+        {% for option in language_options %}
+          <option value="{{ option.iso }}" {% if option.selected %}selected{% endif %}>{{ option.locale }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="button" class="ld__save saveLocaleBtn">{{ save_label | escape }}</button>
+  </div>
+</div>
 
-    <span class='seperator'></span>
+{%- comment -%} Mobile Slide-in Sheet — uses IDs/classes the existing JS expects {%- endcomment -%}
+<div class="ld__mobile-sheet locale-selector" id="mobile-country-language" aria-hidden="true">
+  <div class="ld__m-header">
+    <button class="ld__m-back" id="close-language-and-country" type="button" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+    <h5>{{ header_label | escape }}</h5>
+  </div>
 
-    <div class='flex align-center gap-3'>
-      <span>{{ current_selected_locale | upcase }}</span>
-      <span class="arrow-down">
-        <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.39819 7.16341C7.17851 7.38308 6.82241 7.38308 6.60274 7.16341L0.867876 1.42853C0.648208 1.20886 0.648208 0.852756 0.867876 0.633081L1.13305 0.367881C1.35271 0.148206 1.70887 0.148206 1.92854 0.367881L7.00046 5.43983L12.0724 0.367881C12.2921 0.148206 12.6482 0.148206 12.8679 0.367881L13.1331 0.633081C13.3527 0.852756 13.3527 1.20886 13.1331 1.42853L7.39819 7.16341Z" fill="currentColor"/>
-        </svg>
-      </span>
+  <div class="ld__m-body">
+    <div class="ld__field">
+      <span class="ld__label">{{ 'navbar.select_country' | t }}</span>
+      <select class="country-selector" name="country" aria-label="Select country">
+        {% for country in countries %}
+          <option value="{{ country.iso }}" {% if country.selected %}selected{% endif %}>{{ country.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="ld__field">
+      <span class="ld__label">{{ 'navbar.select_language' | t }}</span>
+      <select class="language-selector" name="language" aria-label="Select language">
+        {% for option in language_options %}
+          <option value="{{ option.iso }}" {% if option.selected %}selected{% endif %}>{{ option.locale }}</option>
+        {% endfor %}
+      </select>
     </div>
   </div>
 
-  <ul class='language-country-dropdown-menu locale-selector'>
-    <li>
-      <label>{{ 'navbar.select_country' | t }}</label>
-      <div class="country-dropdown enable-search-dropdown">
-        <select id='countries' class='country-selector' name='country'>
-          {% for country in countries %}
-            <option
-              value='{{ country.iso }}'
-              data-flag='{{ country.iso }}'
-              {% if country.selected %}selected{% endif %}
-            >
-              {{ country.name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-    </li>
-    <li>
-      <label>{{ 'navbar.select_language' | t }}</label>
-      <select id='languages' class='language-dropdown language-selector' name='language'>
-        {% for option in language_options %}
-          <option
-            value='{{ option.iso }}'
-            {% if option.selected %}selected{% endif %}
-          >
-            {{ option.locale }}
-          </option>
-        {% endfor %}
-      </select>
-    </li>
-    <li>
-      {%- assign _save_close_label = 'navbar.save_and_close' | t -%}
-      {% render 'button', text: _save_close_label, variant: 'primary', class: 'saveLocaleBtn', type: 'button' %}
-    </li>
-  </ul>
+  <div class="ld__m-footer">
+    <button type="button" class="ld__save saveLocaleBtn">{{ save_label | escape }}</button>
+  </div>
 </div>

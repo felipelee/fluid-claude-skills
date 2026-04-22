@@ -8,7 +8,7 @@ description: >-
   "compare and fix," "tighten up," "QA the theme," "visual diff," "side by side
   comparison," "it doesn't look right," "make it exact," or "closer to the original."
 metadata:
-  version: 1.4.0
+  version: 1.5.0
 ---
 
 # Fluid Theme Refine
@@ -971,7 +971,11 @@ There are a small number of **canonical blocks** in `base-theme/blocks/`:
 - `blocks/image` — any time a user-uploaded image appears anywhere in the theme
 - `blocks/button` — any time a button appears (10 settings: text, link, font, open_new_tab, style, font_size, padding, background_color, text_color, border, border_radius)
 - `blocks/fluid_media` — any time a Fluid Media widget (video / UGC) appears
+- `blocks/cart_button` — icon-first cart trigger; preserves Fluid's `#show-cart` + `#fluid-cart-count` JS hooks
 - `blocks/schema_entry` — reference card used by the schema-reference page
+
+Reusable theme components (rendered via `{% render %}`, not added as block instances):
+- `components/navbar_locale_dropdown` — single component for desktop popover + mobile sheet, preserves Fluid's existing `header.js` locale-switch hooks
 
 **Rule:** anywhere a section needs one of these things, it must accept the canonical block, not define its own local variant.
 
@@ -1094,6 +1098,71 @@ Right pattern:
   <div class="media-wrap__placeholder">…</div>
 {% endif %}
 ```
+
+---
+
+## Quoting Liquid in setting values — escape brace delimiters
+
+Setting fields with `type: "html"` or `type: "richtext"` **re-evaluate Liquid** in the stored value. If you ever store text that demonstrates Liquid syntax (a docs page, a code-snippet field), Fluid's parser tries to execute the inline `{% for %}` / `{% comment %}` / `{{ x }}` and crashes with confusing errors like "Liquid syntax error: 'comment' tag was never closed" or "Syntax Error in 'for loop'" — even though the surrounding template is fine.
+
+**Symptoms:**
+- Page renders the navbar + footer but the section content is replaced with a Liquid error message
+- Error references a tag inside a value that's clearly meant to be inert documentation text
+
+**Fix — escape the brace delimiters as HTML entities in the stored value:**
+```
+{%  →  &#123;%
+%}  →  %&#125;
+{{  →  &#123;&#123;
+}}  →  &#125;&#125;
+{#  →  &#123;#       (Jinja-style comments — also re-evaluated)
+#}  →  #&#125;
+```
+
+Output the field directly, **without** `| escape` — the browser decodes the entities back for display:
+```liquid
+<pre><code>{{ block.settings.snippet }}</code></pre>
+```
+
+(Adding `| escape` would double-encode the `&` in `&#123;` → `&amp;#123;` and the user would see the literal entity reference.)
+
+**Bulk-escape audit script** for an existing reference page:
+```python
+import json, re
+
+def escape(v):
+    return (v.replace('{%', '&#123;%').replace('%}', '%&#125;')
+             .replace('{{', '&#123;&#123;').replace('}}', '&#125;&#125;')
+             .replace('{#', '&#123;#').replace('#}', '#&#125;'))
+
+# Walk preset blocks, escape any string field that contains {%/{{/{#
+for b in schema['presets'][0]['blocks']:
+    for k, v in list(b['settings'].items()):
+        if isinstance(v, str) and ('{%' in v or '{{' in v or '{#' in v):
+            b['settings'][k] = escape(v)
+```
+
+---
+
+## Image stretch override — canonical image filling a column
+
+When the canonical `blocks/image` is used inside a hero or split section, the image needs to FILL its column instead of using its own aspect ratio. The canonical image block ships with an `aspect_ratio` control (e.g., `4/5`, `16/9`); for hero columns, override it via section CSS:
+
+```css
+.hero__image-slot { align-self: stretch; position: relative; min-height: 360px; }
+
+.hero__image-slot .media-wrap {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  aspect-ratio: unset !important;   /* override canonical block's aspect_ratio */
+  margin: 0 !important;
+}
+.hero__image-slot .media-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+```
+
+The image block keeps its full canonical settings (overlay, border, radius all still work) — section just stretches the wrapper.
 
 ---
 

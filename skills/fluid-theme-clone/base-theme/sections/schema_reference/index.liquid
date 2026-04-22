@@ -246,11 +246,52 @@
       </div>
       <nav class="sr-nav" aria-label="Controls">
         <div class="sr-nav-group">
-          <div class="sr-nav-h">Patterns</div>
-          <a href="#pattern-section-shell"><span>Section Shell</span><span class="sr-nav-tag">recipe</span></a>
+          <div class="sr-nav-h">Patterns &mdash; Canonical Blocks</div>
+          <a href="#pattern-section-shell"><span>Section Shell + Container</span><span class="sr-nav-tag">recipe</span></a>
           <a href="#pattern-button"><span>Button</span><span class="sr-nav-tag">recipe</span></a>
           <a href="#pattern-image"><span>Image</span><span class="sr-nav-tag">recipe</span></a>
           <a href="#pattern-fluid-media"><span>Fluid Media</span><span class="sr-nav-tag">recipe</span></a>
+          <a href="#pattern-cart-button"><span>Cart Button</span><span class="sr-nav-tag">recipe</span></a>
+          <a href="#pattern-locale-dropdown"><span>Locale Dropdown</span><span class="sr-nav-tag">recipe</span></a>
+        </div>
+        <div class="sr-nav-group">
+          <div class="sr-nav-h">Patterns &mdash; Foundation</div>
+          <a href="#pattern-divider-block"><span>Divider Block</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#theme-color-dropdown" class="is-pattern"><span>Theme-Driven Colors</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-theme-fonts"><span>Theme-Driven Fonts</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-split-border"><span>Split Border</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-canonical-block-primacy"><span>Canonical Block Primacy</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-loop-not-first"><span>Loop, don't <code>| first</code></span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-phantom-default"><span>Phantom Default Antipattern</span><span class="sr-nav-tag">pattern</span></a>
+        </div>
+        <div class="sr-nav-group">
+          <div class="sr-nav-h">Patterns &mdash; Composition</div>
+          <a href="#pattern-stat"><span>Stat</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-rating-stars"><span>Rating Stars</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-trust-bar"><span>Trust Bar</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-tag-pill"><span>Tag Pill</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-card-grid"><span>Card Grid</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-css-carousel"><span>CSS Scroll Carousel</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-native-accordion"><span>Native Accordion</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-drag-slider"><span>Drag Slider</span><span class="sr-nav-tag">pattern</span></a>
+        </div>
+        <div class="sr-nav-group">
+          <div class="sr-nav-h">Patterns &mdash; Polish &amp; UI</div>
+          <a href="#pattern-hero-overlay"><span>Hero Overlay</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-scroll-indicator"><span>Scroll Indicator</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-comparison-row"><span>Comparison Row</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-connector-line"><span>Connector Line</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-glass-morphism"><span>Glass Morphism</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-editorial-meta-column"><span>Editorial Meta Column</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-image-stretch-override"><span>Image Stretch Override</span><span class="sr-nav-tag">pattern</span></a>
+        </div>
+        <div class="sr-nav-group">
+          <div class="sr-nav-h">Patterns &mdash; Data &amp; Workflow</div>
+          <a href="#pattern-media-picker-fallback"><span>Media Picker Fallback</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-product-image-fallback"><span>Product Image Fallback</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-collection-fallback"><span>Collection Fallback</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-preset-expansion"><span>Preset Expansion Workflow</span><span class="sr-nav-tag">pattern</span></a>
+          <a href="#pattern-liquid-comments"><span>Liquid Comments</span><span class="sr-nav-tag">pattern</span></a>
         </div>
         <div class="sr-nav-group">
           <div class="sr-nav-h">Input</div>
@@ -761,7 +802,7 @@
           "default": "Schema"
         },
         {
-          "type": "html",
+          "type": "textarea",
           "id": "schema_snippet",
           "label": "Schema snippet",
           "info": "JSON, no surrounding raw/code tags. This is shown verbatim inside a <pre><code> block."
@@ -773,7 +814,7 @@
           "info": "Optional. For patterns that need two JSON snippets (e.g. section schema + theme option_group)."
         },
         {
-          "type": "html",
+          "type": "textarea",
           "id": "schema_snippet_2",
           "label": "Second schema snippet",
           "info": "Optional."
@@ -785,7 +826,7 @@
           "default": "Liquid"
         },
         {
-          "type": "html",
+          "type": "textarea",
           "id": "liquid_snippet",
           "label": "Liquid snippet",
           "info": "Liquid, shown verbatim inside a <pre><code> block."
@@ -830,9 +871,9 @@
             "description": "<p>The baseline every section ships with. <strong>Container</strong> (9 settings) is a nested shell with its own max-width, padding, radius, background color/image, overlay, and border. <strong>Section Shell</strong> (6 settings) wraps it with outer padding, radius, background, and border. Two nested shells give editors full control \u2014 outer can be full-bleed with a colored bg, inner can be a bounded card with its own styling.</p>",
             "preview_type": "custom",
             "preview_custom_html": "<div class=\"sr-collapsible\">Container</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Max Width</div><div class=\"sr-select\" style=\"margin-left:8px;\">Default (1280px)</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Padding</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-pi-t\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-pi-r\"></div><div class=\"sr-box4-input\">64</div><div class=\"sr-box4-icon sr-pi-b\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-pi-l\"></div><div class=\"sr-box4-input\">64</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Border Radius</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-cr-tl\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-cr-tr\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-cr-bl\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-cr-br\"></div><div class=\"sr-box4-input\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Background Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Transparent</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Background Image</div><div class=\"sr-upload\" style=\"margin-left:8px;\"><div class=\"sr-upload-icon\">\ud83d\udcc1</div><div class=\"sr-upload-title\">Select or Upload image</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Overlay Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Transparent</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Overlay Opacity</div><div class=\"sr-range-wrap\" style=\"margin-left:8px;\"><div class=\"sr-range\"><div class=\"sr-range-fill\" style=\"width:0%;\"></div><div class=\"sr-range-knob\" style=\"left:0%;\"></div></div><div class=\"sr-range-val\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Border Width</div><div class=\"sr-range-wrap\" style=\"margin-left:8px;\"><div class=\"sr-range\"><div class=\"sr-range-fill\" style=\"width:0%;\"></div><div class=\"sr-range-knob\" style=\"left:0%;\"></div></div><div class=\"sr-range-val\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Container Border Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Primary</div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Section Shell</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Section Padding</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-pi-t\"></div><div class=\"sr-box4-input\">80</div><div class=\"sr-box4-icon sr-pi-r\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-pi-b\"></div><div class=\"sr-box4-input\">80</div><div class=\"sr-box4-icon sr-pi-l\"></div><div class=\"sr-box4-input\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Section Border Radius</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-cr-tl\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-cr-tr\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-cr-bl\"></div><div class=\"sr-box4-input\">0</div><div class=\"sr-box4-icon sr-cr-br\"></div><div class=\"sr-box4-input\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Background Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Primary</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Background Image</div><div class=\"sr-upload\" style=\"margin-left:8px;\"><div class=\"sr-upload-icon\">\ud83d\udcc1</div><div class=\"sr-upload-title\">Select or Upload image</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Section Border Width</div><div class=\"sr-range-wrap\" style=\"margin-left:8px;\"><div class=\"sr-range\"><div class=\"sr-range-fill\" style=\"width:0%;\"></div><div class=\"sr-range-knob\" style=\"left:0%;\"></div></div><div class=\"sr-range-val\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Section Border Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Primary</div>",
-            "schema_snippet": "{\n  \"settings\": [\n    { \"type\": \"header\", \"content\": \"Container\" },\n    { \"type\": \"select\", \"id\": \"container_max_width\", \"label\": \"Max Width\", \"default\": \"1280px\",\n      \"options\": [\n        { \"value\": \"960px\",  \"label\": \"Narrow (960px)\" },\n        { \"value\": \"1280px\", \"label\": \"Default (1280px)\" },\n        { \"value\": \"1440px\", \"label\": \"Wide (1440px)\" },\n        { \"value\": \"100%\",   \"label\": \"Full (100%)\" }\n      ] },\n    { \"type\": \"padding\", \"id\": \"container_padding\", \"label\": \"Container Padding\" },\n    { \"type\": \"corner_radius\", \"id\": \"container_border_radius\", \"label\": \"Container Border Radius\" },\n    { \"type\": \"select\", \"id\": \"container_background_color\", \"label\": \"Container Background Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" },\n    { \"type\": \"image_picker\", \"id\": \"container_background_image\", \"label\": \"Container Background Image\" },\n    { \"type\": \"select\", \"id\": \"container_overlay_color\", \"label\": \"Container Overlay Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" },\n    { \"type\": \"range\", \"id\": \"container_overlay_opacity\", \"label\": \"Container Overlay Opacity\",\n      \"min\": 0, \"max\": 100, \"step\": 5, \"default\": 0, \"unit\": \"%\" },\n    { \"type\": \"range\", \"id\": \"container_border_width\", \"label\": \"Container Border Width\",\n      \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" },\n    { \"type\": \"select\", \"id\": \"container_border_color\", \"label\": \"Container Border Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" },\n\n    { \"type\": \"header\", \"content\": \"Section Shell\" },\n    { \"type\": \"padding\", \"id\": \"section_padding\", \"label\": \"Section Padding\" },\n    { \"type\": \"corner_radius\", \"id\": \"section_border_radius\", \"label\": \"Section Border Radius\" },\n    { \"type\": \"select\", \"id\": \"background_color\", \"label\": \"Background Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" },\n    { \"type\": \"image_picker\", \"id\": \"background_image\", \"label\": \"Background Image\" },\n    { \"type\": \"range\", \"id\": \"section_border_width\", \"label\": \"Section Border Width\",\n      \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" },\n    { \"type\": \"select\", \"id\": \"section_border_color\", \"label\": \"Section Border Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" }\n  ]\n}",
+            "schema_snippet": "&#123;\n  \"settings\": [\n    &#123; \"type\": \"header\", \"content\": \"Container\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"container_max_width\", \"label\": \"Max Width\", \"default\": \"1280px\",\n      \"options\": [\n        &#123; \"value\": \"960px\",  \"label\": \"Narrow (960px)\" &#125;,\n        &#123; \"value\": \"1280px\", \"label\": \"Default (1280px)\" &#125;,\n        &#123; \"value\": \"1440px\", \"label\": \"Wide (1440px)\" &#125;,\n        &#123; \"value\": \"100%\",   \"label\": \"Full (100%)\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"padding\", \"id\": \"container_padding\", \"label\": \"Container Padding\" &#125;,\n    &#123; \"type\": \"corner_radius\", \"id\": \"container_border_radius\", \"label\": \"Container Border Radius\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"container_background_color\", \"label\": \"Container Background Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" &#125;,\n    &#123; \"type\": \"image_picker\", \"id\": \"container_background_image\", \"label\": \"Container Background Image\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"container_overlay_color\", \"label\": \"Container Overlay Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" &#125;,\n    &#123; \"type\": \"range\", \"id\": \"container_overlay_opacity\", \"label\": \"Container Overlay Opacity\",\n      \"min\": 0, \"max\": 100, \"step\": 5, \"default\": 0, \"unit\": \"%\" &#125;,\n    &#123; \"type\": \"range\", \"id\": \"container_border_width\", \"label\": \"Container Border Width\",\n      \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"container_border_color\", \"label\": \"Container Border Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;,\n\n    &#123; \"type\": \"header\", \"content\": \"Section Shell\" &#125;,\n    &#123; \"type\": \"padding\", \"id\": \"section_padding\", \"label\": \"Section Padding\" &#125;,\n    &#123; \"type\": \"corner_radius\", \"id\": \"section_border_radius\", \"label\": \"Section Border Radius\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"background_color\", \"label\": \"Background Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" &#125;,\n    &#123; \"type\": \"image_picker\", \"id\": \"background_image\", \"label\": \"Background Image\" &#125;,\n    &#123; \"type\": \"range\", \"id\": \"section_border_width\", \"label\": \"Section Border Width\",\n      \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"section_border_color\", \"label\": \"Section Border Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;\n  ]\n&#125;",
             "liquid_label": "Liquid wire-up",
-            "liquid_snippet": "{%- style -%}\n  .my-section.section-{{ section.id }} {\n    {%- assign p = section.settings.section_padding -%}\n    {%- if p -%}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{%- endif -%}\n    {%- assign r = section.settings.section_border_radius -%}\n    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}\n    {% if section.settings.section_border_width > 0 %}\n      border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};\n    {% endif %}\n    background-color: {{ section.settings.background_color | default: 'transparent' }};\n    {%- if section.settings.background_image != blank -%}\n      background-image: url({{ section.settings.background_image | img_url: '2400x' }});\n      background-size: cover; background-position: center; background-repeat: no-repeat;\n    {%- endif -%}\n  }\n  .my-section.section-{{ section.id }} .my-section__container {\n    max-width: {{ section.settings.container_max_width | default: '1280px' }};\n    margin: 0 auto;\n    {%- assign cp = section.settings.container_padding -%}\n    {%- if cp -%}\n      padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;\n    {%- else -%}\n      padding: 0 64px;\n    {%- endif -%}\n  }\n  @media (max-width: 991px) { .my-section.section-{{ section.id }} .my-section__container { padding-left: 24px; padding-right: 24px; } }\n  @media (max-width: 767px) { .my-section.section-{{ section.id }} .my-section__container { padding-left: 16px; padding-right: 16px; } }\n{%- endstyle -%}\n\n<section class=\"my-section section-{{ section.id }}\" {{ section.fluid_attributes }}>\n  <div class=\"my-section__container\">\n    \u2026\n  </div>\n</section>",
+            "liquid_snippet": "&#123;%- style -%&#125;\n  .my-section.section-&#123;&#123; section.id &#125;&#125; &#123;\n    &#123;%- assign p = section.settings.section_padding -%&#125;\n    &#123;%- if p -%&#125;padding: &#123;&#123; p.top &#125;&#125;px &#123;&#123; p.right &#125;&#125;px &#123;&#123; p.bottom &#125;&#125;px &#123;&#123; p.left &#125;&#125;px;&#123;%- endif -%&#125;\n    &#123;%- assign r = section.settings.section_border_radius -%&#125;\n    &#123;%- if r -%&#125;border-radius: &#123;&#123; r.tl &#125;&#125;px &#123;&#123; r.tr &#125;&#125;px &#123;&#123; r.br &#125;&#125;px &#123;&#123; r.bl &#125;&#125;px;&#123;%- endif -%&#125;\n    &#123;% if section.settings.section_border_width > 0 %&#125;\n      border: &#123;&#123; section.settings.section_border_width &#125;&#125;px solid &#123;&#123; section.settings.section_border_color &#125;&#125;;\n    &#123;% endif %&#125;\n    background-color: &#123;&#123; section.settings.background_color | default: 'transparent' &#125;&#125;;\n    &#123;%- if section.settings.background_image != blank -%&#125;\n      background-image: url(&#123;&#123; section.settings.background_image | img_url: '2400x' &#125;&#125;);\n      background-size: cover; background-position: center; background-repeat: no-repeat;\n    &#123;%- endif -%&#125;\n  &#125;\n  .my-section.section-&#123;&#123; section.id &#125;&#125; .my-section__container &#123;\n    max-width: &#123;&#123; section.settings.container_max_width | default: '1280px' &#125;&#125;;\n    margin: 0 auto;\n    &#123;%- assign cp = section.settings.container_padding -%&#125;\n    &#123;%- if cp -%&#125;\n      padding: &#123;&#123; cp.top | default: 0 &#125;&#125;px &#123;&#123; cp.right | default: 64 &#125;&#125;px &#123;&#123; cp.bottom | default: 0 &#125;&#125;px &#123;&#123; cp.left | default: 64 &#125;&#125;px;\n    &#123;%- else -%&#125;\n      padding: 0 64px;\n    &#123;%- endif -%&#125;\n  &#125;\n  @media (max-width: 991px) &#123; .my-section.section-&#123;&#123; section.id &#125;&#125; .my-section__container &#123; padding-left: 24px; padding-right: 24px; &#125; &#125;\n  @media (max-width: 767px) &#123; .my-section.section-&#123;&#123; section.id &#125;&#125; .my-section__container &#123; padding-left: 16px; padding-right: 16px; &#125; &#125;\n&#123;%- endstyle -%&#125;\n\n<section class=\"my-section section-&#123;&#123; section.id &#125;&#125;\" &#123;&#123; section.fluid_attributes &#125;&#125;>\n  <div class=\"my-section__container\">\n    \u2026\n  </div>\n</section>",
             "tip_label": "Why split Container from Section Shell",
             "tip_kind": "tip",
             "tip": "<p>Think of it as two nested boxes. <strong>Section Shell</strong> is the outer box \u2014 full-width colored area, section-to-section separator. <strong>Container</strong> is the inner box \u2014 bounded content area, optionally styled as a standalone card. Stack them for hero sections with image backgrounds + bordered content containers, or keep the container transparent for a clean centered layout.</p>"
@@ -850,9 +891,9 @@
             "preview_type": "custom",
             "preview_custom_html": "<div class=\"sr-collapsible\">Content</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Text</div><div class=\"sr-input\" style=\"margin-left:8px;\">Shop now</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Link</div><div class=\"sr-input\" style=\"margin-left:8px;\">/shop</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Font Family</div><div class=\"sr-select\" style=\"margin-left:8px;\">Inter</div><div class=\"sr-toggle-row\" style=\"padding-left:8px;margin-top:4px;\"><div class=\"sr-field-label\">Open in new tab</div><div class=\"sr-toggle sr-toggle--off\"></div></div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Style</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Style</div><div class=\"sr-radio\" style=\"margin-left:8px;\"><span class=\"sr-radio-opt is-selected\">Filled</span><span class=\"sr-radio-opt\">Outline</span><span class=\"sr-radio-opt\">Text only</span></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Font Size</div><div class=\"sr-range-wrap\" style=\"margin-left:8px;\"><div class=\"sr-range\"><div class=\"sr-range-fill\" style=\"width:33%;\"></div><div class=\"sr-range-knob\" style=\"left:33%;\"></div></div><div class=\"sr-range-val\">16</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Padding</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-pi-t\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-pi-r\"></div><div class=\"sr-box4-input\">24</div><div class=\"sr-box4-icon sr-pi-b\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-pi-l\"></div><div class=\"sr-box4-input\">24</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Background Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Primary</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Text Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">White</div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Shape</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border</div><div class=\"sr-border-row\" style=\"margin-left:8px;\"><div class=\"sr-box4-input\">0</div><div class=\"sr-select\">Color Presets</div><div class=\"sr-swatch\" style=\"background:#000\"></div><div class=\"sr-hex\">#000000</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border Radius</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-cr-tl\"></div><div class=\"sr-box4-input\">8</div><div class=\"sr-box4-icon sr-cr-tr\"></div><div class=\"sr-box4-input\">8</div><div class=\"sr-box4-icon sr-cr-bl\"></div><div class=\"sr-box4-input\">8</div><div class=\"sr-box4-icon sr-cr-br\"></div><div class=\"sr-box4-input\">8</div></div>",
             "schema_label": "Schema (inline in section's blocks)",
-            "schema_snippet": "{\n  \"type\": \"button\",\n  \"name\": \"Button\",\n  \"settings\": [\n    { \"type\": \"header\", \"content\": \"Content\" },\n    { \"type\": \"text\", \"id\": \"text\", \"label\": \"Text\", \"default\": \"Shop now\" },\n    { \"type\": \"url\", \"id\": \"link\", \"label\": \"Link\" },\n    { \"type\": \"font_picker\", \"id\": \"font_family\", \"label\": \"Font Family\", \"default\": \"Inter\" },\n    { \"type\": \"checkbox\", \"id\": \"open_new_tab\", \"label\": \"Open in new tab\", \"default\": false },\n    { \"type\": \"header\", \"content\": \"Style\" },\n    { \"type\": \"radio\", \"id\": \"style\", \"label\": \"Style\", \"default\": \"filled\",\n      \"options\": [\n        { \"value\": \"filled\",  \"label\": \"Filled\" },\n        { \"value\": \"outline\", \"label\": \"Outline\" },\n        { \"value\": \"text\",    \"label\": \"Text only\" }\n      ] },\n    { \"type\": \"range\", \"id\": \"font_size\", \"label\": \"Font Size\",\n      \"min\": 10, \"max\": 32, \"step\": 1, \"default\": 16, \"unit\": \"px\" },\n    { \"type\": \"padding\", \"id\": \"padding\", \"label\": \"Padding\" },\n    { \"type\": \"select\", \"id\": \"background_color\", \"label\": \"Background Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" },\n    { \"type\": \"select\", \"id\": \"text_color\", \"label\": \"Text Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-white)\" },\n    { \"type\": \"header\", \"content\": \"Shape\" },\n    { \"type\": \"border\", \"id\": \"border\", \"label\": \"Border\" },\n    { \"type\": \"corner_radius\", \"id\": \"border_radius\", \"label\": \"Border Radius\" }\n  ]\n}",
+            "schema_snippet": "&#123;\n  \"type\": \"button\",\n  \"name\": \"Button\",\n  \"settings\": [\n    &#123; \"type\": \"header\", \"content\": \"Content\" &#125;,\n    &#123; \"type\": \"text\", \"id\": \"text\", \"label\": \"Text\", \"default\": \"Shop now\" &#125;,\n    &#123; \"type\": \"url\", \"id\": \"link\", \"label\": \"Link\" &#125;,\n    &#123; \"type\": \"font_picker\", \"id\": \"font_family\", \"label\": \"Font Family\", \"default\": \"Inter\" &#125;,\n    &#123; \"type\": \"checkbox\", \"id\": \"open_new_tab\", \"label\": \"Open in new tab\", \"default\": false &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Style\" &#125;,\n    &#123; \"type\": \"radio\", \"id\": \"style\", \"label\": \"Style\", \"default\": \"filled\",\n      \"options\": [\n        &#123; \"value\": \"filled\",  \"label\": \"Filled\" &#125;,\n        &#123; \"value\": \"outline\", \"label\": \"Outline\" &#125;,\n        &#123; \"value\": \"text\",    \"label\": \"Text only\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"range\", \"id\": \"font_size\", \"label\": \"Font Size\",\n      \"min\": 10, \"max\": 32, \"step\": 1, \"default\": 16, \"unit\": \"px\" &#125;,\n    &#123; \"type\": \"padding\", \"id\": \"padding\", \"label\": \"Padding\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"background_color\", \"label\": \"Background Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"text_color\", \"label\": \"Text Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-white)\" &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Shape\" &#125;,\n    &#123; \"type\": \"border\", \"id\": \"border\", \"label\": \"Border\" &#125;,\n    &#123; \"type\": \"corner_radius\", \"id\": \"border_radius\", \"label\": \"Border Radius\" &#125;\n  ]\n&#125;",
             "liquid_label": "Liquid (render inside a section's case/when)",
-            "liquid_snippet": "<a href=\"{{ block.settings.link | default: '#' }}\"\n   class=\"btn btn--{{ block.settings.style | default: 'filled' }}\"\n   style=\"\n     background-color: {{ block.settings.background_color }};\n     color: {{ block.settings.text_color }};\n     font-size: {{ block.settings.font_size }}px;\n     font-family: {{ block.settings.font_family | font_family }};\n     {%- assign p = block.settings.padding -%}\n     {%- if p -%}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{%- endif -%}\n     {%- assign br = block.settings.border_radius -%}\n     {%- if br -%}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{%- endif -%}\n     {%- assign bd = block.settings.border -%}\n     {%- if bd.width -%}border: {{ bd.width }} solid {{ bd.color }};{%- endif -%}\n   \"\n   {% if block.settings.open_new_tab %}target=\"_blank\" rel=\"noopener\"{% endif %}\n   {{ block.fluid_attributes }}>\n  {{ block.settings.text | escape }}\n</a>",
+            "liquid_snippet": "<a href=\"&#123;&#123; block.settings.link | default: '#' &#125;&#125;\"\n   class=\"btn btn--&#123;&#123; block.settings.style | default: 'filled' &#125;&#125;\"\n   style=\"\n     background-color: &#123;&#123; block.settings.background_color &#125;&#125;;\n     color: &#123;&#123; block.settings.text_color &#125;&#125;;\n     font-size: &#123;&#123; block.settings.font_size &#125;&#125;px;\n     font-family: &#123;&#123; block.settings.font_family | font_family &#125;&#125;;\n     &#123;%- assign p = block.settings.padding -%&#125;\n     &#123;%- if p -%&#125;padding: &#123;&#123; p.top &#125;&#125;px &#123;&#123; p.right &#125;&#125;px &#123;&#123; p.bottom &#125;&#125;px &#123;&#123; p.left &#125;&#125;px;&#123;%- endif -%&#125;\n     &#123;%- assign br = block.settings.border_radius -%&#125;\n     &#123;%- if br -%&#125;border-radius: &#123;&#123; br.tl &#125;&#125;px &#123;&#123; br.tr &#125;&#125;px &#123;&#123; br.br &#125;&#125;px &#123;&#123; br.bl &#125;&#125;px;&#123;%- endif -%&#125;\n     &#123;%- assign bd = block.settings.border -%&#125;\n     &#123;%- if bd.width -%&#125;border: &#123;&#123; bd.width &#125;&#125; solid &#123;&#123; bd.color &#125;&#125;;&#123;%- endif -%&#125;\n   \"\n   &#123;% if block.settings.open_new_tab %&#125;target=\"_blank\" rel=\"noopener\"&#123;% endif %&#125;\n   &#123;&#123; block.fluid_attributes &#125;&#125;>\n  &#123;&#123; block.settings.text | escape &#125;&#125;\n</a>",
             "tip_label": "Why Font Size + Padding instead of Size presets",
             "tip_kind": "tip",
             "tip": "<p>T-shirt sizes (sm/md/lg) are opinionated \u2014 they bake in a specific relationship between font-size and padding. Font Size + Padding as independent controls let you dial in the exact button dimensions for the design, without being stuck with three preset shapes.</p>"
@@ -870,9 +911,9 @@
             "preview_type": "custom",
             "preview_custom_html": "<div class=\"sr-collapsible\">Content</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Image</div><div class=\"sr-upload\" style=\"margin-left:8px;\"><div class=\"sr-upload-icon\">\ud83d\udcc1</div><div class=\"sr-upload-title\">Select or Upload image</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Alt Text</div><div class=\"sr-input\" style=\"margin-left:8px;color:#94a3b8;\">Describe the image\u2026</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Link</div><div class=\"sr-input\" style=\"margin-left:8px;\">/product</div><div class=\"sr-toggle-row\" style=\"padding-left:8px;margin-top:4px;\"><div class=\"sr-field-label\">Open in new tab</div><div class=\"sr-toggle sr-toggle--off\"></div></div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Sizing</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Aspect Ratio</div><div class=\"sr-select\" style=\"margin-left:8px;\">Square (1:1)</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Fit</div><div class=\"sr-radio\" style=\"margin-left:8px;\"><span class=\"sr-radio-opt is-selected\">Cover</span><span class=\"sr-radio-opt\">Contain</span><span class=\"sr-radio-opt\">Fill</span></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Object Position</div><div class=\"sr-select\" style=\"margin-left:8px;\">Center</div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Overlay</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Overlay Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Primary</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Overlay Opacity</div><div class=\"sr-range-wrap\" style=\"margin-left:8px;\"><div class=\"sr-range\"><div class=\"sr-range-fill\" style=\"width:25%;\"></div><div class=\"sr-range-knob\" style=\"left:25%;\"></div></div><div class=\"sr-range-val\">25</div></div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Shape</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border</div><div class=\"sr-border-row\" style=\"margin-left:8px;\"><div class=\"sr-box4-input\">0</div><div class=\"sr-select\">Color Presets</div><div class=\"sr-swatch\" style=\"background:#000\"></div><div class=\"sr-hex\">#000000</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border Radius</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-cr-tl\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-cr-tr\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-cr-bl\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-cr-br\"></div><div class=\"sr-box4-input\">12</div></div>",
             "schema_label": "Schema (inline in section's blocks)",
-            "schema_snippet": "{\n  \"type\": \"image\",\n  \"name\": \"Image\",\n  \"settings\": [\n    { \"type\": \"header\", \"content\": \"Content\" },\n    { \"type\": \"image_picker\", \"id\": \"image\", \"label\": \"Image\" },\n    { \"type\": \"text\", \"id\": \"alt\", \"label\": \"Alt Text\",\n      \"info\": \"Leave blank to use the image's own alt.\" },\n    { \"type\": \"url\", \"id\": \"link\", \"label\": \"Link\" },\n    { \"type\": \"checkbox\", \"id\": \"open_new_tab\", \"label\": \"Open in new tab\", \"default\": false },\n    { \"type\": \"header\", \"content\": \"Sizing\" },\n    { \"type\": \"select\", \"id\": \"aspect_ratio\", \"label\": \"Aspect Ratio\", \"default\": \"auto\",\n      \"options\": [\n        { \"value\": \"auto\",  \"label\": \"Auto (natural)\" },\n        { \"value\": \"1/1\",   \"label\": \"Square (1:1)\" },\n        { \"value\": \"4/3\",   \"label\": \"Standard (4:3)\" },\n        { \"value\": \"16/9\",  \"label\": \"Widescreen (16:9)\" },\n        { \"value\": \"3/2\",   \"label\": \"Classic (3:2)\" },\n        { \"value\": \"3/4\",   \"label\": \"Portrait (3:4)\" },\n        { \"value\": \"9/16\",  \"label\": \"Portrait mobile (9:16)\" },\n        { \"value\": \"21/9\",  \"label\": \"Ultrawide (21:9)\" }\n      ] },\n    { \"type\": \"radio\", \"id\": \"fit\", \"label\": \"Fit\", \"default\": \"cover\",\n      \"options\": [\n        { \"value\": \"cover\",   \"label\": \"Cover\" },\n        { \"value\": \"contain\", \"label\": \"Contain\" },\n        { \"value\": \"fill\",    \"label\": \"Fill\" }\n      ] },\n    { \"type\": \"select\", \"id\": \"object_position\", \"label\": \"Object Position\", \"default\": \"center\",\n      \"info\": \"Only affects Fit = Cover.\",\n      \"options\": [\n        { \"value\": \"center\", \"label\": \"Center\" },\n        { \"value\": \"top\",    \"label\": \"Top\" },\n        { \"value\": \"bottom\", \"label\": \"Bottom\" },\n        { \"value\": \"left\",   \"label\": \"Left\" },\n        { \"value\": \"right\",  \"label\": \"Right\" }\n      ] },\n    { \"type\": \"header\", \"content\": \"Overlay\" },\n    { \"type\": \"select\", \"id\": \"overlay_color\", \"label\": \"Overlay Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" },\n    { \"type\": \"range\", \"id\": \"overlay_opacity\", \"label\": \"Overlay Opacity\",\n      \"min\": 0, \"max\": 100, \"step\": 5, \"default\": 0, \"unit\": \"%\" },\n    { \"type\": \"header\", \"content\": \"Shape\" },\n    { \"type\": \"border\", \"id\": \"border\", \"label\": \"Border\" },\n    { \"type\": \"corner_radius\", \"id\": \"border_radius\", \"label\": \"Border Radius\" }\n  ]\n}",
+            "schema_snippet": "&#123;\n  \"type\": \"image\",\n  \"name\": \"Image\",\n  \"settings\": [\n    &#123; \"type\": \"header\", \"content\": \"Content\" &#125;,\n    &#123; \"type\": \"image_picker\", \"id\": \"image\", \"label\": \"Image\" &#125;,\n    &#123; \"type\": \"text\", \"id\": \"alt\", \"label\": \"Alt Text\",\n      \"info\": \"Leave blank to use the image's own alt.\" &#125;,\n    &#123; \"type\": \"url\", \"id\": \"link\", \"label\": \"Link\" &#125;,\n    &#123; \"type\": \"checkbox\", \"id\": \"open_new_tab\", \"label\": \"Open in new tab\", \"default\": false &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Sizing\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"aspect_ratio\", \"label\": \"Aspect Ratio\", \"default\": \"auto\",\n      \"options\": [\n        &#123; \"value\": \"auto\",  \"label\": \"Auto (natural)\" &#125;,\n        &#123; \"value\": \"1/1\",   \"label\": \"Square (1:1)\" &#125;,\n        &#123; \"value\": \"4/3\",   \"label\": \"Standard (4:3)\" &#125;,\n        &#123; \"value\": \"16/9\",  \"label\": \"Widescreen (16:9)\" &#125;,\n        &#123; \"value\": \"3/2\",   \"label\": \"Classic (3:2)\" &#125;,\n        &#123; \"value\": \"3/4\",   \"label\": \"Portrait (3:4)\" &#125;,\n        &#123; \"value\": \"9/16\",  \"label\": \"Portrait mobile (9:16)\" &#125;,\n        &#123; \"value\": \"21/9\",  \"label\": \"Ultrawide (21:9)\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"radio\", \"id\": \"fit\", \"label\": \"Fit\", \"default\": \"cover\",\n      \"options\": [\n        &#123; \"value\": \"cover\",   \"label\": \"Cover\" &#125;,\n        &#123; \"value\": \"contain\", \"label\": \"Contain\" &#125;,\n        &#123; \"value\": \"fill\",    \"label\": \"Fill\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"select\", \"id\": \"object_position\", \"label\": \"Object Position\", \"default\": \"center\",\n      \"info\": \"Only affects Fit = Cover.\",\n      \"options\": [\n        &#123; \"value\": \"center\", \"label\": \"Center\" &#125;,\n        &#123; \"value\": \"top\",    \"label\": \"Top\" &#125;,\n        &#123; \"value\": \"bottom\", \"label\": \"Bottom\" &#125;,\n        &#123; \"value\": \"left\",   \"label\": \"Left\" &#125;,\n        &#123; \"value\": \"right\",  \"label\": \"Right\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Overlay\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"overlay_color\", \"label\": \"Overlay Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" &#125;,\n    &#123; \"type\": \"range\", \"id\": \"overlay_opacity\", \"label\": \"Overlay Opacity\",\n      \"min\": 0, \"max\": 100, \"step\": 5, \"default\": 0, \"unit\": \"%\" &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Shape\" &#125;,\n    &#123; \"type\": \"border\", \"id\": \"border\", \"label\": \"Border\" &#125;,\n    &#123; \"type\": \"corner_radius\", \"id\": \"border_radius\", \"label\": \"Border Radius\" &#125;\n  ]\n&#125;",
             "liquid_label": "Liquid (render inside a section's case/when)",
-            "liquid_snippet": "{% assign _img = block.settings.image %}\n{% assign _alt = block.settings.alt | default: _img.alt | default: '' %}\n{% capture _wrap %}\n  {% if block.settings.aspect_ratio != 'auto' %}aspect-ratio: {{ block.settings.aspect_ratio }};{% endif %}\n  {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}\n  {% assign bd = block.settings.border %}{% if bd.width %}border: {{ bd.width }} solid {{ bd.color }};{% endif %}\n{% endcapture %}\n<div class=\"media-wrap\" style=\"{{ _wrap | strip_newlines }}\" {{ block.fluid_attributes }}>\n  {% if _img %}\n    <img src=\"{{ _img | img_url: '1600x' }}\"\n         alt=\"{{ _alt | escape }}\" loading=\"lazy\"\n         style=\"object-fit: {{ block.settings.fit }}; object-position: {{ block.settings.object_position }}; {% if block.settings.aspect_ratio != 'auto' %}width:100%;height:100%;{% endif %}\">\n  {% endif %}\n  {% if block.settings.overlay_color != blank and block.settings.overlay_opacity > 0 %}\n    {% assign _a = block.settings.overlay_opacity | divided_by: 100.0 %}\n    <div class=\"media-wrap__overlay\" style=\"background: {{ block.settings.overlay_color }}; opacity: {{ _a }};\"></div>\n  {% endif %}\n</div>",
+            "liquid_snippet": "&#123;% assign _img = block.settings.image %&#125;\n&#123;% assign _alt = block.settings.alt | default: _img.alt | default: '' %&#125;\n&#123;% capture _wrap %&#125;\n  &#123;% if block.settings.aspect_ratio != 'auto' %&#125;aspect-ratio: &#123;&#123; block.settings.aspect_ratio &#125;&#125;;&#123;% endif %&#125;\n  &#123;% assign br = block.settings.border_radius %&#125;&#123;% if br %&#125;border-radius: &#123;&#123; br.tl &#125;&#125;px &#123;&#123; br.tr &#125;&#125;px &#123;&#123; br.br &#125;&#125;px &#123;&#123; br.bl &#125;&#125;px;&#123;% endif %&#125;\n  &#123;% assign bd = block.settings.border %&#125;&#123;% if bd.width %&#125;border: &#123;&#123; bd.width &#125;&#125; solid &#123;&#123; bd.color &#125;&#125;;&#123;% endif %&#125;\n&#123;% endcapture %&#125;\n<div class=\"media-wrap\" style=\"&#123;&#123; _wrap | strip_newlines &#125;&#125;\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n  &#123;% if _img %&#125;\n    <img src=\"&#123;&#123; _img | img_url: '1600x' &#125;&#125;\"\n         alt=\"&#123;&#123; _alt | escape &#125;&#125;\" loading=\"lazy\"\n         style=\"object-fit: &#123;&#123; block.settings.fit &#125;&#125;; object-position: &#123;&#123; block.settings.object_position &#125;&#125;; &#123;% if block.settings.aspect_ratio != 'auto' %&#125;width:100%;height:100%;&#123;% endif %&#125;\">\n  &#123;% endif %&#125;\n  &#123;% if block.settings.overlay_color != blank and block.settings.overlay_opacity > 0 %&#125;\n    &#123;% assign _a = block.settings.overlay_opacity | divided_by: 100.0 %&#125;\n    <div class=\"media-wrap__overlay\" style=\"background: &#123;&#123; block.settings.overlay_color &#125;&#125;; opacity: &#123;&#123; _a &#125;&#125;;\"></div>\n  &#123;% endif %&#125;\n</div>",
             "tip_label": "Alt text vs image_picker's built-in alt",
             "tip_kind": "tip",
             "tip": "<p>The <code>image_picker</code> object carries its own <code>.alt</code> (set when the image was uploaded to the DAM). The explicit Alt Text field here <strong>overrides</strong> that when filled \u2014 useful when the image has a generic DAM alt but needs context-specific copy here. If left blank, the render falls back to <code>image.alt</code>.</p>"
@@ -890,9 +931,9 @@
             "preview_type": "custom",
             "preview_custom_html": "<div class=\"sr-collapsible\">Media</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Media</div><div class=\"sr-media-link\" style=\"margin-left:8px;\">Select media</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Embed Type</div><div class=\"sr-select\" style=\"margin-left:8px;\">Inline (plays in place)</div><div class=\"sr-toggle-row\" style=\"padding-left:8px;margin-top:4px;\"><div class=\"sr-field-label\">Responsive</div><div class=\"sr-toggle\"></div></div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Layout</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Aspect Ratio</div><div class=\"sr-select\" style=\"margin-left:8px;\">Widescreen (16:9)</div><div class=\"sr-collapsible\" style=\"margin-top:8px;\">Shape</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Background Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Transparent</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border Width</div><div class=\"sr-range-wrap\" style=\"margin-left:8px;\"><div class=\"sr-range\"><div class=\"sr-range-fill\" style=\"width:0%;\"></div><div class=\"sr-range-knob\" style=\"left:0%;\"></div></div><div class=\"sr-range-val\">0</div></div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border Color</div><div class=\"sr-select\" style=\"margin-left:8px;\">Primary</div><div class=\"sr-field-label\" style=\"padding-left:8px;\">Border Radius</div><div class=\"sr-box4\" style=\"padding-left:8px;\"><div class=\"sr-box4-icon sr-cr-tl\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-cr-tr\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-cr-bl\"></div><div class=\"sr-box4-input\">12</div><div class=\"sr-box4-icon sr-cr-br\"></div><div class=\"sr-box4-input\">12</div></div>",
             "schema_label": "Schema (inline in section's blocks)",
-            "schema_snippet": "{\n  \"type\": \"fluid_media\",\n  \"name\": \"Fluid Media\",\n  \"settings\": [\n    { \"type\": \"header\", \"content\": \"Media\" },\n    { \"type\": \"media\", \"id\": \"media\", \"label\": \"Media\" },\n    { \"type\": \"select\", \"id\": \"embed_type\", \"label\": \"Embed Type\", \"default\": \"auto\",\n      \"options\": [\n        { \"value\": \"auto\",    \"label\": \"Use media's default\" },\n        { \"value\": \"inline\",  \"label\": \"Inline (plays in place)\" },\n        { \"value\": \"popover\", \"label\": \"Popover (opens in overlay)\" },\n        { \"value\": \"modal\",   \"label\": \"Modal (full-screen)\" }\n      ] },\n    { \"type\": \"checkbox\", \"id\": \"responsive\", \"label\": \"Responsive\", \"default\": true },\n    { \"type\": \"header\", \"content\": \"Layout\" },\n    { \"type\": \"select\", \"id\": \"aspect_ratio\", \"label\": \"Aspect Ratio\", \"default\": \"16/9\",\n      \"options\": [\n        { \"value\": \"auto\", \"label\": \"Auto (media's natural)\" },\n        { \"value\": \"16/9\", \"label\": \"Widescreen (16:9)\" },\n        { \"value\": \"1/1\",  \"label\": \"Square (1:1)\" },\n        { \"value\": \"4/3\",  \"label\": \"Standard (4:3)\" },\n        { \"value\": \"4/5\",  \"label\": \"Portrait (4:5)\" },\n        { \"value\": \"9/16\", \"label\": \"Portrait mobile (9:16)\" },\n        { \"value\": \"21/9\", \"label\": \"Ultrawide (21:9)\" }\n      ] },\n    { \"type\": \"header\", \"content\": \"Shape\" },\n    { \"type\": \"select\", \"id\": \"background_color\", \"label\": \"Background Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" },\n    { \"type\": \"range\", \"id\": \"border_width\", \"label\": \"Border Width\",\n      \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" },\n    { \"type\": \"select\", \"id\": \"border_color\", \"label\": \"Border Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" },\n    { \"type\": \"corner_radius\", \"id\": \"border_radius\", \"label\": \"Border Radius\" }\n  ]\n}",
+            "schema_snippet": "&#123;\n  \"type\": \"fluid_media\",\n  \"name\": \"Fluid Media\",\n  \"settings\": [\n    &#123; \"type\": \"header\", \"content\": \"Media\" &#125;,\n    &#123; \"type\": \"media\", \"id\": \"media\", \"label\": \"Media\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"embed_type\", \"label\": \"Embed Type\", \"default\": \"auto\",\n      \"options\": [\n        &#123; \"value\": \"auto\",    \"label\": \"Use media's default\" &#125;,\n        &#123; \"value\": \"inline\",  \"label\": \"Inline (plays in place)\" &#125;,\n        &#123; \"value\": \"popover\", \"label\": \"Popover (opens in overlay)\" &#125;,\n        &#123; \"value\": \"modal\",   \"label\": \"Modal (full-screen)\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"checkbox\", \"id\": \"responsive\", \"label\": \"Responsive\", \"default\": true &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Layout\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"aspect_ratio\", \"label\": \"Aspect Ratio\", \"default\": \"16/9\",\n      \"options\": [\n        &#123; \"value\": \"auto\", \"label\": \"Auto (media's natural)\" &#125;,\n        &#123; \"value\": \"16/9\", \"label\": \"Widescreen (16:9)\" &#125;,\n        &#123; \"value\": \"1/1\",  \"label\": \"Square (1:1)\" &#125;,\n        &#123; \"value\": \"4/3\",  \"label\": \"Standard (4:3)\" &#125;,\n        &#123; \"value\": \"4/5\",  \"label\": \"Portrait (4:5)\" &#125;,\n        &#123; \"value\": \"9/16\", \"label\": \"Portrait mobile (9:16)\" &#125;,\n        &#123; \"value\": \"21/9\", \"label\": \"Ultrawide (21:9)\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"header\", \"content\": \"Shape\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"background_color\", \"label\": \"Background Color\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" &#125;,\n    &#123; \"type\": \"range\", \"id\": \"border_width\", \"label\": \"Border Width\",\n      \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"border_color\", \"label\": \"Border Color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;,\n    &#123; \"type\": \"corner_radius\", \"id\": \"border_radius\", \"label\": \"Border Radius\" &#125;\n  ]\n&#125;",
             "liquid_label": "Liquid (render inside a section's case/when)",
-            "liquid_snippet": "{% assign _m = block.settings.media %}\n{% assign _fmid = _m.fluid_media_id | default: _m.id %}\n{% assign _embed = block.settings.embed_type %}\n{% if _embed == 'auto' %}{% assign _embed = _m.embed_type | default: 'inline' %}{% endif %}\n{% assign _ar = block.settings.aspect_ratio | default: 'auto' %}\n{% capture _wrap %}\n  {% if _ar != 'auto' and _embed == 'inline' %}aspect-ratio: {{ _ar }};{% endif %}\n  background-color: {{ block.settings.background_color | default: 'transparent' }};\n  {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}\n  {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}\n{% endcapture %}\n<div class=\"fluid-media\" style=\"{{ _wrap | strip_newlines }}\" {{ block.fluid_attributes }}>\n  {% if _fmid != blank %}\n    <fluid-media-widget media-id=\"{{ _fmid }}\"\n      responsive=\"{% if block.settings.responsive %}true{% else %}false{% endif %}\"\n      embed-type=\"{{ _embed }}\"\n      data-fluid-widget=\"true\"></fluid-media-widget>\n  {% endif %}\n</div>",
+            "liquid_snippet": "&#123;% assign _m = block.settings.media %&#125;\n&#123;% assign _fmid = _m.fluid_media_id | default: _m.id %&#125;\n&#123;% assign _embed = block.settings.embed_type %&#125;\n&#123;% if _embed == 'auto' %&#125;&#123;% assign _embed = _m.embed_type | default: 'inline' %&#125;&#123;% endif %&#125;\n&#123;% assign _ar = block.settings.aspect_ratio | default: 'auto' %&#125;\n&#123;% capture _wrap %&#125;\n  &#123;% if _ar != 'auto' and _embed == 'inline' %&#125;aspect-ratio: &#123;&#123; _ar &#125;&#125;;&#123;% endif %&#125;\n  background-color: &#123;&#123; block.settings.background_color | default: 'transparent' &#125;&#125;;\n  &#123;% assign br = block.settings.border_radius %&#125;&#123;% if br %&#125;border-radius: &#123;&#123; br.tl &#125;&#125;px &#123;&#123; br.tr &#125;&#125;px &#123;&#123; br.br &#125;&#125;px &#123;&#123; br.bl &#125;&#125;px;&#123;% endif %&#125;\n  &#123;% if block.settings.border_width > 0 %&#125;border: &#123;&#123; block.settings.border_width &#125;&#125;px solid &#123;&#123; block.settings.border_color &#125;&#125;;&#123;% endif %&#125;\n&#123;% endcapture %&#125;\n<div class=\"fluid-media\" style=\"&#123;&#123; _wrap | strip_newlines &#125;&#125;\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n  &#123;% if _fmid != blank %&#125;\n    <fluid-media-widget media-id=\"&#123;&#123; _fmid &#125;&#125;\"\n      responsive=\"&#123;% if block.settings.responsive %&#125;true&#123;% else %&#125;false&#123;% endif %&#125;\"\n      embed-type=\"&#123;&#123; _embed &#125;&#125;\"\n      data-fluid-widget=\"true\"></fluid-media-widget>\n  &#123;% endif %&#125;\n</div>",
             "tip_label": "Embed types explained",
             "tip_kind": "tip",
             "tip": "<p><strong>Inline</strong> \u2014 the media renders in place and plays within its container. Needs an aspect ratio for videos to prevent layout shift.</p><p><strong>Popover</strong> \u2014 the widget renders a thumbnail/trigger; clicking opens the media in an overlay panel. Good for video galleries.</p><p><strong>Modal</strong> \u2014 similar to popover but full-screen. Good for long-form content.</p><p><strong>Use media's default</strong> \u2014 defers to whatever <code>embed_type</code> was set when the media was uploaded to the DAM. Usually a safe default.</p>"
@@ -910,7 +951,7 @@
             "preview_label": "Heading",
             "preview_value": "Welcome",
             "schema_snippet": "{ \"type\": \"text\", \"id\": \"heading\", \"label\": \"Heading\",\n  \"default\": \"Welcome\" }",
-            "liquid_snippet": "{{ section.settings.heading | escape }}"
+            "liquid_snippet": "&#123;&#123; section.settings.heading | escape &#125;&#125;"
           }
         },
         {
@@ -925,7 +966,7 @@
             "preview_label": "Caption",
             "preview_value": "Line one.<br>Line two.<br>Line three.",
             "schema_snippet": "{ \"type\": \"textarea\", \"id\": \"caption\", \"label\": \"Caption\",\n  \"default\": \"Line 1\\nLine 2\" }",
-            "liquid_snippet": "{{ section.settings.caption | escape | newline_to_br }}"
+            "liquid_snippet": "&#123;&#123; section.settings.caption | escape | newline_to_br &#125;&#125;"
           }
         },
         {
@@ -941,7 +982,7 @@
             "preview_label": "Body",
             "preview_value": "<strong>Rich text</strong> with <em>formatting</em> and a <u>link</u>.",
             "schema_snippet": "{ \"type\": \"richtext\", \"id\": \"body\", \"label\": \"Body\",\n  \"default\": \"<p>Rich copy.</p>\" }",
-            "liquid_snippet": "<div class=\"rte\" {{ block.fluid_attributes }}>\n  {{ block.settings.body }}\n</div>"
+            "liquid_snippet": "<div class=\"rte\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n  &#123;&#123; block.settings.body &#125;&#125;\n</div>"
           }
         },
         {
@@ -956,7 +997,7 @@
             "preview_label": "Custom HTML",
             "preview_value": "<span style=\"padding:4px 8px;border-radius:6px;background:#0f172a;color:#fff;\">Raw HTML</span>",
             "schema_snippet": "{ \"type\": \"html\", \"id\": \"embed\", \"label\": \"Custom HTML\" }",
-            "liquid_snippet": "{{ section.settings.embed }}"
+            "liquid_snippet": "&#123;&#123; section.settings.embed &#125;&#125;"
           }
         },
         {
@@ -971,7 +1012,7 @@
             "preview_label": "CTA URL",
             "preview_value": "https://fluid.app",
             "schema_snippet": "{ \"type\": \"url\", \"id\": \"cta_url\", \"label\": \"CTA URL\",\n  \"default\": \"https://fluid.app\" }",
-            "liquid_snippet": "<a href=\"{{ section.settings.cta_url | default: '#' }}\">CTA</a>"
+            "liquid_snippet": "<a href=\"&#123;&#123; section.settings.cta_url | default: '#' &#125;&#125;\">CTA</a>"
           }
         },
         {
@@ -986,7 +1027,7 @@
             "preview_label": "Columns",
             "preview_value": "3",
             "schema_snippet": "{ \"type\": \"range\", \"id\": \"columns\", \"label\": \"Columns\",\n  \"min\": 1, \"max\": 12, \"step\": 1, \"default\": 3, \"unit\": \"cols\" }",
-            "liquid_snippet": "grid-template-columns: repeat({{ section.settings.columns }}, 1fr);"
+            "liquid_snippet": "grid-template-columns: repeat(&#123;&#123; section.settings.columns &#125;&#125;, 1fr);"
           }
         },
         {
@@ -1001,7 +1042,7 @@
             "preview_label": "Layout",
             "preview_value": "Grid",
             "schema_snippet": "{ \"type\": \"select\", \"id\": \"layout\", \"label\": \"Layout\", \"default\": \"grid\",\n  \"options\": [\n    { \"value\": \"grid\",     \"label\": \"Grid\" },\n    { \"value\": \"list\",     \"label\": \"List\" },\n    { \"value\": \"carousel\", \"label\": \"Carousel\" }\n  ]\n}",
-            "liquid_snippet": "<div class=\"layout-{{ section.settings.layout }}\">\u2026</div>"
+            "liquid_snippet": "<div class=\"layout-&#123;&#123; section.settings.layout &#125;&#125;\">\u2026</div>"
           }
         },
         {
@@ -1015,7 +1056,7 @@
             "preview_type": "radio",
             "preview_label": "Size",
             "schema_snippet": "{ \"type\": \"radio\", \"id\": \"size\", \"label\": \"Size\", \"default\": \"md\",\n  \"options\": [\n    { \"value\": \"sm\", \"label\": \"Small\" },\n    { \"value\": \"md\", \"label\": \"Medium\" },\n    { \"value\": \"lg\", \"label\": \"Large\" }\n  ]\n}",
-            "liquid_snippet": "<div class=\"size-{{ section.settings.size }}\">\u2026</div>"
+            "liquid_snippet": "<div class=\"size-&#123;&#123; section.settings.size &#125;&#125;\">\u2026</div>"
           }
         },
         {
@@ -1029,7 +1070,7 @@
             "preview_type": "checkbox",
             "preview_label": "Show Divider",
             "schema_snippet": "{ \"type\": \"checkbox\", \"id\": \"show_divider\",\n  \"label\": \"Show Divider\", \"default\": true }",
-            "liquid_snippet": "{% if section.settings.show_divider %}\n  <hr>\n{% endif %}"
+            "liquid_snippet": "&#123;% if section.settings.show_divider %&#125;\n  <hr>\n&#123;% endif %&#125;"
           }
         },
         {
@@ -1044,7 +1085,7 @@
             "preview_label": "Text Color",
             "preview_value": "#6366f1",
             "schema_snippet": "{ \"type\": \"color\", \"id\": \"text_color\", \"label\": \"Text Color\",\n  \"default\": \"#111\" }",
-            "liquid_snippet": "color: {{ section.settings.text_color }};",
+            "liquid_snippet": "color: &#123;&#123; section.settings.text_color &#125;&#125;;",
             "tip_label": "Prefer theme-aware alternative",
             "tip_kind": "tip",
             "tip": "<p>For colors that should respect theme tokens, use the <a href='#theme-color-dropdown'><strong>Theme Color Dropdown</strong></a> pattern (<code>select</code> + <code>option_group</code>). That way editors pick from named theme colors and changes propagate automatically.</p>"
@@ -1061,7 +1102,7 @@
             "preview_type": "color_background",
             "preview_label": "Background",
             "schema_snippet": "{ \"type\": \"color_background\", \"id\": \"bg\", \"label\": \"Background\",\n  \"default\": \"linear-gradient(135deg,#6366f1,#ec4899)\" }",
-            "liquid_snippet": "background: {{ section.settings.bg }};"
+            "liquid_snippet": "background: &#123;&#123; section.settings.bg &#125;&#125;;"
           }
         },
         {
@@ -1080,10 +1121,10 @@
             "schema_snippet": "{ \"type\": \"select\", \"id\": \"background_color\",\n  \"label\": \"Background Color\",\n  \"options\": \"background_colors\",\n  \"default\": \"transparent\" }",
             "schema_snippet_2_label": "2. config/settings_schema.json \u2014 the option_group",
             "schema_snippet_2": "{\n  \"type\": \"color_background\",\n  \"id\": \"color_primary\",\n  \"label\": \"Primary Color\",\n  \"default\": \"#023026\",\n  \"option_group\": {\n    \"id\": \"background_colors\",\n    \"label\": \"Primary\",\n    \"value\": \"var(--clr-primary)\"\n  }\n}",
-            "liquid_snippet": "background-color: {{ section.settings.background_color | default: 'transparent' }};",
+            "liquid_snippet": "background-color: &#123;&#123; section.settings.background_color | default: 'transparent' &#125;&#125;;",
             "tip_label": "Critical bug to avoid",
             "tip_kind": "warning",
-            "tip": "<p>Never wrap the value as <code>var(--clr-{{ '{{' }}\u2026{{ '}}' }})</code>. When the setting is empty that renders <code>var(--clr-)</code> \u2014 invalid CSS that silently breaks the entire rule block. The <code>option_group</code>'s <code>value</code> already returns a CSS value (e.g. <code>var(--clr-primary)</code>, <code>transparent</code>).</p>"
+            "tip": "<p>Never wrap the value as <code>var(--clr-&#123;&#123; '&#123;&#123;' &#125;&#125;\u2026&#123;&#123; '&#125;&#125;' &#125;&#125;)</code>. When the setting is empty that renders <code>var(--clr-)</code> \u2014 invalid CSS that silently breaks the entire rule block. The <code>option_group</code>'s <code>value</code> already returns a CSS value (e.g. <code>var(--clr-primary)</code>, <code>transparent</code>).</p>"
           }
         },
         {
@@ -1098,7 +1139,7 @@
             "preview_label": "Heading Font",
             "preview_value": "System UI",
             "schema_snippet": "{ \"type\": \"font_picker\", \"id\": \"heading_font\",\n  \"label\": \"Heading Font\", \"default\": \"Inter\" }",
-            "liquid_snippet": "font-family: {{ section.settings.heading_font | font_family }};"
+            "liquid_snippet": "font-family: &#123;&#123; section.settings.heading_font | font_family &#125;&#125;;"
           }
         },
         {
@@ -1112,7 +1153,7 @@
             "preview_type": "image_picker",
             "preview_label": "Hero Image",
             "schema_snippet": "{ \"type\": \"image_picker\", \"id\": \"hero_image\", \"label\": \"Hero Image\" }",
-            "liquid_snippet": "{%- assign img = section.settings.hero_image -%}\n{%- if img -%}\n  <img src=\"{{ img | img_url: '1200x' }}\" alt=\"{{ img.alt | escape }}\">\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign img = section.settings.hero_image -%&#125;\n&#123;%- if img -%&#125;\n  <img src=\"&#123;&#123; img | img_url: '1200x' &#125;&#125;\" alt=\"&#123;&#123; img.alt | escape &#125;&#125;\">\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1126,7 +1167,7 @@
             "preview_type": "video_picker",
             "preview_label": "Demo Video",
             "schema_snippet": "{ \"type\": \"video_picker\", \"id\": \"demo_video\", \"label\": \"Demo Video\" }",
-            "liquid_snippet": "{%- assign v = section.settings.demo_video -%}\n{%- if v -%}\n  <video src=\"{{ v.url }}\" autoplay muted loop playsinline></video>\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign v = section.settings.demo_video -%&#125;\n&#123;%- if v -%&#125;\n  <video src=\"&#123;&#123; v.url &#125;&#125;\" autoplay muted loop playsinline></video>\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1140,7 +1181,7 @@
             "preview_type": "media_picker",
             "preview_label": "Hero Media",
             "schema_snippet": "{ \"type\": \"media_picker\", \"id\": \"hero_media\", \"label\": \"Hero Media\" }",
-            "liquid_snippet": "{%- assign m = section.settings.hero_media -%}\n{%- if m.media_type == 'image' -%}\n  <img src=\"{{ m | img_url: '1600x' }}\">\n{%- elsif m.media_type == 'video' -%}\n  <video src=\"{{ m.url }}\" autoplay muted loop></video>\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign m = section.settings.hero_media -%&#125;\n&#123;%- if m.media_type == 'image' -%&#125;\n  <img src=\"&#123;&#123; m | img_url: '1600x' &#125;&#125;\">\n&#123;%- elsif m.media_type == 'video' -%&#125;\n  <video src=\"&#123;&#123; m.url &#125;&#125;\" autoplay muted loop></video>\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1154,7 +1195,7 @@
             "preview_type": "text_alignment",
             "preview_label": "Alignment",
             "schema_snippet": "{ \"type\": \"text_alignment\", \"id\": \"align\",\n  \"label\": \"Alignment\", \"default\": \"center\" }",
-            "liquid_snippet": "text-align: {{ section.settings.align }};"
+            "liquid_snippet": "text-align: &#123;&#123; section.settings.align &#125;&#125;;"
           }
         },
         {
@@ -1169,7 +1210,7 @@
             "preview_label": "Section Padding",
             "schema_snippet": "{ \"type\": \"padding\", \"id\": \"section_padding\",\n  \"label\": \"Section Padding\" }",
             "liquid_label": "Liquid wire-up",
-            "liquid_snippet": "{%- assign p = section.settings.section_padding -%}\n{%- if p -%}\n  padding: {{ p.top }}px {{ p.right }}px\n           {{ p.bottom }}px {{ p.left }}px;\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign p = section.settings.section_padding -%&#125;\n&#123;%- if p -%&#125;\n  padding: &#123;&#123; p.top &#125;&#125;px &#123;&#123; p.right &#125;&#125;px\n           &#123;&#123; p.bottom &#125;&#125;px &#123;&#123; p.left &#125;&#125;px;\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1184,7 +1225,7 @@
             "preview_label": "Section Border Radius",
             "schema_snippet": "{ \"type\": \"corner_radius\", \"id\": \"section_border_radius\",\n  \"label\": \"Section Border Radius\" }",
             "liquid_label": "Liquid wire-up",
-            "liquid_snippet": "{%- assign r = section.settings.section_border_radius -%}\n{%- if r -%}\n  border-radius: {{ r.tl }}px {{ r.tr }}px\n                 {{ r.br }}px {{ r.bl }}px;\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign r = section.settings.section_border_radius -%&#125;\n&#123;%- if r -%&#125;\n  border-radius: &#123;&#123; r.tl &#125;&#125;px &#123;&#123; r.tr &#125;&#125;px\n                 &#123;&#123; r.br &#125;&#125;px &#123;&#123; r.bl &#125;&#125;px;\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1198,7 +1239,7 @@
             "preview_type": "border",
             "preview_label": "Section Border",
             "schema_snippet": "{ \"type\": \"border\", \"id\": \"section_border\",\n  \"label\": \"Section Border\" }",
-            "liquid_snippet": "{%- assign b = section.settings.section_border -%}\n{%- if b.width -%}\n  border: {{ b.width }} solid {{ b.color }};\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign b = section.settings.section_border -%&#125;\n&#123;%- if b.width -%&#125;\n  border: &#123;&#123; b.width &#125;&#125; solid &#123;&#123; b.color &#125;&#125;;\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1213,7 +1254,7 @@
             "preview_label": "Overlay",
             "preview_value": "off",
             "schema_snippet": "{ \"type\": \"gradient_overlay\", \"id\": \"overlay\", \"label\": \"Overlay\" }",
-            "liquid_snippet": "{%- assign o = section.settings.overlay -%}\n{%- if o.enabled -%}\n  <div class=\"overlay\" style=\"background: {{ o.css }};\"></div>\n{%- endif -%}"
+            "liquid_snippet": "&#123;%- assign o = section.settings.overlay -%&#125;\n&#123;%- if o.enabled -%&#125;\n  <div class=\"overlay\" style=\"background: &#123;&#123; o.css &#125;&#125;;\"></div>\n&#123;%- endif -%&#125;"
           }
         },
         {
@@ -1228,7 +1269,7 @@
             "preview_label": "Image Fit",
             "preview_value": "Cover",
             "schema_snippet": "{ \"type\": \"media_fit\", \"id\": \"image_fit\", \"label\": \"Image Fit\" }",
-            "liquid_snippet": "object-fit: {{ section.settings.image_fit | default: 'cover' }};"
+            "liquid_snippet": "object-fit: &#123;&#123; section.settings.image_fit | default: 'cover' &#125;&#125;;"
           }
         },
         {
@@ -1242,7 +1283,7 @@
             "preview_type": "header_group",
             "preview_value": "Typography Settings",
             "schema_snippet": "{ \"type\": \"header\", \"content\": \"Typography Settings\" },\n{ \"type\": \"font_picker\", \"id\": \"heading_font\", \"label\": \"Heading Font\" }",
-            "liquid_snippet": "{# not rendered \u2014 UI only #}"
+            "liquid_snippet": "&#123;# not rendered \u2014 UI only #&#125;"
           }
         },
         {
@@ -1257,7 +1298,7 @@
             "preview_label": "Featured Product",
             "preview_value": "Product #0",
             "schema_snippet": "{ \"type\": \"product\", \"id\": \"featured_product\",\n  \"label\": \"Featured Product\" }",
-            "liquid_snippet": "{% for p in products %}\n  {% if p.id == section.settings.featured_product %}\n    <h3>{{ p.title }}</h3>\n  {% endif %}\n{% endfor %}"
+            "liquid_snippet": "&#123;% for p in products %&#125;\n  &#123;% if p.id == section.settings.featured_product %&#125;\n    <h3>&#123;&#123; p.title &#125;&#125;</h3>\n  &#123;% endif %&#125;\n&#123;% endfor %&#125;"
           }
         },
         {
@@ -1272,7 +1313,7 @@
             "preview_label": "Featured Collection",
             "preview_value": "Collection #0",
             "schema_snippet": "{ \"type\": \"collection\", \"id\": \"featured_collection\",\n  \"label\": \"Featured Collection\" }",
-            "liquid_snippet": "{% assign c = section.settings.featured_collection %}\n<a href=\"{{ c.url }}\">{{ c.title }}</a>"
+            "liquid_snippet": "&#123;% assign c = section.settings.featured_collection %&#125;\n<a href=\"&#123;&#123; c.url &#125;&#125;\">&#123;&#123; c.title &#125;&#125;</a>"
           }
         },
         {
@@ -1287,7 +1328,7 @@
             "preview_label": "Featured Category",
             "preview_value": "Category #0",
             "schema_snippet": "{ \"type\": \"category\", \"id\": \"featured_category\",\n  \"label\": \"Featured Category\" }",
-            "liquid_snippet": "{{ section.settings.featured_category.title }}"
+            "liquid_snippet": "&#123;&#123; section.settings.featured_category.title &#125;&#125;"
           }
         },
         {
@@ -1302,7 +1343,7 @@
             "preview_label": "Featured Post",
             "preview_value": "Post #0",
             "schema_snippet": "{ \"type\": \"post\", \"id\": \"featured_post\",\n  \"label\": \"Featured Post\" }",
-            "liquid_snippet": "{{ section.settings.featured_post.title }}"
+            "liquid_snippet": "&#123;&#123; section.settings.featured_post.title &#125;&#125;"
           }
         },
         {
@@ -1317,7 +1358,7 @@
             "preview_label": "Starter Pack",
             "preview_value": "Enrollment #0",
             "schema_snippet": "{ \"type\": \"enrollment_pack\", \"id\": \"starter_pack\",\n  \"label\": \"Starter Pack\" }",
-            "liquid_snippet": "{{ section.settings.starter_pack.name }}"
+            "liquid_snippet": "&#123;&#123; section.settings.starter_pack.name &#125;&#125;"
           }
         },
         {
@@ -1332,7 +1373,7 @@
             "preview_label": "Contact Form",
             "preview_value": "Form #0",
             "schema_snippet": "{ \"type\": \"forms\", \"id\": \"contact_form\", \"label\": \"Contact Form\" }",
-            "liquid_snippet": "{{ section.settings.contact_form.name }}"
+            "liquid_snippet": "&#123;&#123; section.settings.contact_form.name &#125;&#125;"
           }
         },
         {
@@ -1347,7 +1388,7 @@
             "preview_label": "Main Menu",
             "preview_value": "Select a menu",
             "schema_snippet": "{ \"type\": \"link_list\", \"id\": \"main_menu\", \"label\": \"Main Menu\" }",
-            "liquid_snippet": "{% for link in section.settings.main_menu.links %}\n  <a href=\"{{ link.url }}\">{{ link.title }}</a>\n{% endfor %}"
+            "liquid_snippet": "&#123;% for link in section.settings.main_menu.links %&#125;\n  <a href=\"&#123;&#123; link.url &#125;&#125;\">&#123;&#123; link.title &#125;&#125;</a>\n&#123;% endfor %&#125;"
           }
         },
         {
@@ -1362,7 +1403,7 @@
             "preview_label": "Products",
             "preview_value": "Product",
             "schema_snippet": "{ \"type\": \"product_list\", \"id\": \"grid_products\",\n  \"label\": \"Products\", \"limit\": 8 }",
-            "liquid_snippet": "{% for product in section.settings.grid_products %}\n  <a href=\"{{ product.url }}\">{{ product.title }}</a>\n{% endfor %}"
+            "liquid_snippet": "&#123;% for product in section.settings.grid_products %&#125;\n  <a href=\"&#123;&#123; product.url &#125;&#125;\">&#123;&#123; product.title &#125;&#125;</a>\n&#123;% endfor %&#125;"
           }
         },
         {
@@ -1377,7 +1418,7 @@
             "preview_label": "Collections",
             "preview_value": "Collection",
             "schema_snippet": "{ \"type\": \"collection_list\", \"id\": \"grid_collections\",\n  \"label\": \"Collections\", \"limit\": 6 }",
-            "liquid_snippet": "{% for c in section.settings.grid_collections %}\n  <a href=\"{{ c.url }}\">{{ c.title }}</a>\n{% endfor %}"
+            "liquid_snippet": "&#123;% for c in section.settings.grid_collections %&#125;\n  <a href=\"&#123;&#123; c.url &#125;&#125;\">&#123;&#123; c.title &#125;&#125;</a>\n&#123;% endfor %&#125;"
           }
         },
         {
@@ -1392,7 +1433,7 @@
             "preview_label": "Categories",
             "preview_value": "Category",
             "schema_snippet": "{ \"type\": \"category_list\", \"id\": \"grid_categories\",\n  \"label\": \"Categories\", \"limit\": 6 }",
-            "liquid_snippet": "{% for cat in section.settings.grid_categories %}\n  <a href=\"{{ cat.url }}\">{{ cat.title }}</a>\n{% endfor %}"
+            "liquid_snippet": "&#123;% for cat in section.settings.grid_categories %&#125;\n  <a href=\"&#123;&#123; cat.url &#125;&#125;\">&#123;&#123; cat.title &#125;&#125;</a>\n&#123;% endfor %&#125;"
           }
         },
         {
@@ -1407,7 +1448,7 @@
             "preview_label": "Posts",
             "preview_value": "Post",
             "schema_snippet": "{ \"type\": \"posts_list\", \"id\": \"grid_posts\",\n  \"label\": \"Posts\", \"limit\": 6 }",
-            "liquid_snippet": "{% for post in section.settings.grid_posts %}\n  <a href=\"{{ post.url }}\">{{ post.title }}</a>\n{% endfor %}"
+            "liquid_snippet": "&#123;% for post in section.settings.grid_posts %&#125;\n  <a href=\"&#123;&#123; post.url &#125;&#125;\">&#123;&#123; post.title &#125;&#125;</a>\n&#123;% endfor %&#125;"
           }
         },
         {
@@ -1422,7 +1463,504 @@
             "preview_label": "Enrollments",
             "preview_value": "Enrollment",
             "schema_snippet": "{ \"type\": \"enrollment_list\", \"id\": \"grid_enrollments\",\n  \"label\": \"Enrollments\", \"limit\": 6 }",
-            "liquid_snippet": "{% for e in section.settings.grid_enrollments %}\n  <h3>{{ e.name }}</h3>\n{% endfor %}"
+            "liquid_snippet": "&#123;% for e in section.settings.grid_enrollments %&#125;\n  <h3>&#123;&#123; e.name &#125;&#125;</h3>\n&#123;% endfor %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-divider-block",
+            "is_featured": true,
+            "control_name": "Divider Block (Cards / Steps)",
+            "returns_label": "Empty block \u00b7 stateful walk in section liquid",
+            "description": "<p>Group repeating sub-blocks (image + heading + text + button \u2026) into <strong>cards</strong> by walking blocks statelessly. An empty <code>divider</code> block opens a new card; subsequent canonical blocks render inside until the next divider closes/reopens. Used by <code>feature_grid</code>, <code>testimonial_grid</code>, <code>process_steps</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;\n  \"blocks\": [\n    &#123; \"type\": \"step\", \"name\": \"+ New Step\", \"settings\": [\n      &#123; \"type\": \"paragraph\", \"content\": \"Divider block. Add image / heading / text blocks AFTER this.\" &#125;\n    ] &#125;,\n    &#123; \"type\": \"image\",   \"name\": \"Image\",   \"settings\": [ /* canonical image */ ] &#125;,\n    &#123; \"type\": \"heading\", \"name\": \"Heading\", \"settings\": [\n      &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Title\" &#125;\n    ] &#125;,\n    &#123; \"type\": \"text\", \"name\": \"Text\", \"settings\": [\n      &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Text\" &#125;\n    ] &#125;\n  ]\n&#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;%- assign in_step = false -%&#125;\n&#123;% for block in section.blocks %&#125;\n  &#123;% case block.type %&#125;\n    &#123;% when 'step' %&#125;\n      &#123;% if in_step %&#125;</div>&#123;% endif %&#125;\n      <div class=\"step-card\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n      &#123;% assign in_step = true %&#125;\n    &#123;% when 'image' %&#125;\n      &#123;% if in_step %&#125;&#123;% comment %&#125;render canonical image&#123;% endcomment %&#125;&#123;% endif %&#125;\n    &#123;% when 'heading' %&#125;\n      &#123;% if in_step %&#125;<h3 &#123;&#123; block.fluid_attributes &#125;&#125;>&#123;&#123; block.settings.text &#125;&#125;</h3>&#123;% endif %&#125;\n    &#123;% when 'text' %&#125;\n      &#123;% if in_step %&#125;<div class=\"rte\" &#123;&#123; block.fluid_attributes &#125;&#125;>&#123;&#123; block.settings.text &#125;&#125;</div>&#123;% endif %&#125;\n  &#123;% endcase %&#125;\n&#123;% endfor %&#125;\n&#123;% if in_step %&#125;</div>&#123;% endif %&#125;",
+            "tip_label": "Why a divider block instead of nested blocks",
+            "tip_kind": "tip",
+            "tip": "<p>Fluid doesn't support true block nesting. The divider pattern emulates it by walking the flat block list in order. <strong>Editors learn the rule once</strong>: \"+ New Step\" opens a card, blocks after it render inside until the next \"+ New Step\". Cards stay reorderable as a unit by moving the divider.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-theme-fonts",
+            "is_featured": true,
+            "control_name": "Theme-Driven Fonts",
+            "returns_label": "select + options: \"font_families\"",
+            "description": "<p>Never use <code>font_picker</code> in section/block settings \u2014 it's disconnected from the theme and lets editors pick any font. Always use a <code>select</code> with <code>options: \"font_families\"</code>. Pulls from the 5-font theme palette: Body / Heading / Accent / Italic / Handwriting.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"select\", \"id\": \"font_family\", \"label\": \"Font Family\",\n  \"options\": \"font_families\",\n  \"default\": \"var(--ff-body)\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% if block.settings.font_family != blank %&#125;\n  font-family: &#123;&#123; block.settings.font_family &#125;&#125;;\n&#123;% endif %&#125;\n\n&#123;# Value is already a CSS var like var(--ff-italic). #&#125;\n&#123;# DO NOT pipe through | font_family \u2014 that's for raw strings only. #&#125;",
+            "tip_label": "Theme exposes 5 fonts via option_group",
+            "tip_kind": "tip",
+            "tip": "<p>For the dropdown to populate, <code>config/settings_schema.json</code> must declare each font with <code>option_group: { id: \"font_families\", label: \"Body\", value: \"var(--ff-body)\" }</code>. Without that metadata, the dropdown shows empty.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-split-border",
+            "is_featured": true,
+            "control_name": "Split Border (width + color)",
+            "returns_label": "range + select \u00b7 never native border type",
+            "description": "<p>Fluid's native <code>border</code> control uses a <em>hex color picker</em> internally \u2014 disconnected from the theme. Always split into two controls: a <code>range</code> for width, a <code>select + background_colors</code> for color. Same applies to nested borders (Container, items, cards).</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"range\",  \"id\": \"border_width\", \"label\": \"Border Width\",\n  \"min\": 0, \"max\": 10, \"step\": 1, \"default\": 0, \"unit\": \"px\" &#125;,\n&#123; \"type\": \"select\", \"id\": \"border_color\", \"label\": \"Border Color\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% if section.settings.border_width > 0 %&#125;\n  border: &#123;&#123; section.settings.border_width &#125;&#125;px solid &#123;&#123; section.settings.border_color &#125;&#125;;\n&#123;% endif %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-canonical-block-primacy",
+            "is_featured": true,
+            "control_name": "Canonical Block Primacy",
+            "returns_label": "Reuse blocks/image, blocks/button, blocks/fluid_media",
+            "description": "<p>Anywhere a section needs an image, button, video, or other primitive \u2014 use the <strong>canonical</strong> block, not a local one-off. Inline its full settings into the section's <code>blocks</code> array (Fluid's preset expansion requires inline copies, not refs). Standalone <code>blocks/&lt;name&gt;/index.liquid</code> files exist as the source-of-truth specs.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;\n  \"blocks\": [\n    &#123; \"type\": \"image\",  \"name\": \"Image\",  \"settings\": [ /* full canonical image schema */ ] &#125;,\n    &#123; \"type\": \"button\", \"name\": \"Button\", \"settings\": [ /* full canonical button schema */ ] &#125;\n  ]\n&#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;# Loop matched canonical blocks in section liquid #&#125;\n&#123;% for block in section.blocks %&#125;\n  &#123;% case block.type %&#125;\n    &#123;% when 'image' %&#125;  &#123;% comment %&#125;canonical image markup&#123;% endcomment %&#125;\n    &#123;% when 'button' %&#125; &#123;% comment %&#125;canonical button markup&#123;% endcomment %&#125;\n  &#123;% endcase %&#125;\n&#123;% endfor %&#125;",
+            "tip_label": "Exception: data-driven images",
+            "tip_kind": "tip",
+            "tip": "<p>If the image is bound to a data source (<code>product.images[0].src</code>, <code>post.image_url</code>) \u2014 render directly. Canonical blocks are for editor-uploaded images only.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-loop-not-first",
+            "is_featured": true,
+            "control_name": "Loop, don't `| first`",
+            "returns_label": "for + drop limit: 1 \u00b7 enables block duplicate",
+            "description": "<p>If you write <code>section.blocks | where: 'type', 'heading' | first</code>, only the first instance of that block ever renders \u2014 even if the editor duplicates it. Symptom: duplicate appears in the editor list but does nothing on the page. Fix: drop <code>limit: 1</code> from the schema and render via a <code>&#123;% for %&#125;</code> loop.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"heading\", \"name\": \"Heading\",\n  \"settings\": [\n    &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Text\",\n      \"default\": \"<h2>Heading</h2>\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;# WRONG \u2014 duplicate doesn't render #&#125;\n&#123;%- assign h = section.blocks | where: 'type', 'heading' | first -%&#125;\n&#123;% if h %&#125;<div &#123;&#123; h.fluid_attributes &#125;&#125;>&#123;&#123; h.settings.text &#125;&#125;</div>&#123;% endif %&#125;\n\n&#123;# RIGHT \u2014 duplicate works #&#125;\n&#123;%- assign hs = section.blocks | where: 'type', 'heading' -%&#125;\n&#123;% for block in hs %&#125;\n  <div &#123;&#123; block.fluid_attributes &#125;&#125;>&#123;&#123; block.settings.text &#125;&#125;</div>\n&#123;% endfor %&#125;",
+            "tip_label": "When limit: 1 IS appropriate",
+            "tip_kind": "tip",
+            "tip": "<p>For blocks with a structurally enforced single slot \u2014 hero image, locale dropdown, primary CTA in a navbar \u2014 keep <code>limit: 1</code>. Editor disables duplicate. Loop over the result anyway so the rendering pattern is consistent.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-phantom-default",
+            "is_featured": true,
+            "control_name": "Phantom Default Antipattern",
+            "returns_label": "Wrap in &#123;% if block %&#125; \u00b7 never `| default: \"<p>...\"`",
+            "description": "<p>Anti-pattern: <code>&#123;&#123; heading_block.settings.text | default: '&lt;h2&gt;Lorem...&lt;/h2&gt;' &#125;&#125;</code>. When no block of that type is present, the fallback STILL renders \u2014 editors see lorem text on the page they can't click or edit (no block = no fluid_attributes binding). Fix: conditionally render the wrapper.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;# Schema: defaults belong on the BLOCK, not on the rendered output #&#125;\n&#123; \"type\": \"heading\", \"name\": \"Heading\",\n  \"settings\": [\n    &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Text\",\n      \"default\": \"<h2>Default heading</h2>\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;# WRONG \u2014 phantom lorem text appears with no editor binding #&#125;\n<div class=\"rte\">&#123;&#123; heading_block.settings.text | default: \"<h2>Lorem...</h2>\" &#125;&#125;</div>\n\n&#123;# RIGHT \u2014 only renders when the block exists #&#125;\n&#123;% if heading_block %&#125;\n  <div class=\"rte\" &#123;&#123; heading_block.fluid_attributes &#125;&#125;>\n    &#123;&#123; heading_block.settings.text &#125;&#125;\n  </div>\n&#123;% endif %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-stat",
+            "is_featured": true,
+            "control_name": "Stat (Prefix + Value + Suffix + Label)",
+            "returns_label": "4 text fields \u00b7 used in stats_bar / hero_split_stats",
+            "description": "<p>The atomic unit for any number-driven block: <code>$</code> + <code>49</code> + <code>+</code> + \"Free shipping over\". Three text inputs for the value composition + one for the descriptive label. Stack them in a row or grid.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"stat\", \"name\": \"Stat\",\n  \"settings\": [\n    &#123; \"type\": \"text\", \"id\": \"prefix\", \"label\": \"Prefix\" &#125;,\n    &#123; \"type\": \"text\", \"id\": \"value\",  \"label\": \"Value\",  \"default\": \"10K\" &#125;,\n    &#123; \"type\": \"text\", \"id\": \"suffix\", \"label\": \"Suffix\", \"default\": \"+\" &#125;,\n    &#123; \"type\": \"text\", \"id\": \"label\",  \"label\": \"Label\",  \"default\": \"Happy customers\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% for block in stat_blocks %&#125;\n  <div class=\"stat\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n    <div class=\"stat__value\">\n      &#123;%- if block.settings.prefix != blank -%&#125;&#123;&#123; block.settings.prefix | escape &#125;&#125;&#123;%- endif -%&#125;\n      &#123;&#123; block.settings.value | escape &#125;&#125;\n      &#123;%- if block.settings.suffix != blank -%&#125;&#123;&#123; block.settings.suffix | escape &#125;&#125;&#123;%- endif -%&#125;\n    </div>\n    <div class=\"stat__label\">&#123;&#123; block.settings.label | escape &#125;&#125;</div>\n  </div>\n&#123;% endfor %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-rating-stars",
+            "is_featured": true,
+            "control_name": "Rating Stars",
+            "returns_label": "range 0-5 + SVG loop \u00b7 full + empty colors",
+            "description": "<p>0\u20135 star ratings as a <code>range</code>. Render filled stars for the rating, then empty stars to pad to 5. Both colors theme-driven.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"range\", \"id\": \"rating\", \"label\": \"Stars filled\",\n  \"min\": 0, \"max\": 5, \"step\": 1, \"default\": 5 &#125;,\n&#123; \"type\": \"select\", \"id\": \"star_color\",       \"label\": \"Star color\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-warning)\" &#125;,\n&#123; \"type\": \"select\", \"id\": \"star_empty_color\", \"label\": \"Empty star color\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-gray)\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;%- assign rating = block.settings.rating | default: 5 | plus: 0 -%&#125;\n&#123;%- if rating > 5 -%&#125;&#123;% assign rating = 5 %&#125;&#123;%- endif -%&#125;\n&#123;%- assign empty = 5 | minus: rating -%&#125;\n<div class=\"stars\" style=\"color: &#123;&#123; block.settings.star_color &#125;&#125;;\">\n  &#123;% for i in (1..rating) %&#125;\n    <svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>\n  &#123;% endfor %&#125;\n  &#123;% if empty > 0 %&#125;\n    <span style=\"color: &#123;&#123; block.settings.star_empty_color &#125;&#125;;\">\n      &#123;% for i in (1..empty) %&#125;<svg ...>same star svg</svg>&#123;% endfor %&#125;\n    </span>\n  &#123;% endif %&#125;\n</div>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-trust-bar",
+            "is_featured": true,
+            "control_name": "Trust Bar",
+            "returns_label": "Stars + score + count text \u00b7 social proof under hero",
+            "description": "<p>Compact trust signal that pairs with hero or product CTAs. Combines the rating-stars pattern with a score number and review count text. One block, three visible elements.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"trust\", \"name\": \"Trust Bar\",\n  \"settings\": [\n    &#123; \"type\": \"checkbox\", \"id\": \"show_stars\", \"label\": \"Show stars\", \"default\": true &#125;,\n    &#123; \"type\": \"range\", \"id\": \"rating\", \"label\": \"Stars filled\",\n      \"min\": 0, \"max\": 5, \"step\": 1, \"default\": 5 &#125;,\n    &#123; \"type\": \"text\", \"id\": \"text\", \"label\": \"Text\",\n      \"default\": \"4.9 from 2,400+ verified reviews\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% for block in trust_blocks %&#125;\n  <div class=\"trust\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n    &#123;% if block.settings.show_stars %&#125;\n      <span class=\"trust__stars\">&#123;% comment %&#125;render stars per rating&#123;% endcomment %&#125;</span>\n    &#123;% endif %&#125;\n    <span>&#123;&#123; block.settings.text | escape &#125;&#125;</span>\n  </div>\n&#123;% endfor %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-tag-pill",
+            "is_featured": true,
+            "control_name": "Tag Pill",
+            "returns_label": "Uppercase label \u00b7 bordered or filled \u00b7 for badges/categories",
+            "description": "<p>Small uppercase label with a border or fill, used for categories, status badges, sale flags, etc. Theme-driven background, text, and border colors.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"tag\", \"name\": \"Tag Pill\",\n  \"settings\": [\n    &#123; \"type\": \"text\", \"id\": \"text\", \"label\": \"Text\", \"default\": \"New\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"background\", \"label\": \"Background\",\n      \"options\": \"background_colors\", \"default\": \"transparent\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"text_color\", \"label\": \"Text color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"border_color\", \"label\": \"Border color\",\n      \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% for block in tag_blocks %&#125;\n  <span class=\"tag\" style=\"background: &#123;&#123; block.settings.background &#125;&#125;; color: &#123;&#123; block.settings.text_color &#125;&#125;; border: 1px solid &#123;&#123; block.settings.border_color &#125;&#125;;\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n    &#123;&#123; block.settings.text | escape &#125;&#125;\n  </span>\n&#123;% endfor %&#125;\n\n<style>\n  .tag &#123;\n    display: inline-flex; align-items: center;\n    padding: 5px 12px;\n    font-size: 11px; font-weight: 600;\n    letter-spacing: 0.06em; text-transform: uppercase;\n    border-radius: 999px;\n  &#125;\n</style>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-card-grid",
+            "is_featured": true,
+            "control_name": "Card Grid (via divider)",
+            "returns_label": "CSS grid + divider blocks \u00b7 responsive columns",
+            "description": "<p>The composition pattern for any card-driven section: CSS grid wrapper, configurable columns per breakpoint, and divider blocks that group canonical sub-blocks into cards. Used by <code>feature_grid</code>, <code>testimonial_grid</code>, <code>process_steps</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;\n  \"settings\": [\n    &#123; \"type\": \"range\", \"id\": \"columns_desktop\", \"label\": \"Columns (desktop)\",\n      \"min\": 1, \"max\": 4, \"step\": 1, \"default\": 3 &#125;,\n    &#123; \"type\": \"range\", \"id\": \"columns_tablet\",  \"label\": \"Columns (tablet)\",\n      \"min\": 1, \"max\": 3, \"step\": 1, \"default\": 2 &#125;,\n    &#123; \"type\": \"range\", \"id\": \"columns_mobile\",  \"label\": \"Columns (mobile)\",\n      \"min\": 1, \"max\": 2, \"step\": 1, \"default\": 1 &#125;,\n    &#123; \"type\": \"range\", \"id\": \"gap\", \"label\": \"Gap (px)\",\n      \"min\": 8, \"max\": 48, \"step\": 2, \"default\": 24 &#125;\n  ]\n&#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": ".grid &#123;\n  display: grid;\n  grid-template-columns: repeat(&#123;&#123; section.settings.columns_desktop &#125;&#125;, minmax(0, 1fr));\n  gap: &#123;&#123; section.settings.gap &#125;&#125;px;\n&#125;\n@media (max-width: 991px) &#123;\n  .grid &#123; grid-template-columns: repeat(&#123;&#123; section.settings.columns_tablet &#125;&#125;, minmax(0, 1fr)); &#125;\n&#125;\n@media (max-width: 767px) &#123;\n  .grid &#123; grid-template-columns: repeat(&#123;&#123; section.settings.columns_mobile &#125;&#125;, minmax(0, 1fr)); gap: 16px; &#125;\n&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-css-carousel",
+            "is_featured": true,
+            "control_name": "CSS Scroll-Snap Carousel",
+            "returns_label": "No JS lib \u00b7 scroll-snap track + vanilla arrows/dots",
+            "description": "<p>Splide breaks Fluid theme rendering. Use a CSS scroll-snap track + tiny vanilla JS for arrows/dots/autoplay instead. Works for any horizontally-scrolling collection. Used by <code>ugc_carousel</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"range\", \"id\": \"items_desktop\", \"label\": \"Items per view (desktop)\",\n  \"min\": 1, \"max\": 6, \"step\": 1, \"default\": 4 &#125;,\n&#123; \"type\": \"range\", \"id\": \"gap\", \"label\": \"Gap (px)\",\n  \"min\": 0, \"max\": 48, \"step\": 2, \"default\": 16 &#125;,\n&#123; \"type\": \"checkbox\", \"id\": \"loop\",     \"label\": \"Loop\",     \"default\": true &#125;,\n&#123; \"type\": \"checkbox\", \"id\": \"autoplay\", \"label\": \"Autoplay\", \"default\": false &#125;,\n&#123; \"type\": \"checkbox\", \"id\": \"show_arrows\",     \"label\": \"Arrows\", \"default\": true &#125;,\n&#123; \"type\": \"checkbox\", \"id\": \"show_pagination\", \"label\": \"Dots\",   \"default\": false &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": ".carousel__track &#123;\n  display: grid; grid-auto-flow: column;\n  grid-auto-columns: calc((100% - (&#123;&#123; items_desktop &#125;&#125; - 1) * &#123;&#123; gap &#125;&#125;px) / &#123;&#123; items_desktop &#125;&#125;);\n  gap: &#123;&#123; gap &#125;&#125;px;\n  overflow-x: auto;\n  scroll-snap-type: x mandatory;\n  scroll-behavior: smooth;\n  scrollbar-width: none;\n&#125;\n.carousel__slide &#123; scroll-snap-align: start; &#125;\n\n<script>\n  // arrow.click \u2192 track.scrollTo(&#123; left: track.scrollLeft \u00b1 slideWidth &#125;)\n  // see ugc_carousel for full implementation with loop / autoplay / dots\n</script>",
+            "tip_label": "Why no Splide",
+            "tip_kind": "tip",
+            "tip": "<p>Fluid's editor injects DOM mutations on save. Splide's lifecycle re-mounts on every mutation, double-binds events, and breaks scroll position. Pure CSS scroll-snap is mutation-safe.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-native-accordion",
+            "is_featured": true,
+            "control_name": "Native Accordion",
+            "returns_label": "Native <details>/<summary> \u00b7 zero JS \u00b7 fully accessible",
+            "description": "<p>For FAQ and any expandable list, use native HTML <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code>. Zero JS, fully accessible, keyboard navigation built in. Style the marker via <code>::after</code>. Used by <code>faq_accordion</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"faq_item\", \"name\": \"FAQ Item\",\n  \"settings\": [\n    &#123; \"type\": \"text\",     \"id\": \"question\", \"label\": \"Question\" &#125;,\n    &#123; \"type\": \"richtext\", \"id\": \"answer\",   \"label\": \"Answer\" &#125;,\n    &#123; \"type\": \"checkbox\", \"id\": \"open_by_default\", \"label\": \"Open by default\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% for block in faq_items %&#125;\n  <details class=\"faq__item\"&#123;% if block.settings.open_by_default %&#125; open&#123;% endif %&#125; &#123;&#123; block.fluid_attributes &#125;&#125;>\n    <summary>&#123;&#123; block.settings.question | escape &#125;&#125;</summary>\n    <div class=\"faq__answer rte\">&#123;&#123; block.settings.answer &#125;&#125;</div>\n  </details>\n&#123;% endfor %&#125;\n\n<style>\n  .faq__item > summary &#123;\n    list-style: none; cursor: pointer;\n    display: flex; justify-content: space-between; align-items: center;\n  &#125;\n  .faq__item > summary::-webkit-details-marker &#123; display: none; &#125;\n  .faq__item > summary::after &#123;\n    content: \"\";\n    width: 14px; height: 14px;\n    background: currentColor;\n    -webkit-mask: url(\"data:image/svg+xml;...chevron-down\") center / contain no-repeat;\n    transition: transform .2s;\n  &#125;\n  .faq__item[open] > summary::after &#123; transform: rotate(180deg); &#125;\n</style>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-drag-slider",
+            "is_featured": true,
+            "control_name": "Drag Slider (Before/After)",
+            "returns_label": "Native input[type=range] overlay + clipped after image",
+            "description": "<p>Image-comparison slider with drag handle. Use a transparent native <code>&lt;input type=\"range\"&gt;</code> spanning the full width as the drag affordance \u2014 it gives you free keyboard + touch + accessibility. CSS clips the \"after\" image based on the range value via vanilla JS.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"image_picker\", \"id\": \"before_image\", \"label\": \"Before image\" &#125;,\n&#123; \"type\": \"image_picker\", \"id\": \"after_image\",  \"label\": \"After image\" &#125;,\n&#123; \"type\": \"range\", \"id\": \"initial_position\", \"label\": \"Initial Position\",\n  \"min\": 5, \"max\": 95, \"step\": 5, \"default\": 50, \"unit\": \"%\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "<div class=\"ba\" data-ba-slider>\n  <img class=\"ba__before\" src=\"&#123;&#123; section.settings.before_image | img_url: '2400x' &#125;&#125;\">\n  <div class=\"ba__after-wrap\" data-ba-after style=\"width: 50%;\">\n    <img src=\"&#123;&#123; section.settings.after_image | img_url: '2400x' &#125;&#125;\">\n  </div>\n  <div class=\"ba__handle\" data-ba-handle></div>\n  <input class=\"ba__range\" type=\"range\" min=\"0\" max=\"100\" value=\"50\" data-ba-range>\n</div>\n\n<script>\n  // range.input \u2192 setPos(v)\n  // setPos: after.style.width = v + '%'; handle.style.left = 'calc(' + v + '% - 22px)';\n  // see before_after section for full implementation\n</script>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-cart-button",
+            "is_featured": true,
+            "control_name": "Cart Button",
+            "returns_label": "Icon choices + count badge \u00b7 preserves Fluid JS hooks",
+            "description": "<p>Theme-driven cart trigger. 14 settings: icon choice (bag / cart / basket / minimal), style (filled / outline / icon-only), padding, radius, border, all colors theme-driven, count badge with own font-size + colors. Preserves <code>#show-cart</code> + <code>#fluid-cart-count</code> so Fluid's existing cart JS keeps working.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"cart_button\", \"name\": \"Cart Button\", \"limit\": 1,\n  \"settings\": [\n    &#123; \"type\": \"radio\", \"id\": \"icon\", \"label\": \"Icon\", \"default\": \"bag\",\n      \"options\": [\n        &#123; \"value\": \"bag\",     \"label\": \"Shopping Bag\" &#125;,\n        &#123; \"value\": \"cart\",    \"label\": \"Shopping Cart\" &#125;,\n        &#123; \"value\": \"basket\",  \"label\": \"Basket\" &#125;,\n        &#123; \"value\": \"minimal\", \"label\": \"Minimal\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"range\",  \"id\": \"icon_size\", \"min\": 14, \"max\": 32, \"step\": 1, \"default\": 20 &#125;,\n    &#123; \"type\": \"select\", \"id\": \"icon_color\",       \"options\": \"background_colors\", \"default\": \"var(--clr-primary)\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"count_background\", \"options\": \"background_colors\", \"default\": \"var(--clr-accent)\" &#125;\n    /* + style, padding, border, count_text_color, etc. */\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "<a href=\"&#123;&#123; cart_url &#125;&#125;\" id=\"show-cart\" class=\"cart-btn\" aria-label=\"Cart\">\n  &#123;% case block.settings.icon %&#125;\n    &#123;% when 'bag' %&#125;<svg>...bag...</svg>\n    &#123;% when 'cart' %&#125;<svg>...cart...</svg>\n    ...\n  &#123;% endcase %&#125;\n  &#123;% if block.settings.show_count %&#125;\n    <span class=\"cart-count\" id=\"fluid-cart-count\">0</span>\n  &#123;% endif %&#125;\n</a>\n\n&#123;# See blocks/cart_button/index.liquid for the full canonical block #&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-locale-dropdown",
+            "is_featured": true,
+            "control_name": "Locale Dropdown",
+            "returns_label": "Single component \u00b7 desktop popover + mobile sheet \u00b7 preserves Fluid JS",
+            "description": "<p>One unified component renders both the desktop popover and mobile slide-in sheet. Preserves existing Fluid JS hooks (<code>#show-language-country-dropdown</code>, <code>#mobile-country-language</code>, <code>.saveLocaleBtn</code>, <code>.country-selector</code>, <code>.language-selector</code>) so Fluid's built-in locale-switch logic keeps working without touching <code>header.js</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"locale_dropdown\", \"name\": \"Locale Dropdown\", \"limit\": 1,\n  \"settings\": [\n    &#123; \"type\": \"select\", \"id\": \"display_mode\", \"label\": \"Trigger display\", \"default\": \"flag_code\",\n      \"options\": [\n        &#123; \"value\": \"flag_code\", \"label\": \"Flag + code\" &#125;,\n        &#123; \"value\": \"flag_only\", \"label\": \"Flag only\" &#125;,\n        &#123; \"value\": \"code_only\", \"label\": \"Code only\" &#125;,\n        &#123; \"value\": \"flag_name\", \"label\": \"Flag + country name\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"select\", \"id\": \"trigger_color\",   \"options\": \"background_colors\", \"default\": \"var(--clr-body)\" &#125;,\n    &#123; \"type\": \"select\", \"id\": \"panel_background\", \"options\": \"background_colors\", \"default\": \"var(--clr-white)\" &#125;\n    /* + 20+ more theme-driven settings */\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;# See components/navbar_locale_dropdown/index.liquid for full markup #&#125;\n&#123;# Trigger uses Fluid globals: current_country_iso, current_country_name, current_selected_locale #&#125;\n&#123;# Panel iterates: countries, language_options #&#125;\n&#123;# Save button: class=\"saveLocaleBtn\" inside class=\"locale-selector\" #&#125;\n\n<button id=\"show-language-country-dropdown\">\n  <span class=\"flag-icon fi fi-&#123;&#123; current_country_iso &#125;&#125;\"></span>\n  &#123;&#123; current_country_iso | upcase &#125;&#125;\n</button>\n\n<div class=\"ld__panel locale-selector\">\n  <select class=\"country-selector\">&#123;% for c in countries %&#125;<option value=\"&#123;&#123; c.iso &#125;&#125;\" &#123;% if c.selected %&#125;selected&#123;% endif %&#125;>&#123;&#123; c.name &#125;&#125;</option>&#123;% endfor %&#125;</select>\n  <select class=\"language-selector\">&#123;% for o in language_options %&#125;<option value=\"&#123;&#123; o.iso &#125;&#125;\" &#123;% if o.selected %&#125;selected&#123;% endif %&#125;>&#123;&#123; o.locale &#125;&#125;</option>&#123;% endfor %&#125;</select>\n  <button class=\"saveLocaleBtn\">Save & close</button>\n</div>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-hero-overlay",
+            "is_featured": true,
+            "control_name": "Hero Overlay (Solid + Gradient)",
+            "returns_label": "select color + range opacity + radio style",
+            "description": "<p>Heroes need an overlay over the background image to ensure text contrast. Three controls: color (theme-driven), opacity, and style (solid wash vs bottom-up gradient). Renders as a <code>::before</code> pseudo-element to avoid extra DOM.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"select\", \"id\": \"overlay_color\", \"label\": \"Overlay color\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-dark)\" &#125;,\n&#123; \"type\": \"range\",  \"id\": \"overlay_opacity\", \"label\": \"Overlay opacity\",\n  \"min\": 0, \"max\": 100, \"step\": 5, \"default\": 35, \"unit\": \"%\" &#125;,\n&#123; \"type\": \"radio\",  \"id\": \"overlay_style\", \"label\": \"Overlay style\", \"default\": \"solid\",\n  \"options\": [\n    &#123; \"value\": \"solid\",    \"label\": \"Solid color\" &#125;,\n    &#123; \"value\": \"gradient\", \"label\": \"Bottom gradient (transparent \u2192 color)\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;%- if section.settings.overlay_color != blank and section.settings.overlay_opacity > 0 -%&#125;\n  &#123;%- assign _ov = section.settings.overlay_opacity | divided_by: 100.0 -%&#125;\n  .hero::before &#123;\n    content: \"\"; position: absolute; inset: 0;\n    background: &#123;% if section.settings.overlay_style == 'gradient' %&#125;\n      linear-gradient(180deg, transparent 0%, &#123;&#123; section.settings.overlay_color &#125;&#125; 100%)\n    &#123;% else %&#125;\n      &#123;&#123; section.settings.overlay_color &#125;&#125;\n    &#123;% endif %&#125;;\n    opacity: &#123;&#123; _ov &#125;&#125;; pointer-events: none; z-index: 0;\n  &#125;\n&#123;%- endif -%&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-scroll-indicator",
+            "is_featured": true,
+            "control_name": "Scroll Indicator",
+            "returns_label": "Animated bouncing arrow at hero bottom",
+            "description": "<p>Subtle visual cue at the bottom of full-bleed heroes that says \"there's more below\". Pure CSS keyframe animation, theme-driven color.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"checkbox\", \"id\": \"show_scroll_indicator\", \"label\": \"Show scroll indicator\", \"default\": true &#125;,\n&#123; \"type\": \"text\",     \"id\": \"scroll_label\", \"label\": \"Scroll label\", \"default\": \"Scroll\" &#125;,\n&#123; \"type\": \"select\",   \"id\": \"scroll_color\", \"label\": \"Scroll indicator color\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-white)\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% if section.settings.show_scroll_indicator %&#125;\n  <div class=\"hero__scroll\">\n    <span>&#123;&#123; section.settings.scroll_label | escape &#125;&#125;</span>\n    <svg viewBox=\"0 0 24 24\" stroke=\"currentColor\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><polyline points=\"19 12 12 19 5 12\"/></svg>\n  </div>\n&#123;% endif %&#125;\n\n<style>\n  .hero__scroll &#123;\n    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);\n    color: &#123;&#123; section.settings.scroll_color &#125;&#125;; opacity: 0.7;\n    display: flex; flex-direction: column; align-items: center; gap: 6px;\n    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;\n    animation: scrollBounce 2.4s infinite ease-in-out;\n  &#125;\n  @keyframes scrollBounce &#123;\n    0%, 100% &#123; transform: translate(-50%, 0); &#125;\n    50%      &#123; transform: translate(-50%, 6px); &#125;\n  &#125;\n</style>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-comparison-row",
+            "is_featured": true,
+            "control_name": "Comparison Row (Check / X / Text)",
+            "returns_label": "radio with 3 visual modes \u00b7 for us-vs-them tables",
+            "description": "<p>Each row in a comparison table picks how it displays for each column: a checkmark (yes), an X (no), or free text. Used by <code>comparison_table</code>. The radio control switches markup, not just styling.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"row\", \"name\": \"Row\",\n  \"settings\": [\n    &#123; \"type\": \"text\", \"id\": \"feature\", \"label\": \"Feature\", \"default\": \"Free shipping\" &#125;,\n    &#123; \"type\": \"radio\", \"id\": \"us_value\", \"label\": \"Our column\", \"default\": \"check\",\n      \"options\": [\n        &#123; \"value\": \"check\", \"label\": \"Checkmark\" &#125;,\n        &#123; \"value\": \"x\",     \"label\": \"Cross\" &#125;,\n        &#123; \"value\": \"text\",  \"label\": \"Text\" &#125;\n      ] &#125;,\n    &#123; \"type\": \"text\", \"id\": \"us_text\", \"label\": \"Text (if Display = Text)\", \"default\": \"Yes\" &#125;\n    /* + them_value, them_text */\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;% case block.settings.us_value %&#125;\n  &#123;% when 'check' %&#125;\n    <svg class=\"check\"><polyline points=\"20 6 9 17 4 12\"/></svg>\n  &#123;% when 'x' %&#125;\n    <svg class=\"x\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg>\n  &#123;% else %&#125;\n    <span>&#123;&#123; block.settings.us_text | escape &#125;&#125;</span>\n&#123;% endcase %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-connector-line",
+            "is_featured": true,
+            "control_name": "Connector Line (Timeline)",
+            "returns_label": "CSS pseudo-element on .step:not(:last-child)",
+            "description": "<p>For process-step / timeline UIs. A single CSS pseudo-element on each step (except the last) draws the connecting line. No extra DOM. Vertical or horizontal, theme-driven color, hidden on mobile.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"checkbox\", \"id\": \"show_connector\", \"label\": \"Show connecting line\", \"default\": true &#125;,\n&#123; \"type\": \"select\",   \"id\": \"connector_color\", \"label\": \"Connector color\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-gray)\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;# Horizontal #&#125;\n&#123;%- if section.settings.show_connector -%&#125;\n  .step:not(:last-child)::after &#123;\n    content: \"\";\n    position: absolute;\n    top: 28px;  /* center of number circle */\n    left: calc(50% + 36px);\n    right: calc(-50% + 36px);\n    height: 2px;\n    background: &#123;&#123; section.settings.connector_color &#125;&#125;;\n    z-index: 1;\n  &#125;\n  @media (max-width: 767px) &#123; .step:not(:last-child)::after &#123; display: none; &#125; &#125;\n&#123;%- endif -%&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-glass-morphism",
+            "is_featured": true,
+            "control_name": "Glass Morphism (Backdrop Blur)",
+            "returns_label": "backdrop-filter pill \u00b7 for badges over images",
+            "description": "<p>For floating badges, captions, or controls layered over images: semi-transparent background + <code>backdrop-filter: blur()</code> creates a frosted-glass effect. Use sparingly \u2014 great for one or two elements per page, distracting if overused.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"select\", \"id\": \"glass_background\", \"label\": \"Background\",\n  \"options\": \"background_colors\", \"default\": \"var(--clr-white)\" &#125;,\n&#123; \"type\": \"range\",  \"id\": \"glass_opacity\", \"label\": \"Opacity\",\n  \"min\": 0, \"max\": 100, \"step\": 5, \"default\": 90, \"unit\": \"%\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": ".glass-pill &#123;\n  display: inline-flex; align-items: center; gap: 6px;\n  padding: 6px 14px;\n  background: rgba(255, 255, 255, 0.15);\n  color: var(--clr-white);\n  border-radius: 999px;\n  font-size: 12px; font-weight: 600; text-transform: uppercase;\n  backdrop-filter: blur(8px);\n  -webkit-backdrop-filter: blur(8px);\n&#125;",
+            "tip_label": "Don't blur over solid backgrounds",
+            "tip_kind": "tip",
+            "tip": "<p>backdrop-filter has no visible effect over solid colors \u2014 it only blurs whatever's behind it. Reserve it for elements that float over images or video.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-editorial-meta-column",
+            "is_featured": true,
+            "control_name": "Editorial Meta Column",
+            "returns_label": "writing-mode: vertical-rl \u00b7 sidebar of meta labels",
+            "description": "<p>Magazine-style sidebar of small meta labels (\"Issue 04\", \"Spring 2026\") rotated vertically beside the main content. Single CSS property turns horizontal text into vertical text \u2014 no DOM hacks. Used by <code>hero_editorial</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"meta\", \"name\": \"Meta Label\",\n  \"settings\": [\n    &#123; \"type\": \"text\", \"id\": \"text\", \"label\": \"Text\", \"default\": \"Issue 04\" &#125;\n  ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "<aside class=\"meta-col\">\n  &#123;% for block in meta_blocks %&#125;\n    <span class=\"meta-label\" &#123;&#123; block.fluid_attributes &#125;&#125;>&#123;&#123; block.settings.text | escape &#125;&#125;</span>\n  &#123;% endfor %&#125;\n</aside>\n\n<style>\n  @media (min-width: 992px) &#123;\n    .meta-col &#123;\n      writing-mode: vertical-rl;\n      transform: rotate(180deg);\n      display: flex; gap: 24px;\n    &#125;\n  &#125;\n  .meta-label &#123;\n    font-size: 11px; font-weight: 600;\n    letter-spacing: 0.18em; text-transform: uppercase;\n    color: var(--clr-muted);\n  &#125;\n</style>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-image-stretch-override",
+            "is_featured": true,
+            "control_name": "Image Stretch Override",
+            "returns_label": "When canonical image fills a hero column, override aspect-ratio",
+            "description": "<p>The canonical image block has its own <code>aspect_ratio</code> control \u2014 great when the image is sized by ratio. But when the image needs to FILL a parent column (like in a 50/50 hero), the section CSS must override the ratio and let the image stretch.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;# In hero_split_stats schema, the image block keeps its full canonical settings.\n   The section's CSS overrides ratio/sizing instead. #&#125;\n\n&#123; \"type\": \"image\", \"name\": \"Hero Image\", \"limit\": 1,\n  \"settings\": [ /* full canonical image settings */ ] &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "/* In the hero section's CSS, override the image block's wrapper */\n.hero__image-slot &#123; align-self: stretch; position: relative; min-height: 360px; &#125;\n\n.hero__image-slot .media-wrap &#123;\n  position: absolute; inset: 0;\n  width: 100%; height: 100%;\n  aspect-ratio: unset !important;  /* override canonical block's setting */\n  margin: 0 !important;\n&#125;\n.hero__image-slot .media-wrap img &#123;\n  width: 100%; height: 100%; object-fit: cover;\n&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-media-picker-fallback",
+            "is_featured": true,
+            "control_name": "Media Picker Fallback",
+            "returns_label": "Handle Fluid media + plain image upload",
+            "description": "<p>The <code>media_picker</code> control returns two different shapes depending on what the editor picked: a Fluid Media object with <code>fluid_media_id</code> (when picking a Fluid video / UGC asset) OR a plain image object (when uploading a JPG/PNG). Always handle both \u2014 fall through to <code>| image_url</code> when no media id is present.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"media_picker\", \"id\": \"media\", \"label\": \"Media\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;%- assign _m = block.settings.media -%&#125;\n&#123;%- assign _fmid = _m.fluid_media_id -%&#125;\n&#123;%- assign _img_url = '' -%&#125;\n&#123;%- if _fmid == blank and _m -%&#125;\n  &#123;%- assign _img_url = _m | image_url -%&#125;\n  &#123;%- if _img_url == blank -%&#125;&#123;%- assign _img_url = _m.src | default: _m.url -%&#125;&#123;%- endif -%&#125;\n&#123;%- endif -%&#125;\n\n&#123;% if _fmid != blank %&#125;\n  <fluid-media-widget media-id=\"&#123;&#123; _fmid &#125;&#125;\" embed-type=\"&#123;&#123; _embed &#125;&#125;\" responsive=\"true\" data-fluid-widget=\"true\"></fluid-media-widget>\n&#123;% elsif _img_url != blank %&#125;\n  <img src=\"&#123;&#123; _img_url &#125;&#125;\" alt=\"\" loading=\"lazy\">\n&#123;% else %&#125;\n  <div class=\"media-wrap__placeholder\">\u2026</div>\n&#123;% endif %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-product-image-fallback",
+            "is_featured": true,
+            "control_name": "Product Image Fallback Chain",
+            "returns_label": "product.images[0].src \u2192 product.image_url \u2192 product.image | image_url",
+            "description": "<p>Fluid product objects carry images in different shapes depending on context. Always check the chain in order: <code>product.images[0].src</code> (most explicit), then <code>product.image_url</code>, then <code>product.image | image_url</code>. Render a placeholder if all fail.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;# No schema \u2014 reads from Fluid's product object #&#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;%- assign _pimg_url = '' -%&#125;\n&#123;%- if product.images and product.images.size > 0 -%&#125;\n  &#123;%- assign _pimg_url = product.images[0].src -%&#125;\n&#123;%- elsif product.image_url != blank -%&#125;\n  &#123;%- assign _pimg_url = product.image_url -%&#125;\n&#123;%- elsif product.image -%&#125;\n  &#123;%- assign _pimg_url = product.image | image_url -%&#125;\n&#123;%- endif -%&#125;\n\n&#123;% if _pimg_url != blank %&#125;\n  <img src=\"&#123;&#123; _pimg_url &#125;&#125;\" alt=\"&#123;&#123; product.title | escape &#125;&#125;\" loading=\"lazy\">\n&#123;% else %&#125;\n  <div class=\"media-wrap__placeholder\">\u2026</div>\n&#123;% endif %&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-collection-fallback",
+            "is_featured": true,
+            "control_name": "Collection Fallback Chain",
+            "returns_label": "collection.image_url \u2192 first product.image_url",
+            "description": "<p>For collection tiles / category cards: a collection's own <code>image_url</code> is often null (not all stores set it). Fall back to the first product's image so every tile renders something.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123; \"type\": \"collection\", \"id\": \"collection\", \"label\": \"Collection\" &#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;%- assign _col = block.settings.collection -%&#125;\n&#123;%- assign _img_url = '' -%&#125;\n&#123;%- if _col.image_url != blank -%&#125;\n  &#123;%- assign _img_url = _col.image_url -%&#125;\n&#123;%- elsif _col.image_path != blank -%&#125;\n  &#123;%- assign _img_url = _col.image_path -%&#125;\n&#123;%- elsif _col.product_collections -%&#125;\n  &#123;%- for pc in _col.product_collections limit: 1 -%&#125;\n    &#123;%- if pc.product.image_url != blank -%&#125;&#123;%- assign _img_url = pc.product.image_url -%&#125;&#123;%- endif -%&#125;\n  &#123;%- endfor -%&#125;\n&#123;%- elsif _col.products -%&#125;\n  &#123;%- for p in _col.products limit: 1 -%&#125;\n    &#123;%- if p.image_url != blank -%&#125;&#123;%- assign _img_url = p.image_url -%&#125;&#123;%- endif -%&#125;\n  &#123;%- endfor -%&#125;\n&#123;%- endif -%&#125;\n\n&#123;# Also check canonical_url for the collection link, NOT .url #&#125;\n&#123;%- assign _href = _col.canonical_url | default: _col.url | default: '#' -%&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-preset-expansion",
+            "is_featured": true,
+            "control_name": "Preset Expansion Workflow",
+            "returns_label": "Destroy template + re-push to refresh blocks",
+            "description": "<p>Section presets only expand on <em>fresh template creation</em> \u2014 not on resource updates. After changing a section's block structure (adding new block types, removing old ones), the existing template instance still has the old blocks. To refresh: destroy the template via API, then re-push the page template file. Fluid creates a new template record and runs preset expansion.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;# No schema \u2014 it's an API workflow #&#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "# 1. Find the template's resource_id\ncurl -H \"Authorization: Bearer $TOKEN\" \\\n  \"https://$COMPANY.fluid.app/api/application_themes/$THEME_ID/resources\" \\\n  | jq '.application_theme_resources[] | select(.key == \"home_page/default/index.liquid\")'\n\n# 2. Destroy the template (this clears the old block instances)\ncurl -X DELETE -H \"Authorization: Bearer $TOKEN\" \\\n  \"https://$COMPANY.fluid.app/api/application_theme_templates/$TEMPLATE_ID\"\n# \u2192 \"Template was successfully destroyed.\"\n\n# 3. Re-push the template file\ncurl -X PUT -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '&#123;\"key\":\"home_page/default/index.liquid\",\"content\":\"...\"&#125;' \\\n  \"https://$COMPANY.fluid.app/api/application_themes/$THEME_ID/resources\"\n# \u2192 fresh template with preset blocks expanded",
+            "tip_label": "DELETE /resources alone is not enough",
+            "tip_kind": "tip",
+            "tip": "<p>The <code>DELETE /api/application_themes/{id}/resources</code> endpoint with a key in the body returns 200 but only nulls the content \u2014 the underlying <code>ApplicationThemeTemplate</code> record persists. To fully destroy a template (so re-push triggers fresh preset expansion), use <code>DELETE /api/application_theme_templates/{template_id}</code>.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-liquid-comments",
+            "is_featured": true,
+            "control_name": "Liquid Comments",
+            "returns_label": "&#123;% comment %&#125; not &#123;# #&#125;",
+            "description": "<p>Fluid uses <strong>Liquid</strong>, not Jinja or Twig. Jinja-style <code>&#123;# comment #&#125;</code> tags render as literal text on the page \u2014 the parser doesn't recognize them. Always use <code>&#123;% comment %&#125;</code> / <code>&#123;% endcomment %&#125;</code>.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "&#123;# No schema \u2014 syntax rule #&#125;",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;# WRONG \u2014 renders as text on the page #&#125;\n&#123;# This is a Jinja-style comment #&#125;\n\n&#123;# RIGHT \u2014 Liquid comment, fully stripped #&#125;\n&#123;% comment %&#125; This is a Liquid comment &#123;% endcomment %&#125;\n\n&#123;# Whitespace-stripping variant #&#125;\n&#123;%- comment -%&#125; Eats surrounding whitespace too &#123;%- endcomment -%&#125;"
           }
         }
       ]

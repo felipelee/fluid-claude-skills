@@ -5,7 +5,6 @@
   {%- assign locale_block = section.blocks | where: 'type', 'locale' | first -%}
 {%- endif -%}
 {%- assign mobile_menu_block = section.blocks | where: 'type', 'mobile_menu' | first -%}
-{%- assign mobile_locale_block = section.blocks | where: 'type', 'mobile_locale' | first -%}
 {%- assign has_custom_button_blocks = false -%}
 {%- for block in section.blocks -%}
   {%- if block.type == 'cart_button' or block.type == 'secondary_button' or block.type == 'primary_button' -%}
@@ -53,12 +52,8 @@
     .site-header .primary-menu a:hover {
       color: {{ section.settings.navbar_text_color }};
     }
-    .site-header .menu-toggle-button span,
-    .site-header:not(.is-floating) .language-country-selection-section .seperator {
+    .site-header .menu-toggle-button span {
       background-color: {{ section.settings.navbar_text_color }};
-    }
-    .site-header:not(.is-floating) .language-country-selection-section {
-      border-color: {{ section.settings.navbar_text_color }};
     }
   {%- endif -%}
 
@@ -69,18 +64,13 @@
     .media-header .author-content {
       color: {{ section.settings.sticky_navbar_text_color }};
     }
-    .site-header .menu-toggle-button span,
-    header.site-header.is-sticky .language-country-selection-section .seperator {
+    .site-header.is-sticky .menu-toggle-button span {
       background-color: {{ section.settings.sticky_navbar_text_color }};
-    }
-    .site-header.is-sticky .language-country-selection-section {
-      border-color: {{ section.settings.sticky_navbar_text_color }};
     }
   {%- endif -%}
 
   /* Navbar Font */
-  header.site-header,
-  header.site-header .language-country-selection-section {
+  header.site-header {
     font-size: {{ section.settings.navbar_text_size }}px;
     font-weight: {{ section.settings.navbar_font_weight }};
   }
@@ -114,34 +104,29 @@
     }
   {%- endif -%}
 
-  /* LANGUAGE DROPDOWN */
-  {%- if locale_block -%}
-    {%- if locale_block.settings.lang_bg_color != blank -%}
-      header.site-header ul.language-country-dropdown-menu {
-        background-color: {{ locale_block.settings.lang_bg_color }};
-      }
-    {%- endif -%}
-    {%- if locale_block.settings.lang_text_color != blank -%}
-      header.site-header ul.language-country-dropdown-menu label {
-        color: {{ locale_block.settings.lang_text_color }};
-      }
-    {%- endif -%}
-    header.site-header ul.language-country-dropdown-menu label {
-      font-size: {{ locale_block.settings.lang_text_size }}px;
-    }
-    {%- if locale_block.settings.save_and_close_text_color != blank -%}
-      header.site-header .saveLocaleBtn {
-        color: {{ locale_block.settings.save_and_close_text_color }};
-      }
-    {%- endif -%}
-    header.site-header .saveLocaleBtn {
-      font-size: {{ locale_block.settings.save_and_close_text_size }}px !important;
-      font-weight: {{ locale_block.settings.save_and_close_font_weight }} !important;
-    }
-  {%- endif -%}
+  /* Locale dropdown owns its own styles — see components/navbar_locale_dropdown/index.liquid */
+
+  /* Cart button */
+  .site-header .cart-btn {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1;
+    transition: transform .15s, opacity .15s;
+    cursor: pointer;
+  }
+  .site-header .cart-btn:hover { transform: translateY(-1px); }
+  .site-header .cart-btn .cart-count {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 18px; height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; line-height: 1;
+    letter-spacing: 0;
+  }
 {%- endstyle -%}
 
-{%- capture _cart_inner -%}<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-bag"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg><span class="cart-count" id="fluid-cart-count">0</span>{%- endcapture -%}
 {%- assign _btn2_label = 'navbar.button_2' | t -%}
 {%- assign _btn1_label = 'navbar.button_1' | t -%}
 
@@ -150,17 +135,45 @@
     {% for block in section.blocks %}
       {% case block.type %}
         {% when 'cart_button' %}
-          {% capture _cart_attr %}id="show-cart" {{ block.fluid_attributes }}{% endcapture %}
-          {% render 'button', href: cart_url, text: _cart_inner, variant: 'outline-primary', class: 'button-with-border', attr: _cart_attr %}
+          {%- assign _icon = block.settings.icon | default: 'bag' -%}
+          {%- assign _icon_size = block.settings.icon_size | default: 20 -%}
+          {%- assign _btn_style = block.settings.style | default: 'outline' -%}
+          {% capture _cart_style %}
+            color: {{ block.settings.icon_color | default: 'var(--clr-primary)' }};
+            {% if _btn_style == 'filled' %}background-color: {{ block.settings.background_color | default: 'var(--clr-primary)' }};{% elsif _btn_style == 'outline' %}background-color: {{ block.settings.background_color | default: 'transparent' }};{% else %}background-color: transparent;{% endif %}
+            {% assign cp = block.settings.padding %}{% if cp %}padding: {{ cp.top }}px {{ cp.right }}px {{ cp.bottom }}px {{ cp.left }}px;{% else %}padding: 8px 12px;{% endif %}
+            {% assign cbr = block.settings.border_radius %}{% if cbr %}border-radius: {{ cbr.tl }}px {{ cbr.tr }}px {{ cbr.br }}px {{ cbr.bl }}px;{% else %}border-radius: 999px;{% endif %}
+            {% if _btn_style == 'text' %}border: none;{% elsif block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color | default: 'var(--clr-primary)' }};{% else %}border: 1px solid {{ block.settings.border_color | default: 'var(--clr-primary)' }};{% endif %}
+          {% endcapture %}
+          <a href="{{ cart_url }}" id="show-cart" class="cart-btn" style="{{ _cart_style | strip_newlines }}" aria-label="Cart" {{ block.fluid_attributes }}>
+            {% case _icon %}
+              {% when 'bag' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              {% when 'cart' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              {% when 'basket' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4-7"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/></svg>
+              {% when 'minimal' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="{{ _icon_size }}" height="{{ _icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 13a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7L4 7z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
+            {% endcase %}
+            {% if block.settings.show_count %}
+              {% capture _count_style %}
+                background: {{ block.settings.count_background | default: 'var(--clr-accent)' }};
+                color: {{ block.settings.count_text_color | default: 'var(--clr-white)' }};
+                font-size: {{ block.settings.count_font_size | default: 11 }}px;
+              {% endcapture %}
+              <span class="cart-count" id="fluid-cart-count" style="{{ _count_style | strip_newlines }}">0</span>
+            {% endif %}
+          </a>
         {% when 'secondary_button' %}
           {% capture _sec_style %}
             {% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}
             {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
             {% if block.settings.font_size != blank %}font-size: {{ block.settings.font_size }}px;{% endif %}
             {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
-            {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
-            {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
-            {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
+            {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% else %}padding: 8px 18px;{% endif %}
+            {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% else %}border-radius: 999px;{% endif %}
+            {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% else %}border: 1px solid {{ block.settings.border_color | default: 'var(--clr-primary)' }};{% endif %}
           {% endcapture %}
           <a href="{{ block.settings.link | default: '#' }}"
              class="btn btn--{{ block.settings.style | default: 'outline' }}"
@@ -175,8 +188,8 @@
             {% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}
             {% if block.settings.font_size != blank %}font-size: {{ block.settings.font_size }}px;{% endif %}
             {% if block.settings.font_family != blank %}font-family: {{ block.settings.font_family }};{% endif %}
-            {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% endif %}
-            {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+            {% assign p = block.settings.padding %}{% if p %}padding: {{ p.top }}px {{ p.right }}px {{ p.bottom }}px {{ p.left }}px;{% else %}padding: 8px 18px;{% endif %}
+            {% assign br = block.settings.border_radius %}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% else %}border-radius: 999px;{% endif %}
             {% if block.settings.border_width > 0 %}border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};{% endif %}
           {% endcapture %}
           <a href="{{ block.settings.link | default: '#' }}"
@@ -262,8 +275,6 @@
 </header>
 
 {% render 'navbar_mobile_menu', feature_buttons: feature_buttons, block: mobile_menu_block %}
-{% comment %} Mobile View: Language and country selection {% endcomment %}
-{% render 'navbar_mobile_locale', block: mobile_locale_block %}
 
 <script src='https://code.jquery.com/jquery-3.7.1.min.js' integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' crossorigin='anonymous'></script>
 <script src='https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js'></script>
@@ -478,172 +489,80 @@
       ]
     },
     {
-      "type": "locale",
-      "name": "Language & Country",
-      "limit": 1,
-      "settings": [
-        {
-          "type": "color_background",
-          "id": "lang_bg_color",
-          "label": "Dropdown Background Color",
-          "default": "#fff"
-        },
-        {
-          "type": "color_background",
-          "id": "lang_text_color",
-          "label": "Dropdown Text Color",
-          "default": "#171b2b"
-        },
-        {
-          "type": "range",
-          "id": "lang_text_size",
-          "min": 10,
-          "max": 30,
-          "step": 2,
-          "unit": "px",
-          "label": "Dropdown Font Size",
-          "default": 14
-        },
-        {
-          "type": "header",
-          "content": "Save & Close Button"
-        },
-        {
-          "type": "color_background",
-          "id": "save_and_close_text_color",
-          "label": "Text Color",
-          "default": ""
-        },
-        {
-          "type": "range",
-          "id": "save_and_close_text_size",
-          "min": 10,
-          "max": 30,
-          "step": 1,
-          "unit": "px",
-          "label": "Font Size",
-          "default": 16
-        },
-        {
-          "type": "select",
-          "id": "save_and_close_font_weight",
-          "label": "Font Weight",
-          "options": [
-            {
-              "value": "300",
-              "label": "Light"
-            },
-            {
-              "value": "400",
-              "label": "Regular"
-            },
-            {
-              "value": "500",
-              "label": "Medium"
-            },
-            {
-              "value": "600",
-              "label": "Semi Bold"
-            },
-            {
-              "value": "700",
-              "label": "Bold"
-            },
-            {
-              "value": "800",
-              "label": "Extra Bold"
-            }
-          ],
-          "default": "500"
-        }
-      ]
-    },
-    {
       "type": "locale_dropdown",
       "name": "Locale Dropdown",
       "limit": 1,
       "settings": [
-        {
-          "type": "color_background",
-          "id": "lang_bg_color",
-          "label": "Dropdown Background Color",
-          "default": "#fff"
-        },
-        {
-          "type": "color_background",
-          "id": "lang_text_color",
-          "label": "Dropdown Text Color",
-          "default": "#171b2b"
-        },
-        {
-          "type": "range",
-          "id": "lang_text_size",
-          "min": 10,
-          "max": 30,
-          "step": 2,
-          "unit": "px",
-          "label": "Dropdown Font Size",
-          "default": 14
-        },
-        {
-          "type": "header",
-          "content": "Save & Close Button"
-        },
-        {
-          "type": "color_background",
-          "id": "save_and_close_text_color",
-          "label": "Text Color",
-          "default": ""
-        },
-        {
-          "type": "range",
-          "id": "save_and_close_text_size",
-          "min": 10,
-          "max": 30,
-          "step": 1,
-          "unit": "px",
-          "label": "Font Size",
-          "default": 16
-        },
-        {
-          "type": "select",
-          "id": "save_and_close_font_weight",
-          "label": "Font Weight",
+        { "type": "header", "content": "Trigger" },
+        { "type": "select", "id": "display_mode", "label": "Trigger display", "default": "flag_code",
           "options": [
-            {
-              "value": "300",
-              "label": "Light"
-            },
-            {
-              "value": "400",
-              "label": "Regular"
-            },
-            {
-              "value": "500",
-              "label": "Medium"
-            },
-            {
-              "value": "600",
-              "label": "Semi Bold"
-            },
-            {
-              "value": "700",
-              "label": "Bold"
-            },
-            {
-              "value": "800",
-              "label": "Extra Bold"
-            }
-          ],
-          "default": "500"
-        }
+            { "value": "flag_code", "label": "Flag + country code" },
+            { "value": "flag_only", "label": "Flag only" },
+            { "value": "code_only", "label": "Country code only" },
+            { "value": "flag_name", "label": "Flag + country name" }
+          ]
+        },
+        { "type": "checkbox", "id": "show_language",  "label": "Show language code", "default": true },
+        { "type": "checkbox", "id": "show_separator", "label": "Show separator between country and language", "default": true },
+        { "type": "checkbox", "id": "show_arrow",     "label": "Show dropdown arrow", "default": true },
+        { "type": "range",    "id": "trigger_font_size",    "label": "Font size (px)",     "min": 11, "max": 18, "step": 1, "default": 13 },
+        { "type": "range",    "id": "trigger_border_width", "label": "Border width (px)",  "min": 0,  "max": 3,  "step": 1, "default": 1 },
+        { "type": "range",    "id": "trigger_radius",       "label": "Corner radius (px)", "min": 0,  "max": 999,"step": 1, "default": 999 },
+        { "type": "select",   "id": "trigger_color",         "label": "Text color",         "options": "background_colors", "default": "var(--clr-body)" },
+        { "type": "select",   "id": "trigger_border_color",  "label": "Border color",       "options": "background_colors", "default": "var(--clr-gray)" },
+        { "type": "select",   "id": "separator_color",       "label": "Separator color",    "options": "background_colors", "default": "var(--clr-gray)" },
+
+        { "type": "header", "content": "Dropdown Panel" },
+        { "type": "text",   "id": "header_label",  "label": "Mobile header label", "default": "Country & language" },
+        { "type": "text",   "id": "save_label",    "label": "Save button label",   "default": "Save & close" },
+        { "type": "range",  "id": "panel_width",   "label": "Panel width (desktop px)", "min": 240, "max": 420, "step": 10, "default": 320 },
+        { "type": "range",  "id": "panel_radius",  "label": "Panel corner radius (px)", "min": 0,   "max": 32,  "step": 1,  "default": 16 },
+        { "type": "select", "id": "panel_background",   "label": "Panel background", "options": "background_colors", "default": "var(--clr-white)" },
+        { "type": "select", "id": "panel_text_color",   "label": "Panel text",       "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "select", "id": "panel_border_color", "label": "Panel border",     "options": "background_colors", "default": "var(--clr-gray)" },
+
+        { "type": "header", "content": "Save Button" },
+        { "type": "select", "id": "save_background", "label": "Background", "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "select", "id": "save_text_color", "label": "Text",       "options": "background_colors", "default": "var(--clr-white)" }
       ]
     },
     {
       "type": "cart_button",
       "name": "Cart Button",
       "limit": 1,
-      "settings": []
+      "settings": [
+        { "type": "header", "content": "Icon" },
+        { "type": "radio", "id": "icon", "label": "Icon style", "default": "bag",
+          "options": [
+            { "value": "bag",    "label": "Shopping Bag" },
+            { "value": "cart",   "label": "Shopping Cart" },
+            { "value": "basket", "label": "Basket" },
+            { "value": "minimal","label": "Minimal (bag outline)" }
+          ]
+        },
+        { "type": "range", "id": "icon_size", "label": "Icon size (px)", "min": 14, "max": 32, "step": 1, "default": 20 },
+
+        { "type": "header", "content": "Style" },
+        { "type": "radio", "id": "style", "label": "Button style", "default": "outline",
+          "options": [
+            { "value": "filled",  "label": "Filled" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "text",    "label": "Icon only (no background)" }
+          ]
+        },
+        { "type": "padding", "id": "padding", "label": "Padding" },
+        { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+        { "type": "range",  "id": "border_width", "label": "Border width (px)", "min": 0, "max": 4, "step": 1, "default": 1 },
+        { "type": "select", "id": "background_color", "label": "Background color", "options": "background_colors", "default": "transparent" },
+        { "type": "select", "id": "icon_color",       "label": "Icon color",       "options": "background_colors", "default": "var(--clr-primary)" },
+        { "type": "select", "id": "border_color",     "label": "Border color",     "options": "background_colors", "default": "var(--clr-primary)" },
+
+        { "type": "header", "content": "Cart Count Badge" },
+        { "type": "checkbox", "id": "show_count",    "label": "Show count badge",  "default": true },
+        { "type": "range",  "id": "count_font_size", "label": "Badge font size (px)", "min": 9, "max": 14, "step": 1, "default": 11 },
+        { "type": "select", "id": "count_background", "label": "Badge background", "options": "background_colors", "default": "var(--clr-accent)" },
+        { "type": "select", "id": "count_text_color", "label": "Badge text",       "options": "background_colors", "default": "var(--clr-white)" }
+      ]
     },
     {
       "type": "secondary_button",
@@ -878,45 +797,19 @@
       "name": "Mobile Menu",
       "limit": 1,
       "settings": []
-    },
-    {
-      "type": "mobile_locale",
-      "name": "Mobile Language & Country",
-      "limit": 1,
-      "settings": []
     }
   ],
   "presets": [
     {
       "name": "Navbar",
       "blocks": [
-        {
-          "type": "logo"
-        },
-        {
-          "type": "nav",
-          "settings": {
-            "menu": "main-menu"
-          }
-        },
-        {
-          "type": "locale_dropdown"
-        },
-        {
-          "type": "cart_button"
-        },
-        {
-          "type": "secondary_button"
-        },
-        {
-          "type": "primary_button"
-        },
-        {
-          "type": "mobile_menu"
-        },
-        {
-          "type": "mobile_locale"
-        }
+        { "type": "logo" },
+        { "type": "nav", "settings": { "menu": "main-menu" } },
+        { "type": "locale_dropdown" },
+        { "type": "cart_button" },
+        { "type": "secondary_button" },
+        { "type": "primary_button" },
+        { "type": "mobile_menu" }
       ]
     }
   ]
