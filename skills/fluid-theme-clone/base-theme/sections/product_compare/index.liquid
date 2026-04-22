@@ -1,0 +1,237 @@
+{%- style -%}
+  .pcmp.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;background-repeat:no-repeat;{%- endif -%}
+  }
+  .pcmp.section-{{ section.id }} .pcmp__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1080px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});background-size:cover;background-position:center;background-repeat:no-repeat;{%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .pcmp.section-{{ section.id }} .pcmp__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .pcmp.section-{{ section.id }} .pcmp__container > * { position: relative; }
+  @media (max-width: 991px) { .pcmp.section-{{ section.id }} .pcmp__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .pcmp.section-{{ section.id }} .pcmp__container { padding-left: 16px; padding-right: 16px; } }
+
+  .pcmp.section-{{ section.id }} .pcmp__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 56px; max-width: 720px;{%- else -%}margin-bottom: 56px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .pcmp.section-{{ section.id }} .pcmp__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 767px) { .pcmp.section-{{ section.id }} .pcmp__grid { grid-template-columns: 1fr; gap: 16px; } }
+
+  .pcmp.section-{{ section.id }} .pcmp__col {
+    padding: 28px 28px 20px;
+    border-radius: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .pcmp.section-{{ section.id }} .pcmp__col--without {
+    background: {{ section.settings.without_background | default: 'var(--clr-light)' }};
+    color: {{ section.settings.without_text | default: 'var(--clr-muted)' }};
+    border: 1px solid {{ section.settings.without_border | default: 'var(--clr-gray)' }};
+  }
+  .pcmp.section-{{ section.id }} .pcmp__col--with {
+    background: {{ section.settings.with_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.with_text | default: 'var(--clr-white)' }};
+    border: 1px solid {{ section.settings.with_background | default: 'var(--clr-primary)' }};
+  }
+
+  .pcmp.section-{{ section.id }} .pcmp__col-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid currentColor;
+    opacity: 1;
+  }
+  .pcmp.section-{{ section.id }} .pcmp__col--without .pcmp__col-header { border-bottom-color: {{ section.settings.without_border | default: 'var(--clr-gray)' }}; }
+  .pcmp.section-{{ section.id }} .pcmp__col--with .pcmp__col-header { border-bottom-color: rgba(255, 255, 255, 0.2); }
+
+  .pcmp.section-{{ section.id }} .pcmp__col-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .pcmp.section-{{ section.id }} .pcmp__col-title {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+  }
+
+  .pcmp.section-{{ section.id }} .pcmp__list { display: flex; flex-direction: column; gap: 2px; list-style: none; padding: 0; margin: 0; }
+  .pcmp.section-{{ section.id }} .pcmp__list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0;
+    font-size: 14.5px; line-height: 1.5;
+  }
+  .pcmp.section-{{ section.id }} .pcmp__list svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+  .pcmp.section-{{ section.id }} .pcmp__col--without .pcmp__list svg {
+    color: {{ section.settings.without_icon | default: 'var(--clr-muted)' }};
+  }
+  .pcmp.section-{{ section.id }} .pcmp__col--with .pcmp__list svg {
+    color: {{ section.settings.with_icon | default: 'var(--clr-success)' }};
+  }
+{%- endstyle -%}
+
+<section class="pcmp section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="pcmp__container">
+    {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+    {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+    {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+    {%- assign without_blocks = section.blocks | where: 'type', 'without_item' -%}
+    {%- assign with_blocks    = section.blocks | where: 'type', 'with_item' -%}
+
+    {% if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 %}
+      <div class="pcmp__intro">
+        {% for block in eyebrow_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in heading_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in subhead_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="pcmp__grid">
+      <div class="pcmp__col pcmp__col--without">
+        <header class="pcmp__col-header">
+          <span class="pcmp__col-label">{{ section.settings.without_label | default: 'Other brands' | escape }}</span>
+          <span class="pcmp__col-title">{{ section.settings.without_title | default: 'Without us' | escape }}</span>
+        </header>
+        <ul class="pcmp__list">
+          {% for block in without_blocks %}
+            <li {{ block.fluid_attributes }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span>{{ block.settings.text | default: 'Missing feature' | escape }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="pcmp__col pcmp__col--with">
+        <header class="pcmp__col-header">
+          <span class="pcmp__col-label">{{ section.settings.with_label | default: 'The difference' | escape }}</span>
+          <span class="pcmp__col-title">{{ section.settings.with_title | default: 'With us' | escape }}</span>
+        </header>
+        <ul class="pcmp__list">
+          {% for block in with_blocks %}
+            <li {{ block.fluid_attributes }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>{{ block.settings.text | default: 'Great feature' | escape }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Compare",
+  "tag": "section",
+  "class": "product-compare-section",
+  "settings": [
+    { "type": "header", "content": "Column Labels" },
+    { "type": "text", "id": "without_label", "label": "Without column \u2014 small label", "default": "The others" },
+    { "type": "text", "id": "without_title", "label": "Without column \u2014 title",       "default": "Without us" },
+    { "type": "text", "id": "with_label",    "label": "With column \u2014 small label",    "default": "Our approach" },
+    { "type": "text", "id": "with_title",    "label": "With column \u2014 title",          "default": "With us" },
+
+    { "type": "header", "content": "Without Column Colors" },
+    { "type": "select", "id": "without_background", "label": "Background", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "without_border",     "label": "Border",     "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "without_text",       "label": "Text color", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "without_icon",       "label": "Icon color", "options": "background_colors", "default": "var(--clr-muted)" },
+
+    { "type": "header", "content": "With Column Colors" },
+    { "type": "select", "id": "with_background", "label": "Background", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "with_text",       "label": "Text color", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "with_icon",       "label": "Icon color", "options": "background_colors", "default": "var(--clr-success)" },
+
+    { "type": "header", "content": "Typography" },
+    { "type": "select", "id": "title_font", "label": "Title font", "options": "font_families", "default": "var(--ff-heading)" },
+
+    { "type": "header", "content": "Layout" },
+    { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ]
+    },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1080px",
+      "options": [
+        { "value": "960px",  "label": "Narrow (960px)" },
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.08em;\">The difference</h5>" } ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<h2 style=\"color: var(--clr-primary);\">Here's what sets us apart.</h2>" } ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<p style=\"color: var(--clr-body); font-size: 17px;\">We obsess over the details others overlook.</p>" } ]
+    },
+    { "type": "without_item", "name": "\u2717 Without us (row)",
+      "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "Filler ingredients with no proven benefit" } ]
+    },
+    { "type": "with_item", "name": "\u2713 With us (row)",
+      "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "Clinically-studied ingredients at effective doses" } ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Compare",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "subhead" },
+        { "type": "without_item", "settings": { "text": "Filler ingredients with no proven benefit" } },
+        { "type": "without_item", "settings": { "text": "Added sugars and artificial flavors" } },
+        { "type": "without_item", "settings": { "text": "Sourced anonymously from low-quality suppliers" } },
+        { "type": "without_item", "settings": { "text": "One-size-fits-all dosing" } },
+        { "type": "with_item",    "settings": { "text": "Clinically-studied ingredients at effective doses" } },
+        { "type": "with_item",    "settings": { "text": "No added sugar, no artificial anything" } },
+        { "type": "with_item",    "settings": { "text": "Traceable sourcing from trusted partners" } },
+        { "type": "with_item",    "settings": { "text": "Formulated for your needs, tested by professionals" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

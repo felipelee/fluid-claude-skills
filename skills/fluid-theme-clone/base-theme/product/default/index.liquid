@@ -1,34 +1,25 @@
-{% section 'main_product', id: 'main_product' %}
-{% section 'testimonial_slider', id: 'testimonial_slider' %}
-{% section 'related_products', id: 'related_products' %}
-{% section 'cta_banner5', id: 'cta_banner5' %}
+{% section 'product_hero',              id: 'product_hero'              %}
+{% section 'product_benefits',          id: 'product_benefits'          %}
+{% section 'product_ingredients',       id: 'product_ingredients'       %}
+{% section 'product_how_to_use',        id: 'product_how_to_use'        %}
+{% section 'product_compare',           id: 'product_compare'           %}
+{% section 'product_press',             id: 'product_press'             %}
+{% section 'product_reviews_showcase',  id: 'product_reviews_showcase'  %}
+{% section 'product_bundle',            id: 'product_bundle'            %}
+{% section 'related_products',          id: 'related_products'          %}
 
 {% schema %}
 {
   "sections": {
-    "main_product": {
-      "type": "main_product",
-      "settings": {
-        "show_breadcrumb": true
-      }
-    },
-    "testimonial_slider": {
-      "type": "testimonial_slider"
-    },
-    "related_products": {
-      "type": "related_products",
-      "settings": {
-        "heading": "Products",
-        "heading_size": "h1"
-      }
-    },
-    "cta_banner5": {
-      "type": "cta_banner5",
-      "settings": {
-        "heading": "Medium length heading goes here",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-      }
-    }
+    "product_hero":             { "type": "product_hero" },
+    "product_benefits":         { "type": "product_benefits" },
+    "product_ingredients":      { "type": "product_ingredients" },
+    "product_how_to_use":       { "type": "product_how_to_use" },
+    "product_compare":          { "type": "product_compare" },
+    "product_press":            { "type": "product_press" },
+    "product_reviews_showcase": { "type": "product_reviews_showcase" },
+    "product_bundle":           { "type": "product_bundle" },
+    "related_products":         { "type": "related_products" }
   }
 }
 {% endschema %}

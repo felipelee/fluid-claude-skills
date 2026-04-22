@@ -1,0 +1,313 @@
+{%- style -%}
+  .prev.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;background-repeat:no-repeat;{%- endif -%}
+  }
+  .prev.section-{{ section.id }} .prev__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});background-size:cover;background-position:center;background-repeat:no-repeat;{%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .prev.section-{{ section.id }} .prev__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .prev.section-{{ section.id }} .prev__container > * { position: relative; }
+  @media (max-width: 991px) { .prev.section-{{ section.id }} .prev__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .prev.section-{{ section.id }} .prev__container { padding-left: 16px; padding-right: 16px; } }
+
+  .prev.section-{{ section.id }} .prev__top {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 48px;
+    align-items: center;
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+  }
+  @media (max-width: 767px) { .prev.section-{{ section.id }} .prev__top { grid-template-columns: 1fr; gap: 20px; padding-bottom: 28px; margin-bottom: 28px; } }
+
+  .prev.section-{{ section.id }} .prev__summary { display: flex; flex-direction: column; gap: 8px; }
+  .prev.section-{{ section.id }} .prev__score {
+    font-size: clamp(56px, 7vw, 84px);
+    font-weight: 700; letter-spacing: -0.03em;
+    color: {{ section.settings.score_color | default: 'var(--clr-primary)' }};
+    font-family: {{ section.settings.score_font | default: 'var(--ff-heading)' }};
+    line-height: 1;
+  }
+  .prev.section-{{ section.id }} .prev__stars { position: relative; display: inline-block; line-height: 0; }
+  .prev.section-{{ section.id }} .prev__stars-track,
+  .prev.section-{{ section.id }} .prev__stars-fill { display: inline-flex; gap: 2px; }
+  .prev.section-{{ section.id }} .prev__stars-track { color: {{ section.settings.star_empty_color | default: 'var(--clr-gray)' }}; }
+  .prev.section-{{ section.id }} .prev__stars-fill  { position: absolute; inset: 0; overflow: hidden; color: {{ section.settings.star_color | default: 'var(--clr-warning)' }}; }
+  .prev.section-{{ section.id }} .prev__stars svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
+  .prev.section-{{ section.id }} .prev__count {
+    font-size: 13px; color: {{ section.settings.count_color | default: 'var(--clr-muted)' }};
+  }
+
+  .prev.section-{{ section.id }} .prev__breakdown { display: flex; flex-direction: column; gap: 8px; }
+  .prev.section-{{ section.id }} .prev__bar-row {
+    display: grid; grid-template-columns: 40px 1fr 48px; align-items: center; gap: 12px;
+    font-size: 13px;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .prev.section-{{ section.id }} .prev__bar {
+    position: relative;
+    height: 6px; border-radius: 999px;
+    background: {{ section.settings.bar_track_color | default: 'var(--clr-gray)' }};
+    overflow: hidden;
+  }
+  .prev.section-{{ section.id }} .prev__bar-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: {{ section.settings.bar_fill_color | default: 'var(--clr-warning)' }};
+    border-radius: 999px;
+  }
+
+  .prev.section-{{ section.id }} .prev__grid {
+    {% if section.settings.layout == 'masonry' %}
+    column-count: {{ section.settings.columns_desktop | default: 3 }};
+    column-gap: {{ section.settings.gap | default: 20 }}px;
+    {% else %}
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, minmax(0, 1fr));
+    gap: {{ section.settings.gap | default: 20 }}px;
+    {% endif %}
+  }
+  @media (max-width: 991px) { .prev.section-{{ section.id }} .prev__grid { {% if section.settings.layout == 'masonry' %}column-count: 2;{% else %}grid-template-columns: repeat(2, minmax(0, 1fr));{% endif %} } }
+  @media (max-width: 767px) { .prev.section-{{ section.id }} .prev__grid { {% if section.settings.layout == 'masonry' %}column-count: 1; column-gap: 16px;{% else %}grid-template-columns: 1fr; gap: 16px;{% endif %} } }
+
+  .prev.section-{{ section.id }} .prev__card {
+    {% if section.settings.layout == 'masonry' %}break-inside: avoid; margin-bottom: {{ section.settings.gap | default: 20 }}px;{% endif %}
+    background: {{ section.settings.card_background | default: 'var(--clr-white)' }};
+    border: 1px solid {{ section.settings.card_border | default: 'var(--clr-gray)' }};
+    border-radius: 16px;
+    padding: 24px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .prev.section-{{ section.id }} .prev__card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .prev.section-{{ section.id }} .prev__card-stars { color: {{ section.settings.star_color | default: 'var(--clr-warning)' }}; display: inline-flex; gap: 1px; }
+  .prev.section-{{ section.id }} .prev__card-stars svg { width: 14px; height: 14px; fill: currentColor; }
+  .prev.section-{{ section.id }} .prev__card-date {
+    font-size: 12px; color: {{ section.settings.count_color | default: 'var(--clr-muted)' }};
+  }
+  .prev.section-{{ section.id }} .prev__card-title {
+    font-size: 15px; font-weight: 600; line-height: 1.3;
+    color: {{ section.settings.review_title_color | default: 'var(--clr-primary)' }};
+    margin: 0;
+  }
+  .prev.section-{{ section.id }} .prev__card-body {
+    font-size: 14px; line-height: 1.6;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .prev.section-{{ section.id }} .prev__card-body p { margin: 0; }
+
+  .prev.section-{{ section.id }} .prev__photo {
+    width: 100%;
+    aspect-ratio: 4/3;
+    margin-top: 4px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--clr-light);
+  }
+  .prev.section-{{ section.id }} .prev__photo img { width: 100%; height: 100%; object-fit: cover; }
+
+  .prev.section-{{ section.id }} .prev__author {
+    display: flex; align-items: center; gap: 10px; margin-top: auto;
+  }
+  .prev.section-{{ section.id }} .prev__avatar {
+    width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+    background: var(--clr-gray);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    color: {{ section.settings.count_color | default: 'var(--clr-muted)' }};
+  }
+  .prev.section-{{ section.id }} .prev__avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .prev.section-{{ section.id }} .prev__author-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .prev.section-{{ section.id }} .prev__author-name {
+    font-size: 13px; font-weight: 600;
+    color: {{ section.settings.review_title_color | default: 'var(--clr-primary)' }};
+  }
+  .prev.section-{{ section.id }} .prev__verified {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    color: {{ section.settings.verified_color | default: 'var(--clr-success)' }};
+  }
+  .prev.section-{{ section.id }} .prev__verified svg { width: 11px; height: 11px; }
+{%- endstyle -%}
+
+{%- capture star_svg -%}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{%- endcapture -%}
+
+<section class="prev section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="prev__container">
+
+    {%- assign review_blocks = section.blocks | where: 'type', 'review' -%}
+
+    {% if section.settings.show_summary %}
+      {%- assign rating = section.settings.overall_rating | default: 4.9 | plus: 0 -%}
+      {%- assign rating_pct = rating | divided_by: 5.0 | times: 100 -%}
+      <div class="prev__top">
+        <div class="prev__summary">
+          <div class="prev__score">{{ rating }}</div>
+          <div class="prev__stars">
+            <span class="prev__stars-track">{% for i in (1..5) %}{{ star_svg }}{% endfor %}</span>
+            <span class="prev__stars-fill" style="width: {{ rating_pct }}%;">{% for i in (1..5) %}{{ star_svg }}{% endfor %}</span>
+          </div>
+          <div class="prev__count">Based on {{ section.settings.review_count | default: '2,400+' | escape }} verified reviews</div>
+        </div>
+        <div class="prev__breakdown">
+          {% assign pcts = section.settings.rating_breakdown | default: '85,10,3,1,1' | split: ',' %}
+          {% for i in (1..5) %}
+            {%- assign stars = 6 | minus: forloop.index -%}
+            {%- assign pct = pcts[forloop.index0] | default: '0' | strip -%}
+            <div class="prev__bar-row">
+              <span>{{ stars }} star{% if stars != 1 %}s{% endif %}</span>
+              <div class="prev__bar"><span class="prev__bar-fill" style="width: {{ pct }}%;"></span></div>
+              <span>{{ pct }}%</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if review_blocks.size > 0 %}
+      <div class="prev__grid">
+        {% for block in review_blocks %}
+          {%- assign r = block.settings.rating | default: 5 | plus: 0 -%}
+          {%- if r > 5 -%}{% assign r = 5 %}{%- endif -%}
+          <article class="prev__card" {{ block.fluid_attributes }}>
+            <div class="prev__card-top">
+              <span class="prev__card-stars">{% for i in (1..r) %}{{ star_svg }}{% endfor %}</span>
+              {% if block.settings.date != blank %}<span class="prev__card-date">{{ block.settings.date | escape }}</span>{% endif %}
+            </div>
+            {% if block.settings.title != blank %}<h3 class="prev__card-title">{{ block.settings.title | escape }}</h3>{% endif %}
+            <div class="prev__card-body rte">{{ block.settings.body }}</div>
+            {% if block.settings.photo %}
+              <div class="prev__photo"><img src="{{ block.settings.photo | img_url: '800x' }}" alt="Customer photo" loading="lazy"></div>
+            {% endif %}
+            <div class="prev__author">
+              <div class="prev__avatar">
+                {% if block.settings.avatar %}<img src="{{ block.settings.avatar | img_url: '120x' }}" alt="{{ block.settings.author | escape }}">{% else %}{{ block.settings.author | default: '?' | slice: 0, 1 | upcase }}{% endif %}
+              </div>
+              <div class="prev__author-info">
+                <div class="prev__author-name">{{ block.settings.author | default: 'Customer' | escape }}</div>
+                {% if block.settings.verified %}
+                  <span class="prev__verified">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 2.6 3.5-.3.5 3.5L21 9.5l-1.5 3.2 1.5 3.2-2.6 1.7-.5 3.5-3.5-.3L12 22l-2.4-2.6-3.5.3-.5-3.5L3 14.5l1.5-3.2L3 8.1l2.6-1.7.5-3.5 3.5.3L12 2zm-1.2 13.2l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4 3.6 3.6z"/></svg>
+                    Verified
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Reviews Showcase",
+  "tag": "section",
+  "class": "product-reviews-showcase-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "radio", "id": "layout", "label": "Card layout", "default": "masonry",
+      "options": [ { "value": "masonry", "label": "Masonry" }, { "value": "grid", "label": "Even grid" } ]
+    },
+    { "type": "range", "id": "columns_desktop", "label": "Columns (desktop)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "range", "id": "gap", "label": "Gap (px)", "min": 8, "max": 48, "step": 2, "default": 20 },
+
+    { "type": "header", "content": "Summary Row" },
+    { "type": "checkbox", "id": "show_summary", "label": "Show summary + breakdown", "default": true },
+    { "type": "text", "id": "overall_rating", "label": "Overall rating (1-5)", "default": "4.9" },
+    { "type": "text", "id": "review_count", "label": "Review count text", "default": "2,400+" },
+    { "type": "text", "id": "rating_breakdown", "label": "Breakdown % (5,4,3,2,1)", "default": "85,10,3,1,1",
+      "info": "Comma-separated percentages totaling 100 for 5-star through 1-star bars." },
+    { "type": "select", "id": "score_font",  "label": "Big score font",       "options": "font_families", "default": "var(--ff-heading)" },
+    { "type": "select", "id": "score_color", "label": "Big score color",      "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "bar_track_color", "label": "Breakdown bar track", "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "bar_fill_color",  "label": "Breakdown bar fill",  "options": "background_colors", "default": "var(--clr-warning)" },
+
+    { "type": "header", "content": "Stars" },
+    { "type": "select", "id": "star_color",       "label": "Star color",       "options": "background_colors", "default": "var(--clr-warning)" },
+    { "type": "select", "id": "star_empty_color", "label": "Empty star color", "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Card Style" },
+    { "type": "select", "id": "card_background", "label": "Card background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "card_border",     "label": "Card border",     "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "review_title_color", "label": "Review title color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "body_color",   "label": "Body color",   "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "count_color",  "label": "Secondary text (dates, count)", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "verified_color","label": "Verified badge color", "options": "background_colors", "default": "var(--clr-success)" },
+    { "type": "select", "id": "divider_color", "label": "Top divider color", "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "review", "name": "Review Card",
+      "settings": [
+        { "type": "range",  "id": "rating",   "label": "Stars", "min": 0, "max": 5, "step": 1, "default": 5 },
+        { "type": "text",   "id": "title",    "label": "Review title", "default": "Exceeded my expectations" },
+        { "type": "richtext","id": "body",    "label": "Review body", "default": "<p>I\u2019ve tried every competitor out there \u2014 this is the first one that actually delivers on what it promises. Packaging, experience, support \u2014 everything premium.</p>" },
+        { "type": "text",   "id": "author",   "label": "Author",  "default": "Alex Morgan" },
+        { "type": "text",   "id": "date",     "label": "Date",    "default": "2 weeks ago" },
+        { "type": "checkbox","id": "verified","label": "Verified purchase", "default": true },
+        { "type": "image_picker", "id": "avatar", "label": "Avatar (optional)" },
+        { "type": "image_picker", "id": "photo",  "label": "Customer photo (optional)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Reviews Showcase",
+      "blocks": [
+        { "type": "review", "settings": { "rating": 5, "title": "Honestly the best",            "body": "<p>Took a chance based on the reviews \u2014 no regrets. Quality is top-tier and the little details clearly come from people who care.</p>", "author": "Jamie R.",    "date": "3 days ago" } },
+        { "type": "review", "settings": { "rating": 5, "title": "Every morning, no skipping",   "body": "<p>My whole routine is built around this now. Simple, works, and my energy through the afternoon is night and day.</p>", "author": "Priya D.", "date": "1 week ago" } },
+        { "type": "review", "settings": { "rating": 5, "title": "Finally found my product",      "body": "<p>I had almost given up. This one clicked immediately. Customer service was amazing too.</p>", "author": "Marcus C.", "date": "2 weeks ago" } },
+        { "type": "review", "settings": { "rating": 4, "title": "Really solid",                  "body": "<p>Shipping was fast and packaging was thoughtful. Knock off a half star only because I wish they had more size options.</p>", "author": "Leah A.",  "date": "3 weeks ago" } },
+        { "type": "review", "settings": { "rating": 5, "title": "Beautifully designed",          "body": "<p>It\u2019s the kind of thing where you notice new details a week in. Every choice feels intentional. Recommended.</p>", "author": "Sam P.", "date": "1 month ago" } },
+        { "type": "review", "settings": { "rating": 5, "title": "Worth every penny",             "body": "<p>More expensive than I usually spend but you feel it the moment you open the box. Will buy again.</p>", "author": "Alex N.",   "date": "1 month ago" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

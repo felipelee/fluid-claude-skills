@@ -1,0 +1,270 @@
+{%- style -%}
+  .ppress.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;background-repeat:no-repeat;{%- endif -%}
+  }
+  .ppress.section-{{ section.id }} .ppress__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});background-size:cover;background-position:center;background-repeat:no-repeat;{%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .ppress.section-{{ section.id }} .ppress__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .ppress.section-{{ section.id }} .ppress__container > * { position: relative; }
+  @media (max-width: 991px) { .ppress.section-{{ section.id }} .ppress__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .ppress.section-{{ section.id }} .ppress__container { padding-left: 16px; padding-right: 16px; } }
+
+  .ppress.section-{{ section.id }} .ppress__intro {
+    text-align: {{ section.settings.intro_alignment | default: 'center' }};
+    {%- if section.settings.intro_alignment == 'center' -%}margin: 0 auto 48px; max-width: 640px;{%- else -%}margin-bottom: 48px;{%- endif -%}
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .ppress.section-{{ section.id }} .ppress__carousel {
+    position: relative;
+  }
+  .ppress.section-{{ section.id }} .ppress__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - ({{ section.settings.items_desktop | default: 3 }} - 1) * 20px) / {{ section.settings.items_desktop | default: 3 }});
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding: 4px 0;
+  }
+  .ppress.section-{{ section.id }} .ppress__track::-webkit-scrollbar { display: none; }
+  @media (max-width: 991px) { .ppress.section-{{ section.id }} .ppress__track { grid-auto-columns: calc((100% - 16px) / 2); gap: 16px; } }
+  @media (max-width: 767px) { .ppress.section-{{ section.id }} .ppress__track { grid-auto-columns: 88%; gap: 12px; } }
+
+  .ppress.section-{{ section.id }} .ppress__card {
+    scroll-snap-align: start;
+    display: flex; flex-direction: column; gap: 16px;
+    padding: 28px;
+    background: {{ section.settings.card_background | default: 'var(--clr-white)' }};
+    border: 1px solid {{ section.settings.card_border | default: 'var(--clr-gray)' }};
+    border-radius: 18px;
+    min-height: 220px;
+  }
+  .ppress.section-{{ section.id }} .ppress__logo {
+    font-size: {{ section.settings.logo_font_size | default: 22 }}px;
+    font-weight: 800; letter-spacing: -0.02em;
+    font-family: {{ section.settings.logo_font | default: 'var(--ff-italic)' }};
+    color: {{ section.settings.logo_color | default: 'var(--clr-primary)' }};
+    line-height: 1;
+  }
+  .ppress.section-{{ section.id }} .ppress__logo-img {
+    max-height: 32px; max-width: 140px; width: auto;
+    object-fit: contain; object-position: left;
+  }
+  .ppress.section-{{ section.id }} .ppress__quote {
+    flex: 1;
+    font-size: {{ section.settings.quote_font_size | default: 16 }}px;
+    line-height: 1.55;
+    color: {{ section.settings.quote_color | default: 'var(--clr-primary)' }};
+  }
+  .ppress.section-{{ section.id }} .ppress__quote::before {
+    content: "\201C";
+    display: block;
+    font-size: 36px; line-height: 0.8;
+    color: {{ section.settings.quote_mark_color | default: 'var(--clr-accent)' }};
+    font-family: Georgia, serif;
+    margin-bottom: 4px;
+  }
+  .ppress.section-{{ section.id }} .ppress__attrib {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: {{ section.settings.attrib_color | default: 'var(--clr-muted)' }};
+  }
+
+  .ppress.section-{{ section.id }} .ppress__arrows {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    display: {% if section.settings.show_arrows %}flex{% else %}none{% endif %};
+    align-items: center; justify-content: space-between;
+    padding: 0 -6px;
+  }
+  .ppress.section-{{ section.id }} .ppress__arrow {
+    pointer-events: auto;
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: {{ section.settings.arrow_background | default: 'var(--clr-white)' }};
+    color: {{ section.settings.arrow_color | default: 'var(--clr-primary)' }};
+    border: 1px solid {{ section.settings.card_border | default: 'var(--clr-gray)' }};
+    border-radius: 50%; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(10, 37, 64, 0.08);
+  }
+  .ppress.section-{{ section.id }} .ppress__arrow svg { width: 16px; height: 16px; }
+{%- endstyle -%}
+
+<section class="ppress section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ppress__container">
+
+    {%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+    {%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+    {%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+    {%- assign press_blocks   = section.blocks | where: 'type', 'press_item' -%}
+
+    {% if eyebrow_blocks.size > 0 or heading_blocks.size > 0 or subhead_blocks.size > 0 %}
+      <div class="ppress__intro">
+        {% for block in eyebrow_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in heading_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+        {% for block in subhead_blocks %}<div class="rte" {{ block.fluid_attributes }}>{{ block.settings.text }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% if press_blocks.size > 0 %}
+      <div class="ppress__carousel" data-ppress-carousel>
+        <div class="ppress__track" data-ppress-track>
+          {% for block in press_blocks %}
+            <article class="ppress__card" {{ block.fluid_attributes }}>
+              {% if block.settings.logo_image %}
+                <img class="ppress__logo-img" src="{{ block.settings.logo_image | img_url: '400x' }}" alt="{{ block.settings.source | escape }}">
+              {% elsif block.settings.logo_text != blank %}
+                <div class="ppress__logo">{{ block.settings.logo_text | escape }}</div>
+              {% endif %}
+              <div class="ppress__quote">{{ block.settings.quote | default: 'A great quote about the product.' | escape }}</div>
+              <div class="ppress__attrib">{{ block.settings.source | default: 'Publication' | escape }}</div>
+            </article>
+          {% endfor %}
+        </div>
+        {% if section.settings.show_arrows %}
+          <div class="ppress__arrows">
+            <button type="button" class="ppress__arrow" data-ppress-prev aria-label="Previous">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="ppress__arrow" data-ppress-next aria-label="Next">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if press_blocks.size > 0 and section.settings.show_arrows %}
+<script>
+(function () {
+  function init(root) {
+    var track = root.querySelector('[data-ppress-track]');
+    var prev  = root.querySelector('[data-ppress-prev]');
+    var next  = root.querySelector('[data-ppress-next]');
+    if (!track) return;
+    function slide() {
+      var first = track.firstElementChild;
+      if (!first) return 0;
+      var style = getComputedStyle(track);
+      return first.offsetWidth + (parseFloat(style.columnGap || style.gap) || 0);
+    }
+    if (prev) prev.addEventListener('click', function () { track.scrollBy({ left: -slide(), behavior: 'smooth' }); });
+    if (next) next.addEventListener('click', function () { track.scrollBy({ left:  slide(), behavior: 'smooth' }); });
+  }
+  function boot() { document.querySelectorAll('.section-{{ section.id }} [data-ppress-carousel]').forEach(init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Product Press",
+  "tag": "section",
+  "class": "product-press-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "range", "id": "items_desktop", "label": "Items visible (desktop)", "min": 1, "max": 5, "step": 1, "default": 3 },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show navigation arrows", "default": true },
+    { "type": "select", "id": "intro_alignment", "label": "Intro Alignment", "default": "center",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }, { "value": "right", "label": "Right" } ]
+    },
+
+    { "type": "header", "content": "Card" },
+    { "type": "select", "id": "card_background", "label": "Card background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "card_border",     "label": "Card border",     "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "range",  "id": "quote_font_size", "label": "Quote font size (px)", "min": 13, "max": 22, "step": 1, "default": 16 },
+    { "type": "range",  "id": "logo_font_size",  "label": "Logo font size (px)",  "min": 16, "max": 32, "step": 1, "default": 22 },
+    { "type": "select", "id": "logo_font",       "label": "Logo font",       "options": "font_families", "default": "var(--ff-italic)" },
+    { "type": "select", "id": "logo_color",      "label": "Logo text color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "quote_color",     "label": "Quote color",     "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "quote_mark_color","label": "Quote mark color","options": "background_colors", "default": "var(--clr-accent)" },
+    { "type": "select", "id": "attrib_color",    "label": "Attribution color", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "arrow_background", "label": "Arrow background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "arrow_color",      "label": "Arrow icon color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<h5 style=\"color: var(--clr-muted); text-transform: uppercase; letter-spacing: 0.18em;\">As seen in</h5>" } ]
+    },
+    { "type": "heading", "name": "Heading",
+      "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<h2 style=\"color: var(--clr-primary);\">The press is talking.</h2>" } ]
+    },
+    { "type": "subhead", "name": "Subhead",
+      "settings": [ { "type": "richtext", "id": "text", "label": "Text" } ]
+    },
+    { "type": "press_item", "name": "Press Quote",
+      "settings": [
+        { "type": "image_picker", "id": "logo_image", "label": "Publication logo (optional)" },
+        { "type": "text",         "id": "logo_text",  "label": "Publication name (if no logo)", "default": "Wirecutter" },
+        { "type": "textarea",     "id": "quote",      "label": "Quote",  "default": "A standout in its category \u2014 worth every penny." },
+        { "type": "text",         "id": "source",     "label": "Attribution", "default": "Jane Smith, Wirecutter" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Press",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "press_item", "settings": { "logo_text": "Wirecutter",  "quote": "A standout in its category \u2014 worth every penny.",                   "source": "Wirecutter" } },
+        { "type": "press_item", "settings": { "logo_text": "The Verge",   "quote": "Simple, smart, and genuinely better than the competition.",             "source": "The Verge" } },
+        { "type": "press_item", "settings": { "logo_text": "Fast Company","quote": "One of the most quietly innovative products we've tested this year.",  "source": "Fast Company" } },
+        { "type": "press_item", "settings": { "logo_text": "GQ",          "quote": "The kind of thing you don\u2019t know you needed until you try it.",   "source": "GQ" } },
+        { "type": "press_item", "settings": { "logo_text": "Forbes",      "quote": "Proof that thoughtful design and real science can coexist.",           "source": "Forbes" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

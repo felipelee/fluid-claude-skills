@@ -1,0 +1,1283 @@
+{%- comment -%}
+  product_hero — canonical PDP hero
+  Gallery (left) + info column (right) with sticky info on desktop.
+  Wired to Fluid's product object + checkout JS hooks.
+  Drop {% section 'product_hero' %} into product/<slug>/index.liquid
+{%- endcomment -%}
+
+{%- assign not_purchasable = product.out_of_stock or product.available_for_country == false or product.active == false -%}
+{%- assign sel_variant = product.selected_or_first_available_variant -%}
+
+{%- comment -%} Pick image source: variant images (when present) > product images {%- endcomment -%}
+{%- assign images_array = product.images -%}
+{%- if sel_variant.images and sel_variant.images.size > 0 -%}
+  {%- assign images_array = sel_variant.images | parse_json -%}
+{%- endif -%}
+
+{%- comment -%} Compute savings if compare-at-price > price {%- endcomment -%}
+{%- assign has_compare = false -%}
+{%- if product.compare_at_price and product.compare_at_price != blank -%}
+  {%- assign cmp = product.compare_at_price | plus: 0.0 -%}
+  {%- assign cur = product.price | plus: 0.0 -%}
+  {%- if cmp > cur and cur > 0 -%}
+    {%- assign has_compare = true -%}
+    {%- assign savings_pct = cmp | minus: cur | times: 100.0 | divided_by: cmp | round -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- style -%}
+  .ph.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 48 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 48 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 48px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}
+      background-image: url({{ section.settings.background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+  }
+  .ph.section-{{ section.id }} .ph__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 32 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 32 }}px;{%- else -%}padding: 0 32px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}
+      background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    {%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .ph.section-{{ section.id }} .ph__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .ph.section-{{ section.id }} .ph__container > * { position: relative; }
+  @media (max-width: 991px) { .ph.section-{{ section.id }} .ph__container { padding-left: 16px; padding-right: 16px; } }
+
+  /* ── Layout grid ───────────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__grid {
+    display: grid;
+    grid-template-columns: {% if section.settings.gallery_position == 'right' %}minmax(0, 1fr) minmax(320px, {{ section.settings.info_width | default: 460 }}px){% else %}minmax(320px, {{ section.settings.info_width | default: 460 }}px) minmax(0, 1fr){% endif %};
+    gap: clamp(24px, 4vw, 64px);
+    align-items: start;
+  }
+  @media (max-width: 991px) {
+    .ph.section-{{ section.id }} .ph__grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  .ph.section-{{ section.id }} .ph__gallery {
+    {% if section.settings.gallery_position == 'left' %}order: 1;{% else %}order: 2;{% endif %}
+  }
+  .ph.section-{{ section.id }} .ph__info {
+    {% if section.settings.gallery_position == 'left' %}order: 2;{% else %}order: 1;{% endif %}
+    {% if section.settings.sticky_info %}
+      position: sticky;
+      top: {{ section.settings.sticky_offset | default: 100 }}px;
+    {% endif %}
+  }
+  @media (max-width: 991px) {
+    .ph.section-{{ section.id }} .ph__gallery,
+    .ph.section-{{ section.id }} .ph__info { order: unset; position: static; }
+  }
+
+  /* ── Gallery ──────────────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__gallery-wrap {
+    display: grid;
+    {% if section.settings.thumbnail_position == 'left' %}
+      grid-template-columns: 84px 1fr;
+      gap: 16px;
+    {% else %}
+      grid-template-columns: 1fr;
+      gap: 12px;
+    {% endif %}
+  }
+  @media (max-width: 991px) {
+    .ph.section-{{ section.id }} .ph__gallery-wrap { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  .ph.section-{{ section.id }} .ph__main-image-wrap {
+    position: relative;
+    aspect-ratio: {{ section.settings.image_aspect_ratio | default: '1/1' }};
+    background: {{ section.settings.image_placeholder_background | default: 'var(--clr-light)' }};
+    {%- assign ibr = section.settings.image_border_radius -%}
+    {%- if ibr -%}border-radius: {{ ibr.tl }}px {{ ibr.tr }}px {{ ibr.br }}px {{ ibr.bl }}px;{%- else -%}border-radius: 12px;{%- endif -%}
+    overflow: hidden;
+  }
+  .ph.section-{{ section.id }} .ph__main-image {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    transition: opacity .25s ease;
+    cursor: zoom-in;
+  }
+  .ph.section-{{ section.id }} .ph__main-image-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--clr-muted); opacity: 0.5;
+    background: repeating-linear-gradient(45deg, var(--clr-gray) 0 18px, var(--clr-light) 18px 36px);
+  }
+  .ph.section-{{ section.id }} .ph__badge {
+    position: absolute;
+    top: 16px; left: 16px;
+    z-index: 2;
+    padding: 5px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    background: {{ section.settings.savings_badge_background | default: 'var(--clr-accent)' }};
+    color: {{ section.settings.savings_badge_color | default: 'var(--clr-white)' }};
+    border-radius: 999px;
+  }
+
+  .ph.section-{{ section.id }} .ph__thumbs {
+    display: grid;
+    {% if section.settings.thumbnail_position == 'left' %}
+      grid-template-columns: 1fr;
+      grid-auto-rows: 84px;
+      gap: 8px;
+      max-height: calc(({{ section.settings.image_aspect_ratio_height | default: 1 }} / {{ section.settings.image_aspect_ratio_width | default: 1 }}) * 100%);
+      overflow-y: auto;
+      scrollbar-width: thin;
+    {% else %}
+      grid-auto-flow: column;
+      grid-auto-columns: 64px;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    {% endif %}
+  }
+  .ph.section-{{ section.id }} .ph__thumbs::-webkit-scrollbar { display: none; }
+  .ph.section-{{ section.id }} .ph__thumb {
+    aspect-ratio: 1/1;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .15s, transform .15s;
+    background: var(--clr-gray);
+  }
+  .ph.section-{{ section.id }} .ph__thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .ph.section-{{ section.id }} .ph__thumb:hover { border-color: {{ section.settings.thumb_hover_color | default: 'var(--clr-gray)' }}; }
+  .ph.section-{{ section.id }} .ph__thumb.is-active { border-color: {{ section.settings.thumb_active_color | default: 'var(--clr-primary)' }}; }
+
+  /* ── Info column ──────────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__info-stack {
+    display: flex; flex-direction: column;
+    gap: 16px;
+    color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
+  }
+
+  .ph.section-{{ section.id }} .ph__eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: {{ section.settings.eyebrow_color | default: 'var(--clr-muted)' }};
+    margin: 0;
+  }
+
+  .ph.section-{{ section.id }} .ph__title {
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0;
+    font-family: {{ section.settings.title_font | default: 'var(--ff-heading)' }};
+    color: {{ section.settings.title_color | default: 'var(--clr-primary)' }};
+  }
+
+  .ph.section-{{ section.id }} .ph__rating-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    color: {{ section.settings.rating_text_color | default: 'var(--clr-muted)' }};
+  }
+  .ph.section-{{ section.id }} .ph__stars { position: relative; display: inline-block; line-height: 0; }
+  .ph.section-{{ section.id }} .ph__stars-track,
+  .ph.section-{{ section.id }} .ph__stars-fill { display: inline-flex; gap: 1px; }
+  .ph.section-{{ section.id }} .ph__stars-track { color: {{ section.settings.star_empty_color | default: 'var(--clr-gray)' }}; }
+  .ph.section-{{ section.id }} .ph__stars-fill { position: absolute; inset: 0; overflow: hidden; color: {{ section.settings.star_color | default: 'var(--clr-warning)' }}; }
+  .ph.section-{{ section.id }} .ph__stars svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
+  .ph.section-{{ section.id }} .ph__rating-link {
+    color: inherit; text-decoration: underline; text-underline-offset: 3px;
+  }
+
+  .ph.section-{{ section.id }} .ph__price-row {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .ph.section-{{ section.id }} .ph__price {
+    font-size: clamp(22px, 2.6vw, 32px);
+    font-weight: 700; letter-spacing: -0.02em;
+    color: {{ section.settings.price_color | default: 'var(--clr-primary)' }};
+  }
+  .ph.section-{{ section.id }} .ph__compare {
+    font-size: 16px;
+    color: {{ section.settings.compare_color | default: 'var(--clr-muted)' }};
+    text-decoration: line-through;
+  }
+  .ph.section-{{ section.id }} .ph__savings {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    background: {{ section.settings.savings_pill_background | default: 'var(--clr-success)' }};
+    color: {{ section.settings.savings_pill_color | default: 'var(--clr-white)' }};
+    border-radius: 999px;
+  }
+
+  .ph.section-{{ section.id }} .ph__short-desc {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .ph.section-{{ section.id }} .ph__short-desc p { margin: 0 0 8px; }
+  .ph.section-{{ section.id }} .ph__short-desc p:last-child { margin-bottom: 0; }
+
+  .ph.section-{{ section.id }} .ph__divider { height: 1px; background: {{ section.settings.divider_color | default: 'var(--clr-gray)' }}; margin: 8px 0; }
+
+  /* ── Variant pickers ───────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__variant-group { display: flex; flex-direction: column; gap: 8px; margin: 4px 0; }
+  .ph.section-{{ section.id }} .ph__variant-label {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+    color: {{ section.settings.variant_label_color | default: 'var(--clr-primary)' }};
+    text-transform: uppercase;
+  }
+  .ph.section-{{ section.id }} .ph__variant-selected {
+    font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none;
+    color: {{ section.settings.variant_selected_color | default: 'var(--clr-muted)' }};
+  }
+  .ph.section-{{ section.id }} .ph__variant-options {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .ph.section-{{ section.id }} .ph__variant-pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 48px; padding: 9px 16px;
+    font-size: 14px; font-weight: 500;
+    color: {{ section.settings.variant_pill_color | default: 'var(--clr-primary)' }};
+    background: {{ section.settings.variant_pill_background | default: 'var(--clr-white)' }};
+    border: 1.5px solid {{ section.settings.variant_pill_border | default: 'var(--clr-gray)' }};
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s, background-color .15s, color .15s;
+  }
+  .ph.section-{{ section.id }} .ph__variant-pill:hover { border-color: {{ section.settings.variant_pill_hover_border | default: 'var(--clr-primary)' }}; }
+  .ph.section-{{ section.id }} .ph__variant-pill.is-active {
+    background: {{ section.settings.variant_pill_active_bg | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.variant_pill_active_color | default: 'var(--clr-white)' }};
+    border-color: {{ section.settings.variant_pill_active_bg | default: 'var(--clr-primary)' }};
+  }
+  .ph.section-{{ section.id }} select.ph__variant-select {
+    appearance: none; -webkit-appearance: none;
+    width: 100%; max-width: 360px;
+    padding: 10px 36px 10px 14px;
+    font-size: 14px; font-family: inherit;
+    color: {{ section.settings.variant_pill_color | default: 'var(--clr-primary)' }};
+    background-color: {{ section.settings.variant_pill_background | default: 'var(--clr-white)' }};
+    border: 1.5px solid {{ section.settings.variant_pill_border | default: 'var(--clr-gray)' }};
+    border-radius: 10px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ── Quantity stepper ──────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__qty {
+    display: inline-flex; align-items: stretch;
+    border: 1.5px solid {{ section.settings.variant_pill_border | default: 'var(--clr-gray)' }};
+    border-radius: 999px;
+    overflow: hidden;
+    width: fit-content;
+  }
+  .ph.section-{{ section.id }} .ph__qty button {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer;
+    color: {{ section.settings.variant_pill_color | default: 'var(--clr-primary)' }};
+    font-size: 18px; line-height: 1;
+    transition: background-color .15s;
+  }
+  .ph.section-{{ section.id }} .ph__qty button:hover { background: {{ section.settings.variant_pill_border | default: 'var(--clr-gray)' }}; }
+  .ph.section-{{ section.id }} .ph__qty input {
+    width: 40px; padding: 0;
+    text-align: center;
+    background: transparent; border: none;
+    font-size: 14px; font-weight: 500;
+    color: {{ section.settings.variant_pill_color | default: 'var(--clr-primary)' }};
+    -moz-appearance: textfield;
+  }
+  .ph.section-{{ section.id }} .ph__qty input::-webkit-outer-spin-button,
+  .ph.section-{{ section.id }} .ph__qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* ── Add to cart ──────────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__cta-row { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .ph.section-{{ section.id }} .ph__cta {
+    width: 100%;
+    padding: 18px 28px;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: {{ section.settings.cta_text_color | default: 'var(--clr-white)' }};
+    background: {{ section.settings.cta_background | default: 'var(--clr-primary)' }};
+    border: none; border-radius: 999px;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .ph.section-{{ section.id }} .ph__cta:hover { opacity: 0.92; }
+  .ph.section-{{ section.id }} .ph__cta:active { transform: translateY(1px); }
+  .ph.section-{{ section.id }} .ph__cta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .ph.section-{{ section.id }} .ph__sold-out {
+    padding: 12px 16px;
+    background: {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+    border-radius: 10px;
+    font-size: 14px; text-align: center;
+  }
+
+  /* ── Trust strip ──────────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__trust {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-top: 12px;
+    padding: 16px 18px;
+    background: {{ section.settings.trust_background | default: 'var(--clr-light)' }};
+    border-radius: 12px;
+  }
+  .ph.section-{{ section.id }} .ph__trust-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; font-weight: 500;
+    color: {{ section.settings.trust_color | default: 'var(--clr-primary)' }};
+  }
+  .ph.section-{{ section.id }} .ph__trust-item svg {
+    width: 16px; height: 16px; flex-shrink: 0;
+    color: {{ section.settings.trust_icon_color | default: 'var(--clr-success)' }};
+  }
+
+  /* ── Accordion ────────────────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__accordion { margin-top: 18px; }
+  .ph.section-{{ section.id }} .ph__acc-item { border-top: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }}; }
+  .ph.section-{{ section.id }} .ph__acc-item:last-child { border-bottom: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }}; }
+  .ph.section-{{ section.id }} .ph__acc-item > summary {
+    list-style: none; cursor: pointer;
+    padding: 16px 0;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: {{ section.settings.accordion_label_color | default: 'var(--clr-primary)' }};
+    user-select: none;
+  }
+  .ph.section-{{ section.id }} .ph__acc-item > summary::-webkit-details-marker { display: none; }
+  .ph.section-{{ section.id }} .ph__acc-item > summary::after {
+    content: ""; flex-shrink: 0;
+    width: 12px; height: 12px;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") center / contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") center / contain no-repeat;
+    transition: transform .2s;
+  }
+  .ph.section-{{ section.id }} .ph__acc-item[open] > summary::after { transform: rotate(180deg); }
+  .ph.section-{{ section.id }} .ph__acc-body {
+    padding: 0 0 20px;
+    font-size: 14.5px; line-height: 1.6;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .ph.section-{{ section.id }} .ph__acc-body p:first-child { margin-top: 0; }
+  .ph.section-{{ section.id }} .ph__acc-body p:last-child  { margin-bottom: 0; }
+
+  /* ── Promo banner (top of info column) ──────────────────── */
+  .ph.section-{{ section.id }} .ph__promo {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 14px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    background: {{ section.settings.promo_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.promo_color | default: 'var(--clr-white)' }};
+    border-radius: 999px;
+    text-align: center;
+  }
+  .ph.section-{{ section.id }} .ph__promo svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* ── Highlights (icon + text bullets) ────────────────────── */
+  .ph.section-{{ section.id }} .ph__highlights {
+    display: grid; gap: 10px;
+    margin: 4px 0;
+    padding: 14px 16px;
+    background: {{ section.settings.highlights_background | default: 'transparent' }};
+    border: 1px solid {{ section.settings.highlights_border | default: 'var(--clr-gray)' }};
+    border-radius: 12px;
+  }
+  .ph.section-{{ section.id }} .ph__highlight {
+    display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 12px;
+    font-size: 14px;
+    color: {{ section.settings.highlights_text_color | default: 'var(--clr-primary)' }};
+  }
+  .ph.section-{{ section.id }} .ph__highlight-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: {{ section.settings.highlights_icon_bg | default: 'var(--clr-light)' }};
+    color: {{ section.settings.highlights_icon_color | default: 'var(--clr-primary)' }};
+    flex-shrink: 0;
+  }
+  .ph.section-{{ section.id }} .ph__highlight-icon svg { width: 16px; height: 16px; }
+  .ph.section-{{ section.id }} .ph__highlight-text strong { font-weight: 600; }
+  .ph.section-{{ section.id }} .ph__highlight-text small { display: block; font-size: 12.5px; color: {{ section.settings.body_color | default: 'var(--clr-body)' }}; opacity: 0.85; margin-top: 2px; }
+
+  /* ── Subscription toggle ─────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__sub-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    padding: 4px;
+    background: {{ section.settings.sub_toggle_background | default: 'var(--clr-light)' }};
+    border-radius: 12px;
+    margin: 4px 0;
+  }
+  .ph.section-{{ section.id }} .ph__sub-option {
+    position: relative;
+    padding: 12px 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background-color .15s, color .15s, box-shadow .15s;
+    text-align: left;
+    background: transparent;
+    color: {{ section.settings.sub_option_text | default: 'var(--clr-primary)' }};
+    border: none;
+  }
+  .ph.section-{{ section.id }} .ph__sub-option.is-active {
+    background: {{ section.settings.sub_option_active_bg | default: 'var(--clr-white)' }};
+    color: {{ section.settings.sub_option_active_text | default: 'var(--clr-primary)' }};
+    box-shadow: 0 2px 8px -2px rgba(17, 24, 39, 0.12);
+  }
+  .ph.section-{{ section.id }} .ph__sub-option-label {
+    display: block;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .ph.section-{{ section.id }} .ph__sub-option-detail {
+    display: block;
+    font-size: 12px; opacity: 0.7;
+    margin-top: 2px;
+  }
+  .ph.section-{{ section.id }} .ph__sub-option-saving {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+    background: {{ section.settings.savings_pill_background | default: 'var(--clr-success)' }};
+    color: {{ section.settings.savings_pill_color | default: 'var(--clr-white)' }};
+    border-radius: 999px;
+    vertical-align: middle;
+  }
+
+  /* ── Inventory + Delivery ────────────────────────────────── */
+  .ph.section-{{ section.id }} .ph__urgency {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    background: {{ section.settings.urgency_background | default: 'rgba(245, 158, 11, 0.12)' }};
+    color: {{ section.settings.urgency_color | default: 'var(--clr-warning)' }};
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .ph.section-{{ section.id }} .ph__urgency::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    animation: ph-pulse 1.6s infinite ease-in-out;
+  }
+  @keyframes ph-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .ph.section-{{ section.id }} .ph__delivery {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    color: {{ section.settings.body_color | default: 'var(--clr-body)' }};
+  }
+  .ph.section-{{ section.id }} .ph__delivery svg { width: 16px; height: 16px; flex-shrink: 0; color: {{ section.settings.delivery_icon_color | default: 'var(--clr-success)' }}; }
+  .ph.section-{{ section.id }} .ph__delivery strong { font-weight: 600; color: {{ section.settings.text_color | default: 'var(--clr-primary)' }}; }
+
+  /* Refined Add to Cart sizing */
+  .ph.section-{{ section.id }} .ph__cta { padding: 16px 28px; font-size: 14px; }
+
+  /* ── Image lightbox ──────────────────────────────────────── */
+  .ph__lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9999; padding: 24px;
+  }
+  .ph__lightbox.is-open { display: flex; }
+  .ph__lightbox img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .ph__lightbox-close,
+  .ph__lightbox-prev,
+  .ph__lightbox-next {
+    position: absolute;
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.95);
+    border: none; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: #111;
+    transition: transform .15s;
+  }
+  .ph__lightbox-close { top: 24px; right: 24px; }
+  .ph__lightbox-prev { left: 24px; top: 50%; transform: translateY(-50%); }
+  .ph__lightbox-next { right: 24px; top: 50%; transform: translateY(-50%); }
+  .ph__lightbox-close:hover,
+  .ph__lightbox-prev:hover,
+  .ph__lightbox-next:hover { transform: scale(1.05); }
+  .ph__lightbox-prev:hover { transform: translateY(-50%) scale(1.05); }
+  .ph__lightbox-next:hover { transform: translateY(-50%) scale(1.05); }
+  .ph__lightbox-close svg,
+  .ph__lightbox-prev svg,
+  .ph__lightbox-next svg { width: 20px; height: 20px; }
+  .ph__lightbox-counter {
+    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6); color: #fff;
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 500;
+  }
+
+  /* ── Sticky bottom bar (mobile) ──────────────────────────── */
+  .ph__sticky-bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: {{ section.settings.sticky_bar_background | default: 'var(--clr-white)' }};
+    border-top: 1px solid {{ section.settings.divider_color | default: 'var(--clr-gray)' }};
+    padding: 10px 16px env(safe-area-inset-bottom, 12px);
+    display: none; align-items: center; gap: 12px;
+    z-index: 100;
+    box-shadow: 0 -4px 24px -8px rgba(17, 24, 39, 0.15);
+    transform: translateY(100%);
+    transition: transform .25s ease;
+  }
+  .ph__sticky-bar.is-visible { transform: translateY(0); }
+  @media (max-width: 991px) { .ph__sticky-bar { display: flex; } }
+  .ph__sticky-thumb {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: var(--clr-gray);
+    overflow: hidden; flex-shrink: 0;
+  }
+  .ph__sticky-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .ph__sticky-info { flex: 1; min-width: 0; }
+  .ph__sticky-title {
+    font-size: 13px; font-weight: 600;
+    color: {{ section.settings.text_color | default: 'var(--clr-primary)' }};
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ph__sticky-price {
+    font-size: 14px; font-weight: 700;
+    color: {{ section.settings.price_color | default: 'var(--clr-primary)' }};
+  }
+  .ph__sticky-cta {
+    padding: 10px 18px;
+    background: {{ section.settings.cta_background | default: 'var(--clr-primary)' }};
+    color: {{ section.settings.cta_text_color | default: 'var(--clr-white)' }};
+    border: none; border-radius: 999px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+{%- endstyle -%}
+
+<section class="ph section-{{ section.id }}" {{ section.fluid_attributes }}>
+  <div class="ph__container">
+    <div class="ph__grid">
+
+      {%- comment -%} ───────── Gallery ───────── {%- endcomment -%}
+      <div class="ph__gallery">
+        <div class="ph__gallery-wrap" data-ph-gallery>
+          {% if section.settings.thumbnail_position == 'left' %}
+            <div class="ph__thumbs" data-ph-thumbs>
+              {% for image in images_array %}
+                <button type="button" class="ph__thumb{% if forloop.first %} is-active{% endif %}" data-ph-thumb data-image-src="{{ image.src }}" aria-label="View image {{ forloop.index }}">
+                  <img src="{{ image.src }}" alt="{{ product.title | escape }} — view {{ forloop.index }}" loading="lazy">
+                </button>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="ph__main-image-wrap">
+            {% if has_compare and section.settings.show_savings_badge %}
+              <span class="ph__badge">−{{ savings_pct }}%</span>
+            {% endif %}
+            {% if images_array.size > 0 %}
+              <img class="ph__main-image" src="{{ images_array[0].src }}" alt="{{ product.title | escape }}" data-ph-main loading="eager">
+            {% else %}
+              <div class="ph__main-image-placeholder">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="64" height="64"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if section.settings.thumbnail_position == 'bottom' %}
+            <div class="ph__thumbs" data-ph-thumbs>
+              {% for image in images_array %}
+                <button type="button" class="ph__thumb{% if forloop.first %} is-active{% endif %}" data-ph-thumb data-image-src="{{ image.src }}" aria-label="View image {{ forloop.index }}">
+                  <img src="{{ image.src }}" alt="{{ product.title | escape }} — view {{ forloop.index }}" loading="lazy">
+                </button>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {%- comment -%} ───────── Info column ───────── {%- endcomment -%}
+      <div class="ph__info">
+        {% form 'product', product, class: 'ph__form', id: 'product-form-{{ section.id }}' %}
+          <div class="ph__info-stack">
+
+            {%- assign promo_block = section.blocks | where: 'type', 'promo_banner' | first -%}
+            {% if promo_block %}
+              <div class="ph__promo" {{ promo_block.fluid_attributes }}>
+                {% if promo_block.settings.show_icon %}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                {% endif %}
+                <span>{{ promo_block.settings.text | default: 'Subscribe & save 15%' | escape }}</span>
+              </div>
+            {% endif %}
+
+            {%- assign eyebrow_block = section.blocks | where: 'type', 'eyebrow' | first -%}
+            {% if eyebrow_block %}
+              <div class="ph__eyebrow" {{ eyebrow_block.fluid_attributes }}>{{ eyebrow_block.settings.text | default: 'Bestseller' | escape }}</div>
+            {% elsif section.settings.show_default_eyebrow %}
+              <div class="ph__eyebrow">{{ section.settings.default_eyebrow | default: 'Bestseller' | escape }}</div>
+            {% endif %}
+
+            <h1 class="ph__title">{{ product.title | escape }}</h1>
+
+            {% if section.settings.show_rating %}
+              {%- assign rating = section.settings.rating_value | default: 4.9 | plus: 0 -%}
+              {%- assign rating_pct = rating | divided_by: 5.0 | times: 100 -%}
+              <div class="ph__rating-row">
+                <span class="ph__stars" aria-label="{{ rating }} out of 5 stars">
+                  <span class="ph__stars-track">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </span>
+                  <span class="ph__stars-fill" style="width: {{ rating_pct }}%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </span>
+                </span>
+                <span>{{ section.settings.rating_value | default: '4.9' }}</span>
+                {% if section.settings.review_count != blank %}
+                  <a href="#reviews" class="ph__rating-link">({{ section.settings.review_count | escape }} reviews)</a>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="ph__price-row">
+              <span class="ph__price">{{ product.price }}</span>
+              {% if has_compare %}
+                <span class="ph__compare">{{ product.compare_at_price }}</span>
+                <span class="ph__savings">Save {{ savings_pct }}%</span>
+              {% endif %}
+            </div>
+
+            {%- assign desc_block = section.blocks | where: 'type', 'description' | first -%}
+            {% if desc_block and desc_block.settings.text != blank %}
+              <div class="ph__short-desc rte" {{ desc_block.fluid_attributes }}>{{ desc_block.settings.text }}</div>
+            {% elsif product.short_description != blank %}
+              <div class="ph__short-desc">{{ product.short_description }}</div>
+            {% elsif product.feature_text != blank %}
+              <div class="ph__short-desc">{{ product.feature_text }}</div>
+            {% endif %}
+
+            {%- assign hl_blocks = section.blocks | where: 'type', 'highlight' -%}
+            {% if hl_blocks.size > 0 %}
+              <div class="ph__highlights">
+                {% for block in hl_blocks %}
+                  <div class="ph__highlight" {{ block.fluid_attributes }}>
+                    <span class="ph__highlight-icon">
+                      {% case block.settings.icon %}
+                        {% when 'check' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% when 'leaf' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96c1.4 9.3-3.7 14.4-8.2 17.04Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>
+                        {% when 'sparkle' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+                        {% when 'heart' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        {% when 'shield' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        {% when 'flame' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                        {% when 'award' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                        {% when 'truck' %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        {% else %}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      {% endcase %}
+                    </span>
+                    <div class="ph__highlight-text">
+                      <strong>{{ block.settings.title | default: 'Highlight' | escape }}</strong>
+                      {% if block.settings.text != blank %}<small>{{ block.settings.text | escape }}</small>{% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {% if product.subscription_plans and product.subscription_plans.size > 0 and section.settings.show_subscription_toggle %}
+              {%- assign sub_plan = product.subscription_plans | first -%}
+              {%- assign sub_save_pct = section.settings.subscription_savings_pct | default: 15 -%}
+              <div class="ph__sub-toggle" data-ph-sub-toggle role="radiogroup" aria-label="Purchase type">
+                <button type="button" class="ph__sub-option{% unless product.subscription_only %} is-active{% endunless %}" data-ph-sub-option="onetime" role="radio" aria-checked="{% unless product.subscription_only %}true{% else %}false{% endunless %}">
+                  <span class="ph__sub-option-label">{{ section.settings.onetime_label | default: 'One-time purchase' | escape }}</span>
+                  <span class="ph__sub-option-detail">{{ product.price }}</span>
+                </button>
+                <button type="button" class="ph__sub-option{% if product.subscription_only %} is-active{% endif %}" data-ph-sub-option="subscribe" role="radio" aria-checked="{% if product.subscription_only %}true{% else %}false{% endif %}">
+                  <span class="ph__sub-option-label">
+                    {{ section.settings.subscribe_label | default: 'Subscribe & save' | escape }}
+                    <span class="ph__sub-option-saving">{{ sub_save_pct }}% off</span>
+                  </span>
+                  <span class="ph__sub-option-detail">{{ product.subscription_price | default: product.price }} · cancel anytime</span>
+                </button>
+              </div>
+            {% endif %}
+
+            {% if product.options_with_values and product.options_with_values.size > 0 %}
+              <div class="ph__divider"></div>
+              {% for option in product.options_with_values %}
+                <div class="ph__variant-group">
+                  <label class="ph__variant-label">
+                    {{ option.name | escape }}
+                    {% for v in option.values %}{% if v.selected %}<span class="ph__variant-selected">{{ v.name | escape }}</span>{% endif %}{% endfor %}
+                  </label>
+                  {% if section.settings.variant_style == 'pills' and option.values.size <= 8 %}
+                    <div class="ph__variant-options">
+                      {% for value in option.values %}
+                        <label class="ph__variant-pill{% if value.selected %} is-active{% endif %}">
+                          <input type="radio" name="fluid-checkout-option-{{ option.option_id }}" value="{{ value.id }}" {% if value.selected %}checked{% endif %} style="position:absolute;opacity:0;width:1px;height:1px;">
+                          {{ value.name | escape }}
+                        </label>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <select name="fluid-checkout-option-{{ option.option_id }}" class="ph__variant-select custom-select variation-dropdown">
+                      {% for value in option.values %}
+                        <option value="{{ value.id }}" {% if value.selected %}selected{% endif %}>{{ value.name | escape }}</option>
+                      {% endfor %}
+                    </select>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            {% unless not_purchasable %}
+              <div class="ph__variant-group">
+                <label class="ph__variant-label">Quantity</label>
+                <div class="ph__qty">
+                  <button type="button" data-ph-qty-dec aria-label="Decrease quantity">−</button>
+                  <input type="number" value="1" min="1" {% if product.buyable_quantity %}max="{{ product.buyable_quantity }}"{% endif %} name="quantity" id="fluid-checkout-quantity" data-ph-qty-input>
+                  <button type="button" data-ph-qty-inc aria-label="Increase quantity">+</button>
+                </div>
+              </div>
+
+              <div class="ph__cta-row">
+                <button type="button" class="ph__cta" data-ph-cta
+                  data-fluid-add-to-cart="{{ selected_variant_id }}"
+                  data-fluid-quantity="1"
+                  {% if product.subscription_only %}data-fluid-subscription-plan-id="{{ product.selected_subscription_plan_id }}"{% endif %}>
+                  {{ section.settings.cta_label | default: 'Add to cart' | escape }}
+                </button>
+                {% if section.settings.show_urgency and product.buyable_quantity and product.buyable_quantity > 0 and product.buyable_quantity <= section.settings.low_stock_threshold %}
+                  <div class="ph__urgency">
+                    {%- assign urg_tpl = section.settings.urgency_template -%}
+                    {%- if urg_tpl == blank -%}{%- assign urg_tpl = 'Only QTY left in stock' -%}{%- endif -%}
+                    {{ urg_tpl | replace: 'QTY', product.buyable_quantity }}
+                  </div>
+                {% endif %}
+                {% if section.settings.show_delivery %}
+                  <div class="ph__delivery">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    <span>{{ section.settings.delivery_label_pre | default: 'Order in the next 4 hours and get it' | escape }} <strong data-ph-delivery data-days-out="{{ section.settings.delivery_days_out | default: 5 }}">by {{ section.settings.delivery_default_label | default: 'Friday' | escape }}</strong></span>
+                  </div>
+                {% endif %}
+              </div>
+            {% else %}
+              <div class="ph__sold-out">{{ section.settings.sold_out_label | default: 'Currently unavailable' | escape }}</div>
+            {% endunless %}
+
+            {%- assign trust_blocks = section.blocks | where: 'type', 'trust_item' -%}
+            {% if trust_blocks.size > 0 %}
+              <div class="ph__trust">
+                {% for block in trust_blocks %}
+                  <div class="ph__trust-item" {{ block.fluid_attributes }}>
+                    {% case block.settings.icon %}
+                      {% when 'check' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      {% when 'truck' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                      {% when 'shield' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      {% when 'leaf' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96c1.4 9.3-3.7 14.4-8.2 17.04Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>
+                      {% when 'rotate' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                      {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {% endcase %}
+                    <span>{{ block.settings.text | default: 'Free shipping' | escape }}</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {%- assign acc_blocks = section.blocks | where: 'type', 'accordion_item' -%}
+            {% if acc_blocks.size > 0 %}
+              <div class="ph__accordion">
+                {% for block in acc_blocks %}
+                  <details class="ph__acc-item"{% if block.settings.open_by_default %} open{% endif %} {{ block.fluid_attributes }}>
+                    <summary>{{ block.settings.title | default: 'Details' | escape }}</summary>
+                    <div class="ph__acc-body rte">
+                      {% if block.settings.use_product_description %}
+                        {{ product.description }}
+                      {% else %}
+                        {{ block.settings.body }}
+                      {% endif %}
+                    </div>
+                  </details>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+          </div>
+        {% endform %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% if section.settings.show_lightbox and images_array.size > 0 %}
+<div class="ph__lightbox" data-ph-lightbox aria-hidden="true">
+  <button type="button" class="ph__lightbox-close" data-ph-lightbox-close aria-label="Close">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <button type="button" class="ph__lightbox-prev" data-ph-lightbox-prev aria-label="Previous">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <img data-ph-lightbox-img src="" alt="">
+  <button type="button" class="ph__lightbox-next" data-ph-lightbox-next aria-label="Next">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  <div class="ph__lightbox-counter" data-ph-lightbox-counter>1 / {{ images_array.size }}</div>
+</div>
+{% endif %}
+
+{% if section.settings.show_sticky_bar %}
+<div class="ph__sticky-bar" data-ph-sticky-bar>
+  <div class="ph__sticky-thumb">
+    {% if images_array.size > 0 %}
+      <img src="{{ images_array[0].src }}" alt="{{ product.title | escape }}">
+    {% endif %}
+  </div>
+  <div class="ph__sticky-info">
+    <div class="ph__sticky-title">{{ product.title | escape }}</div>
+    <div class="ph__sticky-price">{{ product.price }}</div>
+  </div>
+  <button type="button" class="ph__sticky-cta"
+    data-fluid-add-to-cart="{{ selected_variant_id }}"
+    data-fluid-quantity="1"
+    {% if product.subscription_only %}data-fluid-subscription-plan-id="{{ product.selected_subscription_plan_id }}"{% endif %}>
+    {{ section.settings.sticky_cta_label | default: 'Add' | escape }}
+  </button>
+</div>
+{% endif %}
+
+<script>
+(function () {
+  function init(root) {
+    var main = root.querySelector('[data-ph-main]');
+    var thumbs = root.querySelectorAll('[data-ph-thumb]');
+    thumbs.forEach(function (t) {
+      t.addEventListener('click', function () {
+        var src = t.getAttribute('data-image-src');
+        if (main && src) main.setAttribute('src', src);
+        thumbs.forEach(function (x) { x.classList.remove('is-active'); });
+        t.classList.add('is-active');
+      });
+    });
+
+    var qInput = root.querySelector('[data-ph-qty-input]');
+    var qDec = root.querySelector('[data-ph-qty-dec]');
+    var qInc = root.querySelector('[data-ph-qty-inc]');
+    var addBtn = root.querySelector('[data-fluid-add-to-cart]');
+    function syncQty() {
+      if (!qInput || !addBtn) return;
+      addBtn.setAttribute('data-fluid-quantity', qInput.value || 1);
+    }
+    if (qDec) qDec.addEventListener('click', function () {
+      if (!qInput) return;
+      var v = parseInt(qInput.value || '1', 10);
+      qInput.value = Math.max(parseInt(qInput.min || '1', 10), v - 1);
+      syncQty();
+    });
+    if (qInc) qInc.addEventListener('click', function () {
+      if (!qInput) return;
+      var v = parseInt(qInput.value || '1', 10);
+      var max = qInput.max ? parseInt(qInput.max, 10) : Infinity;
+      qInput.value = Math.min(max, v + 1);
+      syncQty();
+    });
+    if (qInput) qInput.addEventListener('input', syncQty);
+
+    /* Variant pill radios — toggle is-active on label */
+    root.querySelectorAll('.ph__variant-pill input[type="radio"]').forEach(function (r) {
+      r.addEventListener('change', function () {
+        var name = r.name;
+        root.querySelectorAll('input[type="radio"][name="' + name + '"]').forEach(function (x) {
+          x.closest('.ph__variant-pill').classList.toggle('is-active', x.checked);
+        });
+      });
+    });
+
+    /* Subscription toggle */
+    var subOptions = root.querySelectorAll('[data-ph-sub-option]');
+    subOptions.forEach(function (b) {
+      b.addEventListener('click', function () {
+        subOptions.forEach(function (x) {
+          x.classList.toggle('is-active', x === b);
+          x.setAttribute('aria-checked', x === b ? 'true' : 'false');
+        });
+        var planAttr = b.getAttribute('data-ph-sub-option') === 'subscribe' ? '{{ product.selected_subscription_plan_id }}' : '';
+        if (addBtn) {
+          if (planAttr) addBtn.setAttribute('data-fluid-subscription-plan-id', planAttr);
+          else addBtn.removeAttribute('data-fluid-subscription-plan-id');
+        }
+      });
+    });
+
+    /* Image lightbox — click main image opens overlay */
+    var lightbox = document.querySelector('[data-ph-lightbox]');
+    if (main && lightbox) {
+      var lbImg     = lightbox.querySelector('[data-ph-lightbox-img]');
+      var lbCounter = lightbox.querySelector('[data-ph-lightbox-counter]');
+      var lbClose   = lightbox.querySelector('[data-ph-lightbox-close]');
+      var lbPrev    = lightbox.querySelector('[data-ph-lightbox-prev]');
+      var lbNext    = lightbox.querySelector('[data-ph-lightbox-next]');
+      var sources   = Array.prototype.map.call(thumbs, function (t) { return t.getAttribute('data-image-src'); });
+      if (sources.length === 0 && main.src) sources = [main.src];
+      var idx = 0;
+
+      function show(i) {
+        if (sources.length === 0) return;
+        idx = (i + sources.length) % sources.length;
+        if (lbImg) lbImg.setAttribute('src', sources[idx]);
+        if (lbCounter) lbCounter.textContent = (idx + 1) + ' / ' + sources.length;
+      }
+      function open(i) {
+        show(i || 0);
+        lightbox.classList.add('is-open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        lightbox.classList.remove('is-open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+      main.addEventListener('click', function () {
+        var src = main.getAttribute('src');
+        var found = sources.indexOf(src);
+        open(found >= 0 ? found : 0);
+      });
+      if (lbClose) lbClose.addEventListener('click', close);
+      if (lbPrev) lbPrev.addEventListener('click', function () { show(idx - 1); });
+      if (lbNext) lbNext.addEventListener('click', function () { show(idx + 1); });
+      lightbox.addEventListener('click', function (e) { if (e.target === lightbox) close(); });
+      document.addEventListener('keydown', function (e) {
+        if (!lightbox.classList.contains('is-open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft')  show(idx - 1);
+        else if (e.key === 'ArrowRight') show(idx + 1);
+      });
+    }
+
+    /* Sticky bottom bar (mobile) — show after scrolling past hero */
+    var stickyBar = document.querySelector('[data-ph-sticky-bar]');
+    if (stickyBar) {
+      var heroBottom = function () { return root.getBoundingClientRect().bottom; };
+      function onScroll() {
+        if (heroBottom() < 100) stickyBar.classList.add('is-visible');
+        else stickyBar.classList.remove('is-visible');
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+
+    /* Delivery date — calculate days from today */
+    var deliveryEl = root.querySelector('[data-ph-delivery]');
+    if (deliveryEl) {
+      var daysOut = parseInt(deliveryEl.getAttribute('data-days-out') || '5', 10);
+      var d = new Date();
+      d.setDate(d.getDate() + daysOut);
+      var weekday = d.toLocaleDateString(undefined, { weekday: 'long' });
+      var month   = d.toLocaleDateString(undefined, { month: 'short' });
+      var day     = d.getDate();
+      deliveryEl.textContent = 'by ' + weekday + ', ' + month + ' ' + day;
+    }
+  }
+  function boot() {
+    document.querySelectorAll('.section-{{ section.id }}').forEach(init);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
+<script src="{{ 'product.js' | asset_url }}"></script>
+
+{% schema %}
+{
+  "name": "Product Hero",
+  "tag": "section",
+  "class": "product-hero-section",
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    { "type": "radio", "id": "gallery_position", "label": "Gallery position", "default": "left",
+      "options": [
+        { "value": "left",  "label": "Gallery left, info right" },
+        { "value": "right", "label": "Gallery right, info left" }
+      ]
+    },
+    { "type": "radio", "id": "thumbnail_position", "label": "Thumbnail position", "default": "left",
+      "options": [
+        { "value": "left",   "label": "Vertical strip (left of main image)" },
+        { "value": "bottom", "label": "Horizontal strip (below main image)" }
+      ]
+    },
+    { "type": "range", "id": "info_width", "label": "Info column width (px, desktop)", "min": 320, "max": 560, "step": 10, "default": 460 },
+    { "type": "checkbox", "id": "sticky_info", "label": "Sticky info column on scroll (desktop)", "default": true },
+    { "type": "range", "id": "sticky_offset", "label": "Sticky offset from top (px)", "min": 0, "max": 200, "step": 4, "default": 100 },
+
+    { "type": "header", "content": "Image / Gallery" },
+    { "type": "select", "id": "image_aspect_ratio", "label": "Main image aspect ratio", "default": "1/1",
+      "options": [
+        { "value": "1/1",  "label": "Square (1:1)" },
+        { "value": "4/5",  "label": "Portrait (4:5)" },
+        { "value": "3/4",  "label": "Portrait (3:4)" },
+        { "value": "4/3",  "label": "Standard (4:3)" },
+        { "value": "16/9", "label": "Widescreen (16:9)" },
+        { "value": "3/2",  "label": "Classic (3:2)" }
+      ]
+    },
+    { "type": "corner_radius", "id": "image_border_radius", "label": "Image border radius" },
+    { "type": "select", "id": "image_placeholder_background", "label": "Image placeholder background", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "thumb_active_color", "label": "Active thumbnail border", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "thumb_hover_color",  "label": "Hover thumbnail border",  "options": "background_colors", "default": "var(--clr-gray)" },
+
+    { "type": "header", "content": "Eyebrow + Rating" },
+    { "type": "checkbox", "id": "show_default_eyebrow", "label": "Show eyebrow when no Eyebrow block is added", "default": false },
+    { "type": "text",     "id": "default_eyebrow", "label": "Default eyebrow text", "default": "Bestseller" },
+    { "type": "select",   "id": "eyebrow_color", "label": "Eyebrow color", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "checkbox", "id": "show_rating", "label": "Show rating row", "default": true },
+    { "type": "text",     "id": "rating_value", "label": "Rating value (1-5)", "default": "4.9" },
+    { "type": "text",     "id": "review_count", "label": "Review count text", "default": "124" },
+    { "type": "select",   "id": "star_color",       "label": "Star color",       "options": "background_colors", "default": "var(--clr-warning)" },
+    { "type": "select",   "id": "star_empty_color", "label": "Empty star color", "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select",   "id": "rating_text_color","label": "Rating text color","options": "background_colors", "default": "var(--clr-muted)" },
+
+    { "type": "header", "content": "Title + Price" },
+    { "type": "select", "id": "title_font",  "label": "Title font",  "options": "font_families",     "default": "var(--ff-heading)" },
+    { "type": "select", "id": "title_color", "label": "Title color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "price_color", "label": "Price color", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "compare_color", "label": "Compare-at-price color", "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "checkbox", "id": "show_savings_badge", "label": "Show −% badge on image when on sale", "default": true },
+    { "type": "select", "id": "savings_badge_background", "label": "Savings badge background", "options": "background_colors", "default": "var(--clr-accent)" },
+    { "type": "select", "id": "savings_badge_color",      "label": "Savings badge text",       "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "savings_pill_background",  "label": "Savings pill background (next to price)", "options": "background_colors", "default": "var(--clr-success)" },
+    { "type": "select", "id": "savings_pill_color",       "label": "Savings pill text",       "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Variant Pickers" },
+    { "type": "radio", "id": "variant_style", "label": "Variant display", "default": "pills",
+      "options": [
+        { "value": "pills",   "label": "Pills (best for color/size, < 8 options)" },
+        { "value": "select",  "label": "Always dropdown" }
+      ]
+    },
+    { "type": "select", "id": "variant_label_color",       "label": "Label color",        "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "variant_selected_color",    "label": "Selected value text",  "options": "background_colors", "default": "var(--clr-muted)" },
+    { "type": "select", "id": "variant_pill_background",   "label": "Pill background",    "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select", "id": "variant_pill_color",        "label": "Pill text",          "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "variant_pill_border",       "label": "Pill border",        "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "variant_pill_hover_border", "label": "Pill hover border",  "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "variant_pill_active_bg",    "label": "Pill active background", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "variant_pill_active_color", "label": "Pill active text",   "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Add to Cart" },
+    { "type": "text",   "id": "cta_label", "label": "Button text", "default": "Add to cart" },
+    { "type": "text",   "id": "sold_out_label", "label": "Sold-out text", "default": "Currently unavailable" },
+    { "type": "select", "id": "cta_background", "label": "Button background", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "cta_text_color", "label": "Button text color", "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Subscription Toggle" },
+    { "type": "checkbox", "id": "show_subscription_toggle", "label": "Show subscription toggle (when product has subscription plans)", "default": true },
+    { "type": "text",     "id": "onetime_label",  "label": "One-time label",  "default": "One-time purchase" },
+    { "type": "text",     "id": "subscribe_label","label": "Subscribe label", "default": "Subscribe & save" },
+    { "type": "text",     "id": "subscription_savings_pct", "label": "Subscription savings %", "default": "15" },
+    { "type": "select",   "id": "sub_toggle_background",   "label": "Toggle background",  "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select",   "id": "sub_option_text",         "label": "Option text",        "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select",   "id": "sub_option_active_bg",    "label": "Active option background", "options": "background_colors", "default": "var(--clr-white)" },
+    { "type": "select",   "id": "sub_option_active_text",  "label": "Active option text", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Inventory Urgency" },
+    { "type": "checkbox", "id": "show_urgency", "label": "Show \"Only N left\" pill when stock is low", "default": true },
+    { "type": "range",    "id": "low_stock_threshold", "label": "Show urgency when stock \u2264", "min": 1, "max": 50, "step": 1, "default": 10 },
+    { "type": "text",     "id": "urgency_template", "label": "Urgency text (use QTY for the number)", "default": "Only QTY left in stock" },
+    { "type": "select",   "id": "urgency_background", "label": "Urgency pill background", "options": "background_colors", "default": "var(--clr-warning)" },
+    { "type": "select",   "id": "urgency_color",      "label": "Urgency pill text",       "options": "background_colors", "default": "var(--clr-warning)" },
+
+    { "type": "header", "content": "Delivery Estimate" },
+    { "type": "checkbox", "id": "show_delivery", "label": "Show delivery estimate", "default": true },
+    { "type": "text",     "id": "delivery_label_pre", "label": "Lead text", "default": "Order in the next 4 hours and get it" },
+    { "type": "range",    "id": "delivery_days_out",  "label": "Days from today", "min": 1, "max": 14, "step": 1, "default": 5 },
+    { "type": "text",     "id": "delivery_default_label", "label": "Fallback text (no JS)", "default": "Friday" },
+    { "type": "select",   "id": "delivery_icon_color",   "label": "Delivery icon color", "options": "background_colors", "default": "var(--clr-success)" },
+
+    { "type": "header", "content": "Highlights Block (overall styling)" },
+    { "type": "select", "id": "highlights_background",  "label": "Background",  "options": "background_colors", "default": "transparent" },
+    { "type": "select", "id": "highlights_border",      "label": "Border",      "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "highlights_text_color",  "label": "Title color",  "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "highlights_icon_bg",     "label": "Icon background", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "highlights_icon_color",  "label": "Icon color",  "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Promo Banner (overall styling)" },
+    { "type": "select", "id": "promo_background", "label": "Banner background", "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "promo_color",      "label": "Banner text",       "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Image Lightbox" },
+    { "type": "checkbox", "id": "show_lightbox", "label": "Click main image to open fullscreen lightbox", "default": true },
+
+    { "type": "header", "content": "Sticky Mobile Cart Bar" },
+    { "type": "checkbox", "id": "show_sticky_bar", "label": "Show sticky bottom bar on mobile after scroll", "default": true },
+    { "type": "text",     "id": "sticky_cta_label", "label": "Sticky button text", "default": "Add" },
+    { "type": "select",   "id": "sticky_bar_background", "label": "Sticky bar background", "options": "background_colors", "default": "var(--clr-white)" },
+
+    { "type": "header", "content": "Trust Strip" },
+    { "type": "select", "id": "trust_background", "label": "Trust strip background", "options": "background_colors", "default": "var(--clr-light)" },
+    { "type": "select", "id": "trust_color",      "label": "Trust strip text",       "options": "background_colors", "default": "var(--clr-primary)" },
+    { "type": "select", "id": "trust_icon_color", "label": "Trust strip icon",       "options": "background_colors", "default": "var(--clr-success)" },
+
+    { "type": "header", "content": "Body + Accordion" },
+    { "type": "select", "id": "body_color",     "label": "Body / description text", "options": "background_colors", "default": "var(--clr-body)" },
+    { "type": "select", "id": "divider_color",  "label": "Divider / accordion border", "options": "background_colors", "default": "var(--clr-gray)" },
+    { "type": "select", "id": "accordion_label_color", "label": "Accordion label",  "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Container" },
+    { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+      "options": [
+        { "value": "1080px", "label": "Comfy (1080px)" },
+        { "value": "1280px", "label": "Default (1280px)" },
+        { "value": "1440px", "label": "Wide (1440px)" },
+        { "value": "100%",   "label": "Full (100%)" }
+      ]
+    },
+    { "type": "padding", "id": "container_padding", "label": "Container Padding" },
+    { "type": "corner_radius", "id": "container_border_radius", "label": "Container Border Radius" },
+    { "type": "select", "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "container_background_image", "label": "Container Background Image" },
+    { "type": "select", "id": "container_overlay_color", "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+    { "type": "range", "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+    { "type": "range", "id": "container_border_width", "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "container_border_color", "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+    { "type": "header", "content": "Section Shell" },
+    { "type": "padding", "id": "section_padding", "label": "Section Padding" },
+    { "type": "corner_radius", "id": "section_border_radius", "label": "Section Border Radius" },
+    { "type": "select", "id": "background_color", "label": "Background Color", "options": "background_colors", "default": "transparent" },
+    { "type": "image_picker", "id": "background_image", "label": "Background Image" },
+    { "type": "range", "id": "section_border_width", "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+    { "type": "select", "id": "section_border_color", "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Eyebrow",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "Bestseller" }
+      ]
+    },
+    { "type": "description", "name": "Short Description (override)",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text",
+          "info": "Overrides product.short_description / feature_text. Leave blank to use product data." }
+      ]
+    },
+    { "type": "promo_banner", "name": "Promo Banner (top of info)", "limit": 1,
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "Subscribe & save 15% \u2014 cancel anytime" },
+        { "type": "checkbox", "id": "show_icon", "label": "Show gift icon", "default": true }
+      ]
+    },
+    { "type": "highlight", "name": "Highlight (icon + text)",
+      "settings": [
+        { "type": "radio", "id": "icon", "label": "Icon", "default": "check",
+          "options": [
+            { "value": "check",   "label": "Checkmark" },
+            { "value": "leaf",    "label": "Leaf (natural)" },
+            { "value": "sparkle", "label": "Sparkle (premium)" },
+            { "value": "heart",   "label": "Heart (loved)" },
+            { "value": "shield",  "label": "Shield (safe)" },
+            { "value": "flame",   "label": "Flame (popular)" },
+            { "value": "award",   "label": "Award" },
+            { "value": "truck",   "label": "Truck" }
+          ]
+        },
+        { "type": "text", "id": "title", "label": "Title", "default": "Pediatrician formulated" },
+        { "type": "text", "id": "text",  "label": "Subtitle (optional)", "default": "Made with input from doctors" }
+      ]
+    },
+    { "type": "trust_item", "name": "Trust Strip Item",
+      "settings": [
+        { "type": "radio", "id": "icon", "label": "Icon", "default": "check",
+          "options": [
+            { "value": "check",  "label": "Checkmark" },
+            { "value": "truck",  "label": "Truck (shipping)" },
+            { "value": "shield", "label": "Shield (secure)" },
+            { "value": "rotate", "label": "Rotate (returns)" },
+            { "value": "leaf",   "label": "Leaf (sustainable)" }
+          ]
+        },
+        { "type": "text", "id": "text", "label": "Text", "default": "Free shipping over $50" }
+      ]
+    },
+    { "type": "accordion_item", "name": "Accordion Item",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Details" },
+        { "type": "checkbox", "id": "use_product_description", "label": "Use product.description", "default": false,
+          "info": "If checked, the body uses Fluid's product description and ignores the Body field." },
+        { "type": "richtext", "id": "body", "label": "Body" },
+        { "type": "checkbox", "id": "open_by_default", "label": "Open by default", "default": false }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Hero",
+      "blocks": [
+        { "type": "promo_banner", "settings": { "text": "Subscribe & save 15% — cancel anytime", "show_icon": true } },
+        { "type": "highlight", "settings": { "icon": "leaf",    "title": "Clean ingredients",  "text": "No fillers, no junk, no compromises" } },
+        { "type": "highlight", "settings": { "icon": "sparkle", "title": "Premium quality",    "text": "Sourced & made for the long run" } },
+        { "type": "highlight", "settings": { "icon": "award",   "title": "Award-winning",      "text": "Editor's pick three years running" } },
+        { "type": "highlight", "settings": { "icon": "heart",   "title": "Loved by thousands", "text": "4.9 stars from 2,400+ reviews" } },
+        { "type": "trust_item", "settings": { "icon": "truck",  "text": "Free shipping over $50" } },
+        { "type": "trust_item", "settings": { "icon": "rotate", "text": "30-day returns" } },
+        { "type": "trust_item", "settings": { "icon": "shield", "text": "Secure checkout" } },
+        { "type": "accordion_item", "settings": { "title": "Details", "use_product_description": true, "open_by_default": true } },
+        { "type": "accordion_item", "settings": { "title": "Shipping & delivery", "body": "<p>Free standard shipping on orders over $50. Most orders ship within 1 business day.</p>" } },
+        { "type": "accordion_item", "settings": { "title": "Returns",  "body": "<p>30-day returns, no questions asked. Just email us and we’ll send a prepaid label.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
