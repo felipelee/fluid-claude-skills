@@ -1,21 +1,35 @@
 ---
 name: fluid-theme-refine
 description: >-
-  Refine and improve a Fluid theme to achieve pixel-perfect 1:1 match with
-  the source site. Use after fluid-theme-clone to tighten up visual fidelity.
-  Triggers on "refine theme," "improve theme," "make it closer," "pixel perfect,"
-  "doesn't match," "fix the spacing," "colors are off," "fonts don't match,"
-  "compare and fix," "tighten up," "QA the theme," "visual diff," "side by side
-  comparison," "it doesn't look right," "make it exact," or "closer to the original."
+  Upgrade any Fluid theme to the gold standard. Works for two scenarios:
+  (1) pixel-perfect visual refinement after fluid-theme-clone, and
+  (2) migrating an existing / older / legacy Fluid theme to our current
+  canonical architecture (Section Shell + Container, theme tokens, canonical
+  blocks, richtext hero blocks, modern JS patterns). Triggers on "refine
+  theme," "improve theme," "fix the theme," "migrate the theme,"
+  "modernize theme," "upgrade theme," "old theme refactor," "fix this
+  legacy theme," "bring theme up to standard," "make theme gold
+  standard," "QA the theme," "audit the theme," "theme doesn't match
+  our pattern," "fix the old sections," "make it closer," "pixel
+  perfect," "doesn't match," "fix the spacing," "colors are off,"
+  "fonts don't match," "compare and fix," "tighten up," "visual diff,"
+  "side by side comparison," "it doesn't look right," "make it exact,"
+  or "closer to the original."
 metadata:
-  version: 2.0.0
+  version: 3.0.0
 ---
 
 # Fluid Theme Refine
 
-You are an expert Fluid theme developer doing a pixel-perfect QA pass. Your job is to take an already-cloned Fluid theme, compare it against the original source site screenshot-by-screenshot, identify every visual discrepancy, fix them, and repeat until the two are indistinguishable.
+You are an expert Fluid theme developer. This skill covers **two complementary workflows**:
 
-This skill is the polish step after `/fluid-theme-clone`. The clone gets you 80-90% there. This gets you to 99%.
+**A) Pixel-perfect refinement** — after `/fluid-theme-clone` ships a 1:1 site clone, tighten visual fidelity to match the source.
+
+**B) Legacy theme modernization** — take any existing Fluid theme (built before our canonical architecture solidified, or by a dev following older patterns) and bring it up to the current gold standard: Section Shell + Container settings, theme tokens for every color + font, canonical image / button / cart-button blocks, richtext hero blocks, preset expansion, modern CSS (scroll-snap, no Splide), proper Fluid JS hook preservation.
+
+Both workflows share the same loops + rules — just different starting conditions.
+
+**Which workflow is cheaper than a full clone?** If the existing theme's content + brand tokens are already in place and the goal is structural + visual polish, refining is faster than a full clone. If the existing theme's architecture is fundamentally broken (e.g. every section uses hardcoded hex, every image is an `image_picker` inline, Splide is everywhere), a clone might be cleaner — but Phase 0 below tells you exactly which.
 
 ## How This Works
 
@@ -75,6 +89,162 @@ This skill is the polish step after `/fluid-theme-clone`. The clone gets you 80-
 ```
 
 Every round: screenshot → compare → list diffs → extract values → fix → upload → screenshot again. Repeat until no differences remain.
+
+---
+
+## Phase 0: Theme Architecture Audit (RUN FIRST, ALWAYS)
+
+**This phase is mandatory when modernizing a legacy theme, and recommended even during pure visual refinement.** It takes 10–15 minutes and surfaces every structural bug that no screenshot can catch. Fix these first; then the visual diff loop in Steps 1–10 only has to worry about px / color / font polish.
+
+The audit walks the **entire theme** — not just sections. An old theme can have beautiful sections that silently break because `body { overflow-x: hidden }` kills sticky nav, or because `assets/config.css` hardcodes font variables that shadow merchant selections, or because `settings_data.json` is missing font-family keys so nothing resolves.
+
+### 0a: Theme-wide files — check each one
+
+Pull the theme with `GET /api/application_themes/{id}/resources?key=...` for each path below, OR work from a local `THEME_DIR` if provided.
+
+| File | What to verify |
+|------|---------------|
+| `config/settings_schema.json` | Has **5 font slots** (`font_family_body`, `font_family_heading`, `font_family_accent`, `font_family_italic`, `font_family_handwriting`) and **12 color slots** (`color_primary`, `color_secondary`, `color_accent`, `color_white`, `color_light`, `color_gray`, `color_muted`, `color_dark`, `color_black`, `color_body`, `color_success`, `color_warning`). Every font slot has `option_group: { id: "font_families", label, value: "var(--ff-*)" }`. Every color slot has the same for `background_colors`. |
+| `config/settings_data.json` | Every schema setting with a default has a seeded value here. Especially the 5 font slots — missing keys mean the `font_family` Liquid filter falls back to Roboto for all of them. |
+| `assets/config.css` | Does NOT hardcode `--ff-body`, `--ff-heading`, `--ff-accent`, `--ff-italic`, `--ff-handwriting` in `:root`. Those must come dynamically from `layouts/theme.liquid`. Hardcoded values shadow merchant selections. |
+| `assets/reset.css` | `body` uses `overflow-x: clip` (NOT `overflow-x: hidden`). Hidden creates a scroll container and breaks `position: sticky` for the navbar. |
+| `assets/global.css` (or `global_styles.css`) | Pagination rules use modern pill styles (circular buttons, 6px gap, active=primary bg) — not the legacy square-bordered paginator. |
+| `layouts/theme.liquid` | Inline `{% style %}` outputs `--ff-*` CSS variables from `settings.font_family_*` with proper `| font_family | default:` fallback chain. Same for `--clr-*` variables from `settings.color_*`. |
+| `components/pagination/index.liquid` | Uses `paginate.current_offset \| plus: 1` for the "from" value (NOT raw `current_offset` which is 0-indexed). Caps "to" with `paginate.items`. Renders modern pill-button layout. |
+| `components/navbar_primary_nav/index.liquid` | Outputs `<ul class="primary-menu" id="primary-nav-menu">` with canonical block wrapper. Iterates `menu.menu_items` (NOT `menu.links`). |
+| `components/navbar_locale_dropdown/index.liquid` | Preserves Fluid's locale JS hooks: `#show-language-country-dropdown`, `#mobile-country-language`, `.saveLocaleBtn`, `.country-selector`, `.language-selector`, `.locale-selector`. Never rewrite these. |
+| `components/navbar_mobile_menu/index.liquid` | Drawer structure with feature_buttons + primary nav baked in. |
+| `blocks/image/` + `blocks/button/` + `blocks/cart_button/` + `blocks/fluid_media/` | These are **canonical REFERENCE files** — they document the schema you inline into sections. They are NOT render targets. `{% render 'cart_button' %}` WILL NOT resolve (Fluid renders only from `components/`). |
+| Every `sections/*/index.liquid` | Checked by per-section audit in Step 4b (existing). |
+| Every page-template file (`home_page/default/index.liquid`, `product/default/index.liquid`, etc.) | Composition only — no `blocks` in the template schema (blocks come from section presets). Uses `{% section 'name', id: 'unique_id' %}` pattern. |
+
+### 0b: Theme-wide grep audits
+
+Run each grep across the whole theme directory. Any match is a bug.
+
+```bash
+# 1. Splide anywhere (forbidden — breaks Fluid's DOM lifecycle)
+grep -rn -i "splide" base-theme/ --include="*.liquid" --include="*.css" --include="*.js"
+
+# 2. render targeting blocks/ (Fluid won't resolve — must inline instead)
+grep -rn "{% render 'cart_button'\|{% render 'image'\|{% render 'button'\|{% render 'fluid_media'" base-theme/sections/ base-theme/layouts/ base-theme/components/
+
+# 3. font_picker inside a section (only allowed in config/settings_schema.json)
+grep -rn '"type": "font_picker"' base-theme/sections/
+
+# 4. Raw hex default in a section schema (should be var(--clr-*))
+grep -rn '"default":\s*"#[0-9A-Fa-f]' base-theme/sections/
+
+# 5. Body overflow that kills sticky
+grep -rn "overflow-x:\s*hidden\|overflow:\s*hidden\|overflow-y:\s*hidden" base-theme/assets/ base-theme/layouts/ | grep -i "body\|html"
+
+# 6. image_picker used for a content image (allowed fields: background_image, container_background_image, image inside canonical image block, data-fallback wrappers)
+grep -rn '"type":\s*"image_picker"' base-theme/sections/ | grep -v 'background_image\|container_background_image\|"id": "image"\|image_override\|logo'
+
+# 7. Navbar JS hooks — must preserve these IDs/classes
+grep -rn "show-cart\|fluid-cart-count\|show-language-country-dropdown\|saveLocaleBtn\|country-selector\|language-selector" base-theme/components/ base-theme/sections/main_navbar/
+```
+
+Any non-empty result is a finding. Table them up with file:line:issue and fix before moving on.
+
+### 0c: Decide — refine or re-clone?
+
+After Phase 0, you'll have a clear list of architectural findings. Use this rubric:
+
+| Findings | Recommend |
+|---------|-----------|
+| < 10 total, mostly visual (hex defaults, a few `image_picker`s, some `font_picker` leftovers) | **Refine** — fix in place, proceed to Steps 1–10 |
+| 10–25 findings across sections + some theme-wide (reset, config) | **Refine aggressively** — allocate extra time; many recipe patterns in the Recipe Book apply |
+| Splide everywhere, every section has hex, no Section Shell pattern, no canonical blocks, no theme tokens, no block-based heroes | **Re-clone** — run `/fluid-theme-clone` against the existing site; faster than rebuilding section by section |
+
+Whichever path you pick, Steps 1–10 below drive the visual polish.
+
+### 0d: Legacy → gold standard — section-by-section migration table
+
+When refining, use this table to map each legacy section to its modern equivalent from the **v4 base theme** library (40 gold-standard sections shipped in `skills/fluid-theme-clone/base-theme/sections/`). Steal the shipped section verbatim; don't recreate.
+
+| Legacy (old Fluid boilerplate) | Gold standard (v4 base theme) |
+|---|---|
+| `main_product` (Splide PDP) | `product_hero` (full-featured) OR `product_hero_2` (Seed-style grid gallery) + `product_benefits` + `product_ingredients` + `product_how_to_use` + `product_compare` + `product_press` + `product_reviews_showcase` + `related_products` |
+| `main_collection` / `main_collection_list` | `collection_showcase` (single) + `collection_index` (all collections) |
+| `main_category` / `main_category_list` | `category_showcase` + `category_index` |
+| `main_shop` | `shop_showcase` |
+| `main_post` / `main_post_list` | `blog_showcase` (single post) + `blog_index` (listing) |
+| `main_enrollment` | `enrollment_pack_hero` + `enrollment_whats_included` + `enrollment_compensation` + `enrollment_success_stories` + `enrollment_showcase` |
+| Old homepage hero (hardcoded content) | `hero_centered`, `hero_split_stats`, or `hero_editorial` — block-based, theme-tokened |
+| Old featured products | `featured_products` (auto-fills from collection picker + fallback chain) |
+| Old reviews carousel | `testimonial_grid` (masonry or grid with divider block pattern) |
+| Old FAQ accordion | `faq_accordion` (native `<details>` / `<summary>`, bordered or card style) |
+| Old press logos | `logo_bar` (canonical image blocks) |
+| Old CTA banner | `cta_banner_v2` |
+| Old image + text split | `image_text_split` (canonical block pattern) |
+| Old stats row | `stats_bar` (prefix/value/suffix/label per stat block) |
+| Old process/timeline | `process_steps` (divider + number + image + heading + text blocks) |
+| Old UGC carousel (Splide) | `ugc_carousel` (CSS scroll-snap — Splide-free) |
+| Old before/after slider | `before_after` (drag slider with configurable labels) |
+| Old navbar | `main_navbar` (3-col grid, hamburger overflow, scrolled-bg dropdown, Fluid JS hooks preserved) |
+| Old footer | `main_footer` (multi-column with link_list pickers, newsletter, socials, bottom bar) |
+
+**How to use this table:** open the v4 base-theme file, copy its full contents, paste into the legacy theme's section file (matching the file path), adjust only the theme-specific class prefix if collision risk, push. The section comes with Section Shell + Container + theme tokens + canonical blocks + preset + fluid_attributes already.
+
+### 0e: Theme-wide asset migration — fast paths
+
+For the theme-wide files flagged in 0a, use this cheat sheet:
+
+**`assets/reset.css` body overflow fix**
+```css
+/* old */ body { overflow-x: hidden; }
+/* new */ body { overflow-x: clip; }
+```
+`overflow: clip` is identical visually but does NOT create a scroll container — so `position: sticky` keeps working.
+
+**`assets/config.css` — remove hardcoded font vars**
+```css
+/* REMOVE these lines: */
+--ff-body: "Roboto", sans-serif;
+--ff-heading: "Roboto", sans-serif;
+
+/* Dynamic values live in layouts/theme.liquid and are injected from settings.
+   Hardcoded :root rules shadow merchant selections. */
+```
+
+**`config/settings_data.json` — seed all 5 font slots**
+```json
+"current": {
+  "font_family_body":        "Roboto",
+  "font_family_heading":     "Roboto",
+  "font_family_accent":      "Roboto",
+  "font_family_italic":      "Playfair Display",
+  "font_family_handwriting": "Caveat",
+  // ...
+}
+```
+Missing slots make `{{ settings.font_family_italic | font_family }}` silently fall back to Roboto for all 5.
+
+**`layouts/theme.liquid` — dynamic font variables**
+```liquid
+{% style %}
+  {{ settings.font_family_body | font_face: font_display: 'swap' }}
+  {{ settings.font_family_heading | font_face: font_display: 'swap' }}
+  {{ settings.font_family_accent | font_face: font_display: 'swap' }}
+  {{ settings.font_family_italic | font_face: font_display: 'swap' }}
+  {{ settings.font_family_handwriting | font_face: font_display: 'swap' }}
+
+  :root {
+    --ff-body:        {{ settings.font_family_body        | font_family | default: "system-ui, sans-serif" }};
+    --ff-heading:     {{ settings.font_family_heading     | font_family | default: "system-ui, sans-serif" }};
+    --ff-accent:      {{ settings.font_family_accent      | font_family | default: "system-ui, sans-serif" }};
+    --ff-italic:      {{ settings.font_family_italic      | font_family | default: "'Playfair Display', serif" }};
+    --ff-handwriting: {{ settings.font_family_handwriting | font_family | default: "'Caveat', cursive" }};
+
+    --clr-primary:   {{ settings.color_primary }};
+    --clr-secondary: {{ settings.color_secondary }};
+    /* ... etc for all 12 */
+  }
+{% endstyle %}
+```
+
+**`components/pagination/index.liquid` — replace wholesale** with the v4 version. It's 30 lines, modern, and the styles are in `global_styles.css`. Copy from `skills/fluid-theme-clone/base-theme/components/pagination/index.liquid`.
 
 ---
 
@@ -1269,3 +1439,424 @@ For block/preset issues specifically:
 - [ ] Section's `"blocks"` array in schema has blocks with **inline settings** (not standalone references)
 - [ ] Section has a `"presets"` array with initial block instances if the page should ship pre-populated
 - [ ] To apply presets to a template: delete + re-push the template resource
+
+---
+
+## The Recipe Book — Legacy → Gold Standard Migrations
+
+Drop-in fixes for every pattern that shows up in legacy themes. Each recipe: (1) what the legacy code looks like, (2) why it's wrong, (3) what to replace it with.
+
+### Recipe 1: Legacy section-level `image_picker` → canonical `image` block
+
+**Legacy:**
+```json
+"settings": [
+  { "type": "image_picker", "id": "hero_image", "label": "Hero Image" }
+]
+```
+```liquid
+<img src="{{ section.settings.hero_image | img_url: '1600x' }}" alt="">
+```
+
+**Why wrong:** merchant loses all the controls the canonical image block ships (aspect_ratio, fit, object_position, border_radius, border, overlay). Can't duplicate independently. The slot isn't editor-selectable as an image block.
+
+**Replace with:**
+```json
+"blocks": [
+  { "type": "image", "name": "Image", "limit": 1,
+    "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "alt", "label": "Alt Text" },
+      { "type": "select", "id": "aspect_ratio", "label": "Aspect ratio", "default": "1/1",
+        "options": [ { "value": "1/1", "label": "Square" }, { "value": "4/5", "label": "Portrait (4:5)" }, { "value": "3/4", "label": "Portrait (3:4)" }, { "value": "4/3", "label": "Standard (4:3)" }, { "value": "16/9", "label": "Widescreen (16:9)" } ]
+      },
+      { "type": "radio", "id": "fit", "label": "Fit", "default": "cover",
+        "options": [ { "value": "cover", "label": "Cover" }, { "value": "contain", "label": "Contain" } ] },
+      { "type": "select", "id": "object_position", "label": "Focal point", "default": "center",
+        "options": [ { "value": "center", "label": "Center" }, { "value": "top", "label": "Top" }, { "value": "bottom", "label": "Bottom" }, { "value": "left", "label": "Left" }, { "value": "right", "label": "Right" } ] },
+      { "type": "corner_radius", "id": "border_radius", "label": "Border Radius" },
+      { "type": "range", "id": "border_width", "label": "Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+      { "type": "select", "id": "border_color", "label": "Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+    ]
+  }
+]
+```
+```liquid
+{%- assign image_block = section.blocks | where: 'type', 'image' | first -%}
+{% if image_block %}
+  {%- assign _alt = image_block.settings.alt | default: '' -%}
+  {%- capture _wrap_style -%}
+    aspect-ratio: {{ image_block.settings.aspect_ratio | default: '1/1' }};
+    {%- assign br = image_block.settings.border_radius -%}{% if br %}border-radius: {{ br.tl }}px {{ br.tr }}px {{ br.br }}px {{ br.bl }}px;{% endif %}
+    {% if image_block.settings.border_width > 0 %}border: {{ image_block.settings.border_width }}px solid {{ image_block.settings.border_color }};{% endif %}
+  {%- endcapture -%}
+  <div class="media-wrap" style="{{ _wrap_style | strip_newlines }}" {{ image_block.fluid_attributes }}>
+    {% if image_block.settings.image %}
+      <img src="{{ image_block.settings.image | img_url: '1600x' }}" alt="{{ _alt | escape }}"
+           style="object-fit: {{ image_block.settings.fit | default: 'cover' }}; object-position: {{ image_block.settings.object_position | default: 'center' }};">
+    {% else %}
+      <div class="media-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+```
+
+**Key points:** outer `<div class="media-wrap">` always renders (with `fluid_attributes`) so the editor can select it even when no image is uploaded. Image ↔ placeholder swap is inside, not at the wrapper level.
+
+---
+
+### Recipe 2: Hardcoded `"type": "color"` → theme-token dropdown
+
+**Legacy:**
+```json
+{ "type": "color", "id": "heading_color", "label": "Heading color", "default": "#111827" }
+```
+
+**Why wrong:** merchant picks a one-off hex, disconnected from the theme's brand palette. Changing brand colors requires editing every section's picker.
+
+**Replace with:**
+```json
+{ "type": "select", "id": "heading_color", "label": "Heading color",
+  "options": "background_colors", "default": "var(--clr-primary)" }
+```
+
+The `background_colors` option group is defined in `config/settings_schema.json` with all 12 theme colors. Every color setting in every section references it, so one edit to the palette flows everywhere.
+
+---
+
+### Recipe 3: `font_picker` in section → theme-token dropdown
+
+**Legacy:**
+```json
+{ "type": "font_picker", "id": "heading_font", "label": "Heading font", "default": "Inter" }
+```
+
+**Replace with:**
+```json
+{ "type": "select", "id": "heading_font", "label": "Heading font",
+  "options": "font_families", "default": "var(--ff-heading)" }
+```
+
+`font_picker` belongs in `config/settings_schema.json` only. Section-level font choices must reference the `font_families` option group (which ships 5 slots: body, heading, accent, italic, handwriting).
+
+---
+
+### Recipe 4: Section-level heading/eyebrow text → richtext BLOCKS
+
+**Legacy:**
+```json
+"settings": [
+  { "type": "text",     "id": "eyebrow",  "label": "Eyebrow",  "default": "Featured" },
+  { "type": "text",     "id": "heading",  "label": "Heading",  "default": "Shop now" },
+  { "type": "textarea", "id": "subhead",  "label": "Subhead",  "default": "..." }
+]
+```
+
+**Why wrong:** merchant can't style inline (color, weight, italic emphasis), can't reorder, can't omit one without awkward "leave blank to hide" UX.
+
+**Replace with** canonical eyebrow/heading/subhead blocks:
+```json
+"blocks": [
+  { "type": "eyebrow", "name": "Eyebrow",
+    "settings": [
+      { "type": "richtext", "id": "text", "label": "Text",
+        "default": "<h5 style=\"color: var(--clr-primary); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; font-weight: 600;\">Featured</h5>" }
+    ]
+  },
+  { "type": "heading", "name": "Heading",
+    "settings": [
+      { "type": "richtext", "id": "text", "label": "Text",
+        "default": "<h2 style=\"color: var(--clr-primary); font-size: clamp(32px, 4.5vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;\">Shop now</h2>" }
+    ]
+  },
+  { "type": "subhead", "name": "Subhead",
+    "settings": [
+      { "type": "richtext", "id": "text", "label": "Text",
+        "default": "<p style=\"color: var(--clr-body); font-size: clamp(15px, 1.3vw, 17px); line-height: 1.55;\">Short supporting line.</p>" }
+    ]
+  }
+],
+"presets": [
+  { "name": "...", "blocks": [ { "type": "eyebrow" }, { "type": "heading" }, { "type": "subhead" } ] }
+]
+```
+```liquid
+{%- assign eyebrow_blocks = section.blocks | where: 'type', 'eyebrow' -%}
+{%- assign heading_blocks = section.blocks | where: 'type', 'heading' -%}
+{%- assign subhead_blocks = section.blocks | where: 'type', 'subhead' -%}
+
+{% for b in eyebrow_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+{% for b in heading_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+{% for b in subhead_blocks %}<div class="rte" {{ b.fluid_attributes }}>{{ b.settings.text }}</div>{% endfor %}
+```
+
+Inline `style=""` on the richtext default gives a proper-looking first paint. Merchant can fully edit typography later via the richtext WYSIWYG.
+
+---
+
+### Recipe 5: Section with no Section Shell / Container → canonical shell
+
+**Legacy:**
+```liquid
+<section class="legacy-section">
+  <div style="max-width: 1280px; margin: 0 auto; padding: 60px 20px;">
+    ...
+  </div>
+</section>
+```
+Hardcoded dimensions, no merchant control over padding / background / border / container.
+
+**Replace with** the canonical 6 + 9 pattern. Add to the section schema:
+```json
+"settings": [
+  // ... other section settings ...
+
+  { "type": "header", "content": "Container" },
+  { "type": "select", "id": "container_max_width", "label": "Max Width", "default": "1280px",
+    "options": [
+      { "value": "1080px", "label": "Comfy (1080px)" },
+      { "value": "1280px", "label": "Default (1280px)" },
+      { "value": "1440px", "label": "Wide (1440px)" },
+      { "value": "100%",   "label": "Full" }
+    ]
+  },
+  { "type": "padding",       "id": "container_padding",        "label": "Container Padding" },
+  { "type": "corner_radius", "id": "container_border_radius",  "label": "Container Border Radius" },
+  { "type": "select",        "id": "container_background_color", "label": "Container Background Color", "options": "background_colors", "default": "transparent" },
+  { "type": "image_picker",  "id": "container_background_image", "label": "Container Background Image" },
+  { "type": "select",        "id": "container_overlay_color",  "label": "Container Overlay Color", "options": "background_colors", "default": "transparent" },
+  { "type": "range",         "id": "container_overlay_opacity", "label": "Container Overlay Opacity", "min": 0, "max": 100, "step": 5, "default": 0, "unit": "%" },
+  { "type": "range",         "id": "container_border_width",   "label": "Container Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+  { "type": "select",        "id": "container_border_color",   "label": "Container Border Color", "options": "background_colors", "default": "var(--clr-primary)" },
+
+  { "type": "header", "content": "Section Shell" },
+  { "type": "padding",       "id": "section_padding",        "label": "Section Padding" },
+  { "type": "corner_radius", "id": "section_border_radius",  "label": "Section Border Radius" },
+  { "type": "select",        "id": "background_color",       "label": "Background Color", "options": "background_colors", "default": "transparent" },
+  { "type": "image_picker",  "id": "background_image",       "label": "Background Image" },
+  { "type": "range",         "id": "section_border_width",   "label": "Section Border Width", "min": 0, "max": 10, "step": 1, "default": 0, "unit": "px" },
+  { "type": "select",        "id": "section_border_color",   "label": "Section Border Color", "options": "background_colors", "default": "var(--clr-primary)" }
+]
+```
+```liquid
+{%- style -%}
+  .sec.section-{{ section.id }} {
+    {%- assign p = section.settings.section_padding -%}
+    {%- if p -%}padding: {{ p.top | default: 80 }}px {{ p.right | default: 0 }}px {{ p.bottom | default: 80 }}px {{ p.left | default: 0 }}px;{%- else -%}padding: 80px 0;{%- endif -%}
+    {%- assign r = section.settings.section_border_radius -%}
+    {%- if r -%}border-radius: {{ r.tl }}px {{ r.tr }}px {{ r.br }}px {{ r.bl }}px;{%- endif -%}
+    {% if section.settings.section_border_width > 0 %}border: {{ section.settings.section_border_width }}px solid {{ section.settings.section_border_color }};{% endif %}
+    background-color: {{ section.settings.background_color | default: 'transparent' }};
+    {%- if section.settings.background_image != blank -%}background-image: url({{ section.settings.background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+  }
+  .sec.section-{{ section.id }} .sec__container {
+    position: relative;
+    max-width: {{ section.settings.container_max_width | default: '1280px' }};
+    margin: 0 auto;
+    {%- assign cp = section.settings.container_padding -%}
+    {%- if cp -%}padding: {{ cp.top | default: 0 }}px {{ cp.right | default: 64 }}px {{ cp.bottom | default: 0 }}px {{ cp.left | default: 64 }}px;{%- else -%}padding: 0 64px;{%- endif -%}
+    background-color: {{ section.settings.container_background_color | default: 'transparent' }};
+    {%- if section.settings.container_background_image != blank -%}background-image: url({{ section.settings.container_background_image | img_url: '2400x' }});background-size:cover;background-position:center;{%- endif -%}
+    {%- assign ccr = section.settings.container_border_radius -%}
+    {%- if ccr -%}border-radius: {{ ccr.tl }}px {{ ccr.tr }}px {{ ccr.br }}px {{ ccr.bl }}px;{%- endif -%}
+    {% if section.settings.container_border_width > 0 %}border: {{ section.settings.container_border_width }}px solid {{ section.settings.container_border_color }};{% endif %}
+  }
+  {%- if section.settings.container_overlay_color != blank and section.settings.container_overlay_opacity > 0 -%}
+    {%- assign _cov = section.settings.container_overlay_opacity | divided_by: 100.0 -%}
+    .sec.section-{{ section.id }} .sec__container::before { content: ""; position: absolute; inset: 0; background: {{ section.settings.container_overlay_color }}; opacity: {{ _cov }}; pointer-events: none; }
+  {%- endif -%}
+  .sec.section-{{ section.id }} .sec__container > * { position: relative; }
+  @media (max-width: 991px) { .sec.section-{{ section.id }} .sec__container { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 767px) { .sec.section-{{ section.id }} .sec__container { padding-left: 16px; padding-right: 16px; } }
+{%- endstyle -%}
+```
+
+---
+
+### Recipe 6: Splide carousel → CSS scroll-snap
+
+**Legacy:**
+```html
+<div class="splide">
+  <div class="splide__track">
+    <ul class="splide__list">
+      <li class="splide__slide">...</li>
+    </ul>
+  </div>
+</div>
+<script>new Splide('.splide').mount();</script>
+```
+
+**Why wrong:** Fluid's editor mutates the DOM on every save; Splide re-mounts on each mutation, double-binds events, loses scroll position. Documented incompatibility.
+
+**Replace with** CSS scroll-snap:
+```html
+<div class="rail" data-carousel-rail>
+  <article class="rail__slide">...</article>
+  <article class="rail__slide">...</article>
+</div>
+<button data-carousel-prev>‹</button>
+<button data-carousel-next>›</button>
+```
+```css
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 20px * 3) / 4);
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar { display: none; }
+.rail__slide { scroll-snap-align: start; }
+```
+```js
+const rail = document.querySelector('[data-carousel-rail]');
+const slideWidth = rail.querySelector('.rail__slide').getBoundingClientRect().width + 20;
+document.querySelector('[data-carousel-prev]').addEventListener('click', () => rail.scrollBy({ left: -slideWidth, behavior: 'smooth' }));
+document.querySelector('[data-carousel-next]').addEventListener('click', () => rail.scrollBy({ left:  slideWidth, behavior: 'smooth' }));
+```
+
+Zero dependencies, Fluid-DOM-safe, works natively with trackpad / touch / keyboard / arrow-button controls.
+
+---
+
+### Recipe 7: `{% render 'cart_button' %}` → inline markup
+
+**Legacy navbar:**
+```liquid
+{%- for block in section.blocks -%}
+  {%- when 'cart_button' -%}
+    {%- render 'cart_button', block: block -%}
+{%- endfor -%}
+```
+
+**Why wrong:** Fluid resolves `{% render %}` from `components/` only. `blocks/cart_button/` is a canonical reference file — it documents the schema but isn't a render target. The output is empty.
+
+**Replace with** inline markup (copy from `skills/fluid-theme-clone/base-theme/sections/main_navbar/index.liquid` — the `{%- when 'cart_button' -%}` branch inside the `feature_buttons` capture). Carries the full 14-setting cart button including `id="show-cart"` + `id="fluid-cart-count"` hooks Fluid's cart JS depends on.
+
+---
+
+### Recipe 8: Legacy pagination → modern pill pagination
+
+**Legacy component:**
+```liquid
+Showing <span>{{ paginate.current_offset }}</span> to <span>{{ paginate.end_offset }}</span> of <span>{{ pagination.total_count }}</span> results
+```
+
+**Why wrong:** `current_offset` is 0-indexed (page 1 shows "Showing 0 to 10"). `pagination.total_count` is a typo (should be `paginate.items`).
+
+**Replace with** the v4 component (~30 lines). Copy `skills/fluid-theme-clone/base-theme/components/pagination/index.liquid` wholesale, plus the matching styles in `global_styles.css` (pill buttons, circular shape, modern gap-based layout).
+
+---
+
+### Recipe 9: `body { overflow-x: hidden }` → `clip`
+
+**Legacy reset.css:**
+```css
+body {
+  overflow-x: hidden;
+}
+```
+
+**Why wrong:** `overflow: hidden` on either axis creates a new scroll container, which breaks `position: sticky` relative to the viewport. Every sticky navbar / tab bar / side rail silently fails.
+
+**Replace with:**
+```css
+body {
+  /* overflow-x: clip keeps the visual effect but doesn't create a
+     scroll container, so sticky positioning still works. */
+  overflow-x: clip;
+}
+```
+
+Browser support: Chrome 90+, Safari 16+, Firefox 102+ (95%+ of users).
+
+---
+
+### Recipe 10: Old nav without overflow handling → hamburger-collapse + overflow JS
+
+**Legacy:** navbar with a fixed horizontal menu. 10+ links either clip off-screen or push the logo / actions off.
+
+**Replace with** the v4 main_navbar overflow pattern:
+1. 3-column grid: `auto minmax(0, 1fr) auto` (logo / nav / actions — middle column has `minmax(0, 1fr)` so it shrinks rather than pushing)
+2. JS measures on paint + resize; if any link would overflow the nav column, adds `.is-hamburger` to the header → CSS hides primary-menu + surfaces the mobile toggle on desktop too
+3. Mobile drawer (existing `navbar_mobile_menu` component) contains the full menu
+
+Copy the full Liquid + CSS + JS from `skills/fluid-theme-clone/base-theme/sections/main_navbar/index.liquid`. Key settings exposed: `overflow_mode` (`hamburger` vs `more_dropdown`), `nav_alignment` (flex-start / center / flex-end), `logo_min_width` (reserve clickable area when empty).
+
+---
+
+### Recipe 11: Old footer with hardcoded links → block-based with Fluid link_list pickers
+
+**Legacy:**
+```liquid
+<footer>
+  <div class="footer-col">
+    <h4>Shop</h4>
+    <ul><li><a href="/">Bestsellers</a></li><li><a href="/">New</a></li></ul>
+  </div>
+</footer>
+```
+
+**Replace with** the v4 main_footer pattern. Each column is a block with a `link_list` picker pointing at a Fluid menu:
+
+```json
+{ "type": "column", "name": "Link column",
+  "settings": [
+    { "type": "text",      "id": "heading", "label": "Heading", "default": "Shop" },
+    { "type": "link_list", "id": "menu",    "label": "Menu (Fluid link list)",
+      "info": "Pick a Fluid menu. Or leave blank and use Manual links below." },
+    { "type": "textarea",  "id": "manual_links", "label": "Manual links (Label | /url per line)" }
+  ]
+}
+```
+```liquid
+{%- assign menu_items = block.settings.menu.menu_items -%}
+{% if menu_items and menu_items.size > 0 %}
+  {% for item in menu_items %}
+    <li><a href="{{ item.url }}">{{ item.title | escape }}</a></li>
+  {% endfor %}
+{% elsif block.settings.manual_links != blank %}
+  {%- assign lines = block.settings.manual_links | split: "\n" -%}
+  {% for line in lines %}
+    {%- assign parts = line | strip | split: '|' -%}
+    {% if parts.size > 1 %}<li><a href="{{ parts[1] | strip }}">{{ parts[0] | strip | escape }}</a></li>{% endif %}
+  {% endfor %}
+{% endif %}
+```
+
+**Key points:** `menu.menu_items` (NOT `.links`). Fallback to manual_links when menu is blank — both ship in the preset so an empty theme doesn't render an empty footer.
+
+---
+
+### Recipe 12: Editor draft not persisting → tell the user to SAVE
+
+**Symptom:** merchant uploads a logo image (or any image) in the visual editor. The block settings panel shows the uploaded file. But the live render still shows the fallback (company logo, or placeholder).
+
+**Why:** the visual editor maintains unsaved state in the iframe only. The theme-resource API doesn't receive the change until the merchant clicks **Save** / **Publish** at the top of the editor.
+
+**Fix workflow:**
+1. Confirm the block setting with a debug echo: `<!-- {{ block.settings.image | json }} -->`
+2. If it shows `null`, tell the user to hit Save in the editor
+3. After they save, hard-refresh the preview page (Cmd+Shift+R)
+4. The live render should now pick up the uploaded image
+
+This is a USER-FLOW issue, not a code bug. But it's the most common "my upload isn't showing" support case.
+
+---
+
+### Using the Recipe Book
+
+When the Phase 0 audit or Step 4b structural QA surfaces a finding, search this book for the matching pattern and apply. Most legacy themes hit 3–5 of these recipes. After applying, re-run Phase 0 — findings should drop to zero before moving to Steps 1–10 visual diff.
+
+**Shortcuts:**
+- Migration table (Phase 0d) → which v4 base-theme section replaces which legacy `main_*` section
+- Asset cheat sheet (Phase 0e) → theme-wide file fixes (reset.css, config.css, settings_data.json, theme.liquid, pagination component)
+- Recipe Book (this section) → in-section transformations with before/after code
+
+All three feed into the same end state: every custom section passes the Step 4b audit, every theme-wide file passes the Phase 0 audit, and the visual diff loop only handles true visual polish.
