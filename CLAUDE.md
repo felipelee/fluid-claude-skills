@@ -49,6 +49,10 @@ Skills can reference each other. Use relative paths from the repo root:
 See [fluid-product-admin-import](skills/fluid-product-admin-import/SKILL.md) for product payload structure.
 ```
 
+## Fluid API Key
+
+A test API key is stored in `.env` as `FLUID_API_KEY`. Only use this when the user explicitly asks to interact with the Fluid API (e.g. onboarding, product import, theme operations). Do not load or reference it for other tasks.
+
 ## When Editing Skills
 
 - Test that frontmatter parses as valid YAML
