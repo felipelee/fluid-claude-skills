@@ -16,7 +16,7 @@ description: >-
   "side by side comparison," "it doesn't look right," "make it exact,"
   or "closer to the original."
 metadata:
-  version: 3.0.0
+  version: 3.1.0
 ---
 
 # Fluid Theme Refine
@@ -104,7 +104,7 @@ Pull the theme with `GET /api/application_themes/{id}/resources?key=...` for eac
 
 | File | What to verify |
 |------|---------------|
-| `config/settings_schema.json` | Has **5 font slots** (`font_family_body`, `font_family_heading`, `font_family_accent`, `font_family_italic`, `font_family_handwriting`) and **12 color slots** (`color_primary`, `color_secondary`, `color_accent`, `color_white`, `color_light`, `color_gray`, `color_muted`, `color_dark`, `color_black`, `color_body`, `color_success`, `color_warning`). Every font slot has `option_group: { id: "font_families", label, value: "var(--ff-*)" }`. Every color slot has the same for `background_colors`. |
+| `config/settings_schema.json` | Has **5 font slots** (`font_family_body`, `font_family_heading`, `font_family_accent`, `font_family_italic`, `font_family_handwriting`) and **12 color slots** (`color_primary`, `color_secondary`, `color_accent`, `color_white`, `color_light`, `color_gray`, `color_muted`, `color_dark`, `color_black`, `color_body`, `color_success`, `color_warning`). Every font slot has `option_group: { id: "font_families", label, value: "var(--ff-*)" }`. Every color slot has the same for `background_colors`. **Color settings live inside a category named exactly `color_schema`; typography settings inside `typography`; corner radii inside `corner_radius`; padding inside `padding`** — these are reserved category names that drive WYSIWYG preset dropdowns. A category named anything else (e.g. `colors`, `palette`, `brand_colors`, `fonts`, `text_styles`) is silently skipped and the rich-text editor's preset pickers show "No presets yet." See "Linked CSS Variable Presets — reserved categories" below for the fix. |
 | `config/settings_data.json` | Every schema setting with a default has a seeded value here. Especially the 5 font slots — missing keys mean the `font_family` Liquid filter falls back to Roboto for all of them. |
 | `assets/config.css` | Does NOT hardcode `--ff-body`, `--ff-heading`, `--ff-accent`, `--ff-italic`, `--ff-handwriting` in `:root`. Those must come dynamically from `layouts/theme.liquid`. Hardcoded values shadow merchant selections. |
 | `assets/reset.css` | `body` uses `overflow-x: clip` (NOT `overflow-x: hidden`). Hidden creates a scroll container and breaks `position: sticky` for the navbar. |
@@ -118,11 +118,73 @@ Pull the theme with `GET /api/application_themes/{id}/resources?key=...` for eac
 | Every `sections/*/index.liquid` | Checked by per-section audit in Step 4b (existing). |
 | Every page-template file (`home_page/default/index.liquid`, `product/default/index.liquid`, etc.) | Composition only — no `blocks` in the template schema (blocks come from section presets). Uses `{% section 'name', id: 'unique_id' %}` pattern. |
 
+### 0a-bis: Linked CSS Variable Presets — reserved categories
+
+The rich text WYSIWYG and certain native input pickers populate **linked CSS variable presets** by reading `settings_schema.json`. Fluid only recognizes settings inside categories whose `name` matches one of these reserved tokens — exactly:
+
+| Category `name`  | Drives                                                  |
+|------------------|----------------------------------------------------------|
+| `typography`     | Font size + font family presets in the rich text editor |
+| `color_schema`   | Color presets in the rich text editor                   |
+| `corner_radius`  | Corner radius preset dropdowns                          |
+| `padding`        | Padding/spacing preset dropdowns                        |
+
+**Symptom of misnaming:** Designer opens the rich-text WYSIWYG, clicks the "Color Presets" or "Text Presets" dropdown, sees "No presets yet" + a "Manual Settings" link. Same for native corner-radius / padding pickers — preset dropdowns are empty even though the theme has color and typography settings configured.
+
+**Common wrong category names that we have seen ship:** `colors`, `palette`, `theme_colors`, `brand_colors`, `fonts`, `text_styles`, `typography_settings`. Each of these silently skips Fluid's preset parser.
+
+**Three things must all be present for a preset to appear:**
+
+1. **Settings inside the right reserved category in `settings_schema.json`.** Plain `type: "color"` is enough — what matters is the wrapping category's `name`:
+```json
+{ "name": "color_schema", "settings": [
+  { "type": "color", "id": "color_primary", "label": "Primary", "default": "#2563eb" },
+  { "type": "color", "id": "color_body",    "label": "Body",    "default": "#1A1716" }
+] }
+```
+
+2. **Each setting wired to a CSS variable in `layouts/theme.liquid`** so the saved `var(--…)` reference resolves at render time. The admin parses this exact pattern — `--{css_var_name}: {{ settings.{setting_id} ...` — to build a `setting_id → css_var_name` map:
+```liquid
+{%- style -%}
+  :root {
+    --color_primary: {{ settings.color_primary }};
+    --color_body:    {{ settings.color_body }};
+    --font_size_h1:  {{ settings.font_size_h1 | append: 'px' }};
+    --font_family_heading: {{ settings.font_family_heading | font_family }};
+  }
+{%- endstyle -%}
+```
+The CSS var name doesn't have to match the setting id (`--clr-primary: {{ settings.color_primary }}` works). A setting in a reserved category WITHOUT a matching `--var: {{ settings.id ...` line in theme.liquid still appears as a preset, but it applies the resolved value directly instead of a var() reference.
+
+3. **Concrete value in `settings_data.json`'s `current` object** for each setting id (e.g. `"color_primary": "#1C0F8A"`).
+
+**Stored richtext content uses var() refs:** `<span style="color: var(--color_primary); font-size: var(--font_size_h1);">…</span>` — never the bare `--color_primary` token (that's not valid in a CSS property value). Clicking "Unlink Variables" in the picker resolves to concrete values; "Link Variables" switches back.
+
+**Coexisting with class-name dropdowns:** Class-name `option_group: { id: "background_colors", value: "bg-primary" }` entries (used by section dropdowns that apply Tailwind-style `bg-X` classes) can stay alongside `color_schema` settings — the WYSIWYG preset parser ONLY iterates settings inside `color_schema` / `typography` / `corner_radius` / `padding` categories, ignoring `option_group` on those entries entirely. The two systems are independent.
+
+**Fix recipe (most common case):** Color settings are correct in shape but wrapped in a category named `colors` instead of `color_schema`.
+
+```python
+import json
+schema = json.loads(open('config/settings_schema.json').read())
+for cat in schema:
+    if cat.get('name') == 'colors':
+        cat['name'] = 'color_schema'
+    elif cat.get('name') in ('fonts', 'text_styles'):
+        cat['name'] = 'typography'
+open('config/settings_schema.json', 'w').write(json.dumps(schema, indent=2))
+```
+
+Then PUT `config/settings_schema.json` back to the theme and reload the editor with a fresh `?cb=` param. The dropdowns populate immediately — no other change needed if theme.liquid already wires `--color_*` from `settings.color_*`.
+
 ### 0b: Theme-wide grep audits
 
 Run each grep across the whole theme directory. Any match is a bug.
 
 ```bash
+# 0. Reserved category names — settings_schema.json must use color_schema / typography / corner_radius / padding (NOT colors, palette, fonts, text_styles, etc.) for WYSIWYG preset dropdowns to populate
+grep -E '"name":\s*"(colors|palette|theme_colors|brand_colors|fonts|text_styles|typography_settings)"' base-theme/config/settings_schema.json
+
 # 1. Splide anywhere (forbidden — breaks Fluid's DOM lifecycle)
 grep -rn -i "splide" base-theme/ --include="*.liquid" --include="*.css" --include="*.js"
 
@@ -441,6 +503,8 @@ For EVERY section, check all of these:
 
 ## Step 4b: Gold-Standard Theme QA (structural — not visual)
 
+> **Quick reference:** For a condensed, battle-tested field checklist of every real bug we hit refining sections on cloned themes (with fixes), see [`references/gold-standard-checklist.md`](references/gold-standard-checklist.md). Run through that on any ported section before marking done.
+
 Beyond visual parity, every section must also pass these structural rules. These are the things that fail SILENTLY — a section can look identical to the source but still be broken in the editor or on stores with different content. Walk through each section and check:
 
 **Block editability**
@@ -463,6 +527,64 @@ Beyond visual parity, every section must also pass these structural rules. These
 **Hero text pattern**
 - [ ] Eyebrow / heading / subhead are richtext BLOCKS (editable in editor), not hard-coded section settings
 - [ ] Richtext defaults include inline `style="color: var(--clr-primary); font-size: …;"` so the first-paint looks intentional
+
+### CANONICAL BLOCK CONTRACTS — ship the FULL setting list, never abbreviate
+
+This is where refinement most often regresses. Each canonical block has a fixed, complete set of settings. If you ship a button with only 3 settings, you broke the contract. **Every single canonical block MUST contain every setting listed below — no omissions, ever.** Extending with section-specific extras (like `show_arrow` on a hero button) is fine; dropping canonical settings is NOT.
+
+**Canonical `button` block (11 settings, non-negotiable):**
+```
+1.  text             — text        — button label
+2.  link             — url         — destination
+3.  open_new_tab     — checkbox    → target="_blank" rel="noopener"
+4.  style            — radio       — filled | outline | text
+5.  font_family      — select      → font_families (or theme's equivalent option group)
+6.  font_size        — range px    — 10–32
+7.  padding          — padding     — 4-sided struct
+8.  background_color — select      → background_colors
+9.  text_color       — select      → background_colors / text_colors
+10. border_width     — range px    — 0–10
+11. border_color     — select      → background_colors (or inline CSS var values if option group uses class names)
+12. border_radius    — corner_radius — 4-sided struct
+```
+
+Liquid MUST render as `<a href="{{ link }}" class="btn btn--{{ style }}" style="[inline style composed from all settings]" {% if open_new_tab %}target="_blank" rel="noopener"{% endif %} {{ block.fluid_attributes }}>`, never as a `<span>` or stripped-down anchor.
+
+**Canonical `image` block (canonical setting list):**
+```
+1.  image            — image_picker
+2.  alt              — text (fallback: image.alt)
+3.  aspect_ratio     — select (auto/1:1/4:5/3:4/4:3/16:9)
+4.  fit              — radio (cover | contain)
+5.  object_position  — select (center / top / bottom)
+6.  overlay_color    — select → background_colors (or inline CSS vars)
+7.  overlay_opacity  — range 0–100 %
+8.  border_radius    — corner_radius
+9.  border_width     — range px
+10. border_color     — select
+```
+
+Liquid MUST ALWAYS render the wrapping `<div class="media-wrap" {{ block.fluid_attributes }}>` (even when image is empty) so the editor can select + upload into the slot. Placeholder renders INSIDE the wrap when image is blank, never as a separate branch that skips fluid_attributes.
+
+**Canonical richtext text block (eyebrow / heading / subhead / description / etc.):**
+```
+1. text — richtext (with a STYLED HTML default that sets color + font-family + font-size + line-height inline)
+```
+Never use `"type": "text"` or `"type": "textarea"` for content that could benefit from formatting — the WYSIWYG inserts `<span style="...">` which shows as literal text if the field type isn't `richtext`.
+
+**Canonical `card` / icon-card block (when used for feature tiles):**
+```
+1.  icon             — image_picker
+2.  text             — richtext (NOT plain text — users will format)
+3.  link             — url
+4.  background_color — select → background_colors
+5.  text_color       — select → text_colors
+6.  padding          — padding struct
+7.  border_radius    — corner_radius
+```
+
+**Enforcement rule — before pushing any section:**
+Grep the file for every canonical block type used and count settings. If `"type": "button"` has fewer than 11 settings (plus any section-specific extras), STOP and expand it. Same for image / card / richtext blocks.
 
 **Forbidden patterns — grep to detect**
 - [ ] `"type": "image_picker"` — only allowed on `background_image` / `container_background_image` / `blocks/image.image` / data-driven fallback wrappers. If it appears on a content image, refactor to a canonical `image` block.

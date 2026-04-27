@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 4.0.0
+  version: 4.1.0
 ---
 
 # Fluid Theme Clone
@@ -828,6 +828,53 @@ Every color and font setting needs an `option_group` so sections can reference t
 ```
 
 Without the `option_group`, any section setting with `"options": "background_colors"` or `"options": "font_families"` shows an empty dropdown.
+
+### Reserved category names for WYSIWYG preset dropdowns (CRITICAL)
+
+The rich-text WYSIWYG and certain native input pickers populate **linked CSS variable presets** by reading `settings_schema.json`. Fluid only recognizes settings inside categories whose `name` matches one of these reserved tokens — exactly:
+
+| Category `name`   | Drives                                                  |
+|-------------------|---------------------------------------------------------|
+| `typography`      | Font size + font family presets in the rich text editor |
+| `color_schema`    | **Color presets** in the rich text editor (most cloners get this wrong) |
+| `corner_radius`   | Corner radius preset dropdowns                          |
+| `padding`         | Padding/spacing preset dropdowns                        |
+
+A category named `colors`, `palette`, `theme_colors`, `brand_colors`, etc. is **silently skipped** — the WYSIWYG dropdown shows "No presets yet". Same for typography stored under `fonts` / `text_styles` instead of `typography`.
+
+**Three things must all be present for a preset to appear:**
+
+1. **Settings in the right category in `settings_schema.json`.** Plain `type: "color"` is fine — what matters is the parent category's `name`:
+```json
+{ "name": "color_schema", "settings": [
+  { "type": "color", "id": "color_primary", "label": "Primary", "default": "#2563eb" },
+  { "type": "color", "id": "color_body",    "label": "Body",    "default": "#1A1716" }
+] }
+```
+
+2. **CSS variable wired in `theme.liquid`** so the saved `var(--…)` reference resolves at render time:
+```liquid
+{%- style -%}
+  :root {
+    --color_primary: {{ settings.color_primary }};
+    --color_body:    {{ settings.color_body }};
+    --font_size_h1:  {{ settings.font_size_h1 | append: 'px' }};
+    --font_family_heading: {{ settings.font_family_heading | font_family }};
+  }
+{%- endstyle -%}
+```
+
+The admin parses this exact pattern: `--{css_var_name}: {{ settings.{setting_id} ...` — building a `setting_id → css_var_name` map. The CSS var name doesn't have to match the setting id (e.g. `--clr-primary: {{ settings.color_primary }}` works), but matching is clearer.
+
+3. **Concrete value in `settings_data.json`'s `current` object** (e.g. `"color_primary": "#1C0F8A"`).
+
+**What gets stored when a designer picks a preset:** the saved richtext content uses the var() reference, NOT the bare token:
+```html
+<span style="color: var(--color_primary); font-size: var(--font_size_h1);">…</span>
+```
+Clicking "Unlink Variables" in the picker resolves to concrete values; "Link Variables" switches back.
+
+**Coexisting with class-name dropdowns:** The class-name `option_group: { id: "background_colors", value: "bg-primary" }` entries (used by section dropdowns that apply Tailwind-style `bg-X` classes) can stay alongside `color_schema` entries — the WYSIWYG only iterates `color_schema` / `typography` settings, ignoring `option_group` on those entries entirely. The two systems are independent.
 
 ### theme.liquid — Wire CSS variables
 
