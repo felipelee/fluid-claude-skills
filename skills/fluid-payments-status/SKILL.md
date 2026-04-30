@@ -7,21 +7,21 @@ description: >-
   "We're ready to test <Company>'s connection to <Processor>," "We've sent
   <Company>'s forms to <APM>," "<APM> is ready for <Company>," "update
   payments status for <Company>," or "show me <Company>'s PSP statuses."
-  Collects credentials upfront, confirms the target company, always previews
+  Collects credentials from .env, confirms the target company, always previews
   the change, and only writes after explicit confirmation. Renders rich
   inline visuals (status pills, bordered provider cards, multi-company
   matrix) in Claude Desktop / claude.ai, with an emoji-prefix fallback for
   terminals.
 metadata:
-  version: 1.2.1
+  version: 1.3.0
 ---
 
 # Fluid Payments Status
 
 Set and review PSP (payment service provider) and APM (alternative payment
-method) onboarding status for a specific Fluid merchant from the Fluid
-root admin. This is the scripted equivalent of opening root admin →
-selecting a company → "Manage Status" drawer → ticking statuses by hand.
+method) onboarding status for a specific Fluid merchant. This is the scripted
+equivalent of opening root admin → selecting a company → "Manage Status"
+drawer → ticking statuses by hand.
 
 Works for both directions:
 
@@ -40,61 +40,84 @@ Always previews the change first. Never writes without a `yes`.
 
 ### Base URL
 
-Always production: `https://api.fluid.app`. Don't ask the user — hard
-code it.
+Always production: `https://api.fluid.app`. Don't ask the user — hard-code it.
 
 ```bash
 FLUID_API_BASE="https://api.fluid.app"
 ```
 
-### Collect the token
+### Load API keys from .env
 
-Ask the user for one thing — the root admin JWT:
+API keys are stored in the skill repo's `.env` file:
 
-| Credential         | Example          | How to get it |
-|--------------------|------------------|---------------|
-| **Root admin JWT** | `eyJhbGciOi…`    | Copy from an authenticated root-admin browser session. DevTools → Application → Cookies → `auth_token`, or `localStorage.getItem('fluidUserToken')`. |
+```
+/Users/cheyrasmussen/fluid-claude-skills/.env
+```
 
-Store it as a shell variable:
+**Never ask the user for a token.** Always load from `.env`.
+
+**`.env` format** — one pair per company:
 
 ```bash
-FLUID_ADMIN_TOKEN="eyJhbGciOi…"
+# FLUID_{SLUG}_ID  — Fluid numeric company ID
+# FLUID_{SLUG}_KEY — PartnerToken for that company (PT-... prefix, company admin role)
+FLUID_UPROOTCLEAN_ID=980243135
+FLUID_UPROOTCLEAN_KEY=PT-xxx
+FLUID_NEUMI_ID=1234
+FLUID_NEUMI_KEY=PT-yyy
 ```
 
-Tokens are session-only. Never write them to a file.
+**SLUG rules:**
+- Uppercase only; alphanumeric + underscore; no consecutive underscores
+- Derived from the company name: strip special characters, replace spaces with `_`
+- Examples: `Uproot Clean` → `UPROOTCLEAN`, `NewULife` → `NEWULIFE`,
+  `LimbicArc` → `LIMBICARC`
 
-### Validate the token
-
-Verify the JWT against `/api/me` before doing anything else:
+**Discover configured companies** by parsing `.env` for all `FLUID_*_KEY` entries:
 
 ```bash
-curl -s -w "\n%{http_code}" "${FLUID_API_BASE}/api/me" \
-  -H "Authorization: Bearer ${FLUID_ADMIN_TOKEN}" \
-  -H "Accept: application/json"
+ENV_FILE="/Users/cheyrasmussen/fluid-claude-skills/.env"
+
+# Build a map of slug → {id, key}
+while IFS='=' read -r var val; do
+  [[ "$var" =~ ^FLUID_([A-Z0-9_]+)_KEY$ ]] || continue
+  slug="${BASH_REMATCH[1]}"
+  id_var="FLUID_${slug}_ID"
+  # Read the matching ID
+  id=$(grep "^${id_var}=" "$ENV_FILE" | cut -d= -f2)
+  echo "slug=$slug id=$id"
+done < "$ENV_FILE"
 ```
 
-Expect `200` with a body that includes a `user` object and a `companies`
-array. If the status is `401` or `403`, the token is expired or invalid
-— tell the user, ask for a fresh one, re-validate.
+### Display configured companies
 
-### Confirm identity (REQUIRED)
-
-**Before any read or write**, display who the token belongs to and how
-many companies it can see, then require a yes/no:
+At the start of every session, show which companies are loaded:
 
 ```
-⚠️  Authenticated as: chey@fluid.app
-    Companies visible: 37
+Companies configured in .env:
+  • Uproot Clean  (id 980243135)  [UPROOTCLEAN]
+  • Neumi         (id 1234)       [NEUMI]
 
-Proceed? (yes/no)
+2 companies configured.
 ```
 
-**Do NOT proceed until the user confirms.** This is the same safety
-check the other `fluid-*` skills enforce — tokens can be mis-pasted,
-and root admin writes affect merchants' real payments configuration.
+Derive the display name from the slug by converting `_` to spaces and title-casing
+(e.g., `UPROOTCLEAN` → `Uprootclean`, `NEW_ULIFE` → `New Ulife`). When there's
+an exact slug → name mapping known from prior conversation context, prefer that.
 
-Keep the full `companies[]` array from this response in the session —
-step 3 of every flow reuses it for name resolution.
+If no `FLUID_*_KEY` pairs exist in `.env`, stop and tell the user:
+
+```
+No API keys found in .env. Add a pair for each company:
+  FLUID_{SLUG}_ID=<company id>
+  FLUID_{SLUG}_KEY=<PT-... partner token>
+```
+
+### No upfront validation
+
+Keys are validated implicitly on first use. If any call returns `401` or `403`,
+report the slug, say the key is expired or misconfigured, and ask the user to
+refresh it in `.env`. Do not re-attempt — let the user fix and restart.
 
 ---
 
@@ -136,15 +159,32 @@ mapping is a guess — the user confirms.
 
 ## 3. Resolve the company
 
-Fuzzy-match the extracted name against the `companies[]` array
-returned by `/api/me`. Case-insensitive substring match is fine.
+Fuzzy-match the extracted company name against the **slugs loaded from `.env`**.
 
-- **Exactly one match** → use it. Print `Company: {name} (id {id})`
-  and continue.
-- **Multiple matches** → print all candidates with their IDs and ask
+**Matching algorithm:**
+
+1. Normalize the user's input: lowercase, strip punctuation and spaces.
+2. Normalize each slug: lowercase, strip underscores.
+3. Check for substring match (normalized input ∈ normalized slug, or vice versa).
+
+Examples:
+- `"uproot"` → matches `UPROOTCLEAN` ✓
+- `"newulife"` → matches `NEWULIFE` ✓
+- `"limbic arc"` → normalized to `limbicarc`, matches `LIMBICARC` ✓
+
+Outcomes:
+
+- **Exactly one match** → use it. Print `Company: {display name} (id {id})` and continue.
+- **Multiple matches** → list all candidates with their slugs and IDs and ask
   in plain prose which one they meant.
-- **No match** → ask the user to confirm the spelling, or to paste the
-  numeric company ID directly.
+- **No match** → report clearly:
+
+  ```
+  No API key configured for "{name}".
+  To add it, append to .env:
+    FLUID_{SLUG}_ID=<company id>
+    FLUID_{SLUG}_KEY=<PT-... partner token>
+  ```
 
 Never assume when there's ambiguity.
 
@@ -152,10 +192,19 @@ Never assume when there's ambiguity.
 
 ## 4. Fetch current state
 
+Use the key for the resolved company:
+
 ```bash
+# Load from .env
+source /Users/cheyrasmussen/fluid-claude-skills/.env
+COMPANY_KEY="FLUID_${SLUG}_KEY"
+COMPANY_ID="FLUID_${SLUG}_ID"
+FLUID_API_KEY="${!COMPANY_KEY}"
+COMPANY_ID_VALUE="${!COMPANY_ID}"
+
 curl -s -w "\n%{http_code}" \
-  "${FLUID_API_BASE}/api/companies/${COMPANY_ID}/payments_status" \
-  -H "Authorization: Bearer ${FLUID_ADMIN_TOKEN}" \
+  "${FLUID_API_BASE}/api/companies/${COMPANY_ID_VALUE}/payments_status" \
+  -H "Authorization: Bearer ${FLUID_API_KEY}" \
   -H "Accept: application/json"
 ```
 
@@ -265,8 +314,8 @@ For every provider name in the utterance, fuzzy-match against both
 PSP) — ask which one in plain prose, showing both candidates with
 `provider_type` labels.
 
-**Unknown** — print the company's current PSP and APM lists and ask
-the user to pick.
+**Unknown** — print the company's current PSP and APM lists from step 4
+and ask the user to pick.
 
 Record `payment_account_id ?? id` for each resolved provider — this
 is the batched `updates[].payment_account_id`.
@@ -340,12 +389,16 @@ already in that state.` and stop. No PUT.
 
 ### 6e. Apply
 
-One request, one batched body:
+Load the company key and issue one batched request:
 
 ```bash
+source /Users/cheyrasmussen/fluid-claude-skills/.env
+FLUID_API_KEY="${!$(echo FLUID_${SLUG}_KEY)}"
+COMPANY_ID_VALUE="${!$(echo FLUID_${SLUG}_ID)}"
+
 curl -s -w "\n%{http_code}" -X PUT \
-  "${FLUID_API_BASE}/api/companies/${COMPANY_ID}/payments_status" \
-  -H "Authorization: Bearer ${FLUID_ADMIN_TOKEN}" \
+  "${FLUID_API_BASE}/api/companies/${COMPANY_ID_VALUE}/payments_status" \
+  -H "Authorization: Bearer ${FLUID_API_KEY}" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -d '{
@@ -398,20 +451,25 @@ with `⚠` and suggest re-reading to confirm state.
 
 ## 7. Endpoint reference
 
-| Purpose              | Method | Path                                                           |
-|----------------------|--------|----------------------------------------------------------------|
-| Validate + companies | GET    | `/api/me`                                                      |
-| Current state        | GET    | `/api/companies/{id}/payments_status`                          |
-| Visible-only state   | GET    | `/api/companies/{id}/payments_status?visible_only=true`        |
-| Batched update       | PUT    | `/api/companies/{id}/payments_status`                          |
+| Purpose          | Method | Path                                                    |
+|------------------|--------|---------------------------------------------------------|
+| Current state    | GET    | `/api/companies/{id}/payments_status`                   |
+| Visible-only     | GET    | `/api/companies/{id}/payments_status?visible_only=true` |
+| Batched update   | PUT    | `/api/companies/{id}/payments_status`                   |
+| Company identity | GET    | `/api/companies`                                        |
+
+The company ID (`{id}`) always comes from `.env` — `FLUID_{SLUG}_ID`.
 
 All requests use:
 
 ```
-Authorization: Bearer ${FLUID_ADMIN_TOKEN}
+Authorization: Bearer ${FLUID_API_KEY}   ← FLUID_{SLUG}_KEY from .env
 Accept: application/json
-Content-Type: application/json   (PUT only)
+Content-Type: application/json           (PUT only)
 ```
+
+The `/api/companies` endpoint is for debugging only (verify which company
+a key resolves to). It is not called in normal skill flow.
 
 ### Status enum + UI labels
 
@@ -522,19 +580,20 @@ Skill: ✓ 🟢 PayPal → Live
 
 ## 9. Error handling
 
-| Signal                              | Response                                                                  |
-|-------------------------------------|---------------------------------------------------------------------------|
-| `/api/me` returns 401/403           | "Token expired or invalid — paste a fresh one." Re-validate.              |
-| `payments_status` returns 401/403   | "Token doesn't have access to company {id}." Confirm the company.         |
-| `payments_status` returns 404       | "Company {id} not found or has no payments config." Confirm the company.  |
-| PUT returns 422                     | Print the error body verbatim. Do not retry automatically.                |
-| PUT response missing a provider     | Surface "no confirmation returned for {name}" and suggest re-reading.     |
-| Utterance names an unknown provider | Print the company's PSP and APM lists from step 4 and ask.                |
-| Utterance has no company            | Ask: "Which merchant is this for?"                                        |
-| Preview diff is empty               | "No changes needed — already in that state." No PUT.                      |
+| Signal                                   | Response                                                                        |
+|------------------------------------------|---------------------------------------------------------------------------------|
+| No `FLUID_*_KEY` pairs in `.env`         | "No API keys found in .env." Show the format and stop.                          |
+| Company name not matched in .env slugs   | "No key configured for '{name}'." Show .env format for adding it.               |
+| `payments_status` returns 401/403        | "Key for {SLUG} is expired or misconfigured — refresh `FLUID_{SLUG}_KEY`."      |
+| `payments_status` returns 404            | "Company id {id} not found or has no payments config." Confirm the ID in .env.  |
+| PUT returns 422                          | Print the error body verbatim. Do not retry automatically.                      |
+| PUT response missing a provider          | Surface "no confirmation returned for {name}" and suggest re-reading.           |
+| Utterance names an unknown provider      | Print the company's PSP and APM lists from step 4 and ask.                      |
+| Utterance has no company                 | Ask: "Which merchant is this for?"                                              |
+| Preview diff is empty                    | "No changes needed — already in that state." No PUT.                            |
 
 Never skip a hook, never retry a destructive call automatically, never
-cache the token.
+write token values to any file other than `.env`.
 
 ---
 
@@ -552,16 +611,19 @@ writes still go through §6 one company at a time.
 
 **Flow**:
 
-1. Resolve each company name against `companies[]` from `/api/me`
-   (§3). If any is ambiguous or unknown, ask before fetching.
-2. Fetch `/api/companies/{id}/payments_status` for each — parallel.
-3. Build one matrix per provider type (PSPs, APMs):
+1. Resolve each company name against the slugs loaded from `.env` (§3).
+   If any is ambiguous or has no configured key, ask before fetching.
+2. For "all companies" / "all merchants" requests, use every
+   `FLUID_*_KEY` pair found in `.env` — no need to ask the user.
+3. Fetch `/api/companies/{id}/payments_status` for each — parallel where
+   possible, one key per company.
+4. Build one matrix per provider type (PSPs, APMs):
    - Rows = companies, in mentioned order (or alphabetical for "all").
    - Columns = provider display names. Include only those where at
      least one company is in a non-`not_onboarding` state (unless the
      user named specific providers).
    - Cells = short-label pill (`LIVE`, `CONN.`, `UNDER.`, `INIT.`, `—`).
-4. Prefix with a summary strip (total counts per status).
+5. Prefix with a summary strip (total counts per status).
 
 Templates (matrix, summary strip, short-label map) are in
 [references/visual-rendering.md](references/visual-rendering.md) under
@@ -587,3 +649,27 @@ Short form:
 
 One rule: pick one format per response and use it consistently. Don't
 mix HTML cards for PSPs with text rows for APMs in the same reply.
+
+---
+
+## 12. Adding a new company
+
+To configure a new company:
+
+1. Get their Fluid company ID (from the root admin UI or by running
+   `GET /api/companies` with an existing key for that company).
+2. Create a PartnerToken in the company's admin with a company admin role.
+3. Add to `.env`:
+   ```bash
+   FLUID_{SLUG}_ID=<id>
+   FLUID_{SLUG}_KEY=<PT-...>
+   ```
+4. The company is immediately available — no skill changes required.
+
+To verify a key resolves to the right company:
+```bash
+curl -s "https://api.fluid.app/api/companies" \
+  -H "Authorization: Bearer <PT-...>" \
+  -H "Accept: application/json"
+# Returns: {"company": {"id": ..., "name": "...", ...}}
+```
