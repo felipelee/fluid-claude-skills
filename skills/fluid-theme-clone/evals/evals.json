@@ -4,11 +4,14 @@
     {
       "id": 1,
       "prompt": "Clone this page into my Fluid theme: https://hiyahealth.com/pages/about. The site prefix is 'hiya', page type is 'page', slug is 'about'. My Firecrawl key is fc-xxx, Fluid token is PT-xxx, Fluid URL is https://p.fluid.app.",
-      "expected_output": "Should validate credentials first, then follow the 7-phase workflow: (1) scrape with Firecrawl, (2) visual audit with browser tools, (3) extract and upload images to DAM, (4) build sections with correct naming (exact-hiya-*), (5) assemble page/about/index.liquid, (6) run QA checklist, (7) upload theme to Fluid API.",
+      "expected_output": "Should validate credentials AND local toolchain (Node, fluid CLI, fluid auth, Playwright + Chromium), then follow the workflow: scrape with Firecrawl, source visual audit, upload images to DAM, build sections with correct naming (exact-hiya-*), assemble page/about/index.liquid, push to Fluid, then run `fluid theme dev` and use Playwright to verify localhost vs source at desktop / tablet / mobile before declaring complete.",
       "assertions": [
         "Validates all credentials before starting",
         "Runs Firecrawl API call with provided credentials",
-        "Uses browser tools for visual audit and screenshots",
+        "Runs the local toolchain preflight: node --version, fluid --version, fluid theme --help, fluid whoami, Playwright + Chromium check",
+        "If any preflight tool is missing, surfaces the exact install command and asks the user before installing",
+        "Never installs Playwright or other tooling silently",
+        "Uses browser tools for visual audit and screenshots of the source",
         "Creates section inventory with descriptions and animation notes",
         "Uploads all images to DAM via upload.fluid.app",
         "Uses asset.default_variant_url from upload responses",
@@ -19,36 +22,47 @@
         "Presets include all default content",
         "Page template starts with {% layout 'theme' %}",
         "Page template schema has sections and order",
-        "Runs QA checklist",
-        "Uploads theme files to Fluid via PUT /api/application_themes/:id/resources"
+        "Uploads theme files to Fluid via PUT /api/application_themes/:id/resources",
+        "Spins up `fluid theme dev --port 9292` in the working directory after pushing",
+        "Runs the Playwright visual diff script comparing source vs http://127.0.0.1:9292/pages/about",
+        "Captures paired screenshots at desktop (1440x900), tablet (768x1024), and mobile (390x844)",
+        "Reads the source/built PNG pairs and classifies findings as auto-fix vs flag-for-user",
+        "Auto-fixes color/spacing/typography mismatches directly to section files",
+        "Flags layout structure changes, image asset swaps, and missing fonts for user confirmation",
+        "Loops until findings = 0 or remaining findings are all flagged",
+        "Does not declare the clone complete until the visual verification round passes"
       ]
     },
     {
       "id": 2,
       "prompt": "I want to clone a product page. Here's the URL: https://example.com/products/multivitamin. Prefix is 'haven', slug is 'multivitamin'. I have my tokens ready: fc-abc, PT-def, Fluid URL is https://test.fluid.app.",
-      "expected_output": "Should recognize PAGE_TYPE=product. Must include main_product section and NOT replace it. Must include product.js script tag. Should build custom sections for below-the-fold content while keeping main_product for the product form.",
+      "expected_output": "Should recognize PAGE_TYPE=product. Must include main_product section and NOT replace it. Must include product.js script tag. Should build custom sections for below-the-fold content while keeping main_product for the product form. Must run the dev-preview visual verification at all three breakpoints before declaring complete.",
       "assertions": [
         "Validates credentials first",
+        "Runs the local toolchain preflight before building",
         "Identifies PAGE_TYPE as product",
         "Includes main_product section in template",
         "Does NOT attempt to replace main_product",
         "Includes product.js script tag",
         "Template lives at product/multivitamin/index.liquid",
         "Custom sections use exact-haven-* naming",
-        "Schema includes main_product in sections and order"
+        "Schema includes main_product in sections and order",
+        "Runs `fluid theme dev` and Playwright comparison after pushing",
+        "Compares localhost /products/multivitamin against the source URL at desktop, tablet, and mobile"
       ]
     },
     {
       "id": 3,
       "prompt": "Clone https://example.com into my Fluid theme as the homepage. Prefix: mysite.",
-      "expected_output": "Should ask for missing inputs (FIRECRAWL_API_KEY, FLUID_TOKEN, FLUID_URL). Should identify PAGE_TYPE as home. Once inputs are provided, should proceed with the full workflow.",
+      "expected_output": "Should ask for missing inputs (FIRECRAWL_API_KEY, FLUID_TOKEN, FLUID_URL). Should identify PAGE_TYPE as home. Once inputs are provided, should proceed with the full workflow including the dev-preview visual verification.",
       "assertions": [
         "Asks for missing FIRECRAWL_API_KEY",
         "Asks for missing FLUID_TOKEN",
         "Asks for missing FLUID_URL",
         "Identifies PAGE_TYPE as home",
         "Template targets home_page/default/index.liquid",
-        "Does not proceed until all inputs are collected"
+        "Does not proceed until all inputs are collected",
+        "After receiving inputs, runs the local toolchain preflight"
       ]
     },
     {
@@ -82,9 +96,10 @@
     {
       "id": 6,
       "prompt": "Clone the entire yellowbirdfoods.com site into my Fluid theme. Prefix is 'yb', Fluid token PT-xxx, Firecrawl key fc-xxx, Fluid URL https://test.fluid.app.",
-      "expected_output": "Should enter full site clone mode. Discover all pages via nav scrape. Build page manifest. Identify shared sections. Clone in order: nav/footer, homepage, products, collections, static pages. Upload everything to Fluid at the end.",
+      "expected_output": "Should enter full site clone mode. Discover all pages via nav scrape. Build page manifest. Identify shared sections. Clone in order: nav/footer, homepage, products, collections, static pages. Upload everything to Fluid. Then run the dev-preview visual verification across each cloned page at three breakpoints before declaring the site complete.",
       "assertions": [
         "Validates all credentials first",
+        "Runs the local toolchain preflight (Node, fluid CLI, auth, Playwright)",
         "Scrapes homepage for navigation structure",
         "Builds a complete page manifest",
         "Identifies shared sections across pages",
@@ -92,7 +107,13 @@
         "Clones homepage before other pages",
         "Handles product pages with main_product preserved",
         "Reuses sections where possible",
-        "Uploads all theme files to Fluid API at the end"
+        "Uploads all theme files to Fluid API",
+        "Spins up `fluid theme dev` once for the whole verification pass",
+        "Runs Playwright visual diff against EACH cloned page (homepage, products, collections, static pages)",
+        "Tests all three breakpoints (desktop, tablet, mobile) on every page",
+        "Walks each page section-by-section",
+        "Classifies findings as auto-fix vs flag-for-user per page",
+        "Surfaces flagged findings to the user before declaring the site complete"
       ]
     },
     {
@@ -120,6 +141,48 @@
         "Creates sections/main_navbar/ and sections/main_footer/",
         "Creates config/settings_schema.json and settings_data.json",
         "Does not modify sections/main_product/"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm cloning yellowbirdfoods.com but I don't have Playwright installed yet — just the fluid CLI. Token is PT-xxx, Firecrawl is fc-xxx, Fluid URL https://test.fluid.app, prefix yb.",
+      "expected_output": "Should run the toolchain preflight, detect Playwright + Chromium are missing, surface the exact install commands, and ask the user for explicit consent before installing. Should NOT silently install. If user declines, should fall back to a single full-page screenshot pass and note the missing capability in the final report.",
+      "assertions": [
+        "Runs the local toolchain preflight (node, fluid CLI, auth, Playwright)",
+        "Detects Playwright and/or Chromium are missing",
+        "Surfaces the exact install command (npm install -g playwright && npx playwright install chromium)",
+        "Asks the user for explicit yes/no consent before running installs",
+        "Does not run npm install or npx playwright install without consent",
+        "If the user opts out, falls back to a reduced visual check",
+        "Notes the missing Playwright capability in the final report",
+        "Does not silently skip the visual verification step"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I just finished cloning the homepage and pushed it. The hero looks darker on my Fluid store than on the source site. Source is https://example.com, my Fluid theme is at /Users/me/themes/example. How do I check?",
+      "expected_output": "Should explain the dev-preview visual diff workflow: run `fluid theme dev` from the theme directory, then run the Playwright diff script comparing the source URL to http://127.0.0.1:9292/. Should describe the auto-fix vs flag classification, and that color mismatches are auto-fix territory. Should reference dev-preview-visual-diff.md for the canonical script.",
+      "assertions": [
+        "Tells the user to run `fluid theme dev` from the theme directory",
+        "Mentions the localhost URL is http://127.0.0.1:9292/",
+        "Explains the Playwright diff script with paired source/localhost screenshots",
+        "Notes the script captures desktop, tablet, and mobile in one run",
+        "Classifies background color mismatch as an auto-fix finding (not a flag)",
+        "References references/dev-preview-visual-diff.md as the canonical protocol",
+        "Mentions the watcher-driven save → upload → hot-reload loop"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I cloned a homepage. The Playwright diff shows the hero photo is different — source has a farm photo, mine has a placeholder. Heading font-size is also off by 8px. What do you do?",
+      "expected_output": "Should classify the two findings differently: heading font-size is auto-fix (numeric, mechanical), apply directly. Hero photo swap is FLAG (image asset judgement call), surface to user before changing. Should not auto-fix the photo without confirmation.",
+      "assertions": [
+        "Classifies heading font-size mismatch as auto-fix",
+        "Applies the font-size fix directly to the section file",
+        "Classifies hero photo asset swap as FLAG (do not auto-fix)",
+        "Surfaces the photo asset finding to the user before changing it",
+        "Does not silently swap the placeholder for a different image",
+        "Asks whether the user wants to upload the source photo to DAM or keep the placeholder"
       ]
     }
   ]
