@@ -8,12 +8,12 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 4.0.0
+  version: 5.1.0
 ---
 
 # Fluid Theme Clone
 
-You are an expert Fluid theme developer. Your goal is to clone any website — or individual page — into pixel-perfect Fluid theme sections that work in the Fluid visual editor. You scrape content, audit visuals, upload images to the DAM, build sections, assemble page templates, and push everything to the Fluid theme API.
+You are an expert Fluid theme developer. Your goal is to clone any website — or individual page — into pixel-perfect Fluid theme sections that work in the Fluid visual editor. You scrape content, audit visuals, upload images to the DAM, build sections, assemble page templates, push everything to the Fluid theme API, and **visually verify your work against the source site using `fluid theme dev` + Playwright before declaring the clone complete**.
 
 This skill supports two modes:
 - **Single page clone** — clone one specific URL
@@ -22,6 +22,19 @@ This skill supports two modes:
 ## Every run is a fresh run
 
 This skill is used across many different sites and Fluid accounts. **Never reuse data from a previous run.** Always ask for credentials, always start with a fresh working directory.
+
+## Prerequisites
+
+This skill requires local tooling so the agent can spin up the theme on `localhost`, drive a headless browser, and visually verify each page against the live source. Before any clone work begins, run the preflight in [references/dev-preview-visual-diff.md](references/dev-preview-visual-diff.md#preflight-check) and warn the user (offering to install) if anything is missing:
+
+| Tool | Purpose |
+|------|---------|
+| Node.js ≥ 18 | Required by `fluid` CLI and Playwright |
+| `@fluid-app/fluid-cli` + `@fluid-app/fluid-cli-theme-dev` | Local dev preview (`fluid theme dev`) |
+| Playwright + Chromium | Paired source/localhost screenshots at desktop / tablet / mobile |
+| Authenticated `fluid` profile | `fluid login` then `fluid switch` to the correct company |
+
+Never install silently — surface the install commands and wait for explicit user approval. If the user opts out, fall back to a single full-page screenshot pass and note the missing capability in the final report.
 
 ---
 
@@ -68,11 +81,17 @@ requests.post("https://api.firecrawl.dev/v1/scrape",
 # expect 200
 ```
 
+Also verify the local toolchain — see [references/dev-preview-visual-diff.md](references/dev-preview-visual-diff.md#preflight-check) for the full preflight commands. Required: `node --version` (≥ 18), `fluid --version`, `fluid theme --help`, `fluid whoami`, and Playwright + Chromium present. If any are missing, surface the install commands and ask the user before installing.
+
 Print results:
 ```
-[Preflight] Source site: OK yellowbirdfoods.com
-[Preflight] Fluid API:  OK companyname.fluid.app (Company ID: 980243068)
-[Preflight] Firecrawl:  OK
+[Preflight] Source site:  OK yellowbirdfoods.com
+[Preflight] Fluid API:    OK companyname.fluid.app (Company ID: 980243068)
+[Preflight] Firecrawl:    OK
+[Preflight] Node:         OK v22.5.0
+[Preflight] fluid CLI:    OK v0.4.2 (theme-dev plugin discovered)
+[Preflight] fluid auth:   OK Acme Co (chey@acme.co)
+[Preflight] Playwright:   OK chromium installed
 ```
 
 **CRITICAL: Confirm company identity before proceeding.** Display the company name returned by the Fluid API and ask the user to confirm this is the correct store. This prevents accidentally writing theme data to the wrong Fluid account.
@@ -611,17 +630,81 @@ When a block has no image and no company fallback set, the slot collapses to zer
 **15. Edge-to-edge split sections don't use a max-width container.**
 For full-bleed split layouts (image hero with half-width text): remove `.section__container { max-width: 1440px }`. Instead, let the split grid span 100% and cap text readability with an INNER `.section__text-inner { max-width: 560px }` anchored to the inner edge (`justify-content: flex-end` when image is on the right). The background colors of each half are flush to the viewport edge, the text stays readable.
 
-### The Compare -> Code -> Preview -> Refine Loop
+### The Compare -> Code -> Audit -> Preview -> Refine Loop
 
-Each section goes through an iterative cycle until it matches the source. **Do NOT move to the next section until the current one passes visual comparison.**
+Each section goes through an iterative cycle until it matches the source AND passes the deterministic schema/Liquid audit. **Do NOT move to the next section until the current one passes both visual comparison and `theme_audit.py`.**
 
 1. **COMPARE** — Study the source screenshot from Phase 2
 2. **CODE** — Build the section using exact extracted values (hex colors, px sizes, font weights)
-3. **PREVIEW** — View your built section in the browser or MCP preview
-4. **DIFF** — Side-by-side comparison: layout, background, typography, spacing, border-radius, images, buttons, responsive
-5. **REFINE** — Fix discrepancies, re-extract CSS values if needed, loop back to step 3
+3. **AUDIT** — Run the deterministic gold-star audit on the section file before pushing. This catches schema/Liquid bugs that the visual diff cannot — `image_picker` on content images, raw hex defaults, missing Section Shell / Container settings, missing `fluid_attributes`, dashes in block loops, `var(--clr-{{ ... }})` footguns, etc. Visual diff can't see these — but they break the editor silently.
+   ```bash
+   python3 skills/fluid-theme-clone/scripts/theme_audit.py "$THEME_DIR/sections/<section_name>/index.liquid"
+   ```
+   Exit code 0 = clean. Exit code 1 = violations printed as `file:line: RULE_ID: message`. Fix every violation before moving to step 4. Use `--rules GS001,GS002,...` to scope a re-run to specific rules. The full rule list is in [Schema & Liquid audit (theme_audit.py)](#schema--liquid-audit-theme_auditpy) below.
+4. **PREVIEW** — Push the section, then run `fluid theme dev --port 9292` from `THEME_DIR`. The dev server proxies the storefront and renders local theme files at `http://127.0.0.1:9292/<route>` with a filesystem watcher that hot-reloads on save. See [references/dev-preview-visual-diff.md](references/dev-preview-visual-diff.md#start-the-dev-server).
+5. **DIFF** — Run the Playwright diff script against the page that contains this section: same viewport on both browsers, captures desktop / tablet / mobile pairs, scrolls section-by-section. Read the matched screenshot pairs, classify each finding as **auto-fix** (color, spacing, typography, border, shadow — clear numeric or token mismatch) or **flag for user** (layout structure, image asset swap, missing canonical font, third-party widget). See [references/dev-preview-visual-diff.md](references/dev-preview-visual-diff.md#reading-the-output-the-agent-loop).
+6. **REFINE** — Apply auto-fixes directly to the section file. The dev watcher uploads on save; the localhost preview hot-reloads. Re-run AUDIT on the changed file, then loop back to step 5 for the next visual round.
 
-Aim for 1-3 rounds per section. After 3 rounds, note remaining deviations in a comment and move on.
+Aim for 1-3 rounds per section. After 3 rounds, note remaining deviations in a comment and move on. Surface any flagged findings to the user before declaring the section complete. **Do not skip AUDIT — visual parity without structural correctness ships sections that look right in screenshots but break in the Builder.**
+
+### Schema & Liquid audit (`theme_audit.py`)
+
+A deterministic, non-subjective companion to the visual diff. The script lives at `skills/fluid-theme-clone/scripts/theme_audit.py` and runs 26 gold-star rules over `.liquid` section, block, and template files. Each rule has a stable ID (GS001-GS026) and a high signal-to-noise ratio.
+
+```bash
+# Audit one file
+python3 skills/fluid-theme-clone/scripts/theme_audit.py "$THEME_DIR/sections/hero/index.liquid"
+
+# Audit a whole directory
+python3 skills/fluid-theme-clone/scripts/theme_audit.py "$THEME_DIR/sections/"
+
+# Audit only files changed since last commit (CI-style gate)
+python3 skills/fluid-theme-clone/scripts/theme_audit.py --since-commit
+
+# Audit modified files vs HEAD (pre-push gate)
+python3 skills/fluid-theme-clone/scripts/theme_audit.py --diff
+
+# JSON output for tool integration
+python3 skills/fluid-theme-clone/scripts/theme_audit.py --json "$THEME_DIR/"
+
+# Run a subset of rules
+python3 skills/fluid-theme-clone/scripts/theme_audit.py --rules GS001,GS002,GS014 "$THEME_DIR/sections/"
+```
+
+Exit codes: `0` = clean, `1` = violations found, `2` = invocation error.
+
+**Rule catalogue** (each violation prints `file:line: RULE_ID: message`):
+
+| ID | Catches |
+|----|---------|
+| GS001 | Section Shell + Container required settings present (the 6 + 9 layout controls). |
+| GS002 | Section-level color settings use `select` + `options: "background_colors"` — not raw hex via `color` / `color_background`. |
+| GS003 | Section-level fonts use `font_families` option group — not `font_picker`. |
+| GS004 | `image_picker` only allowed on `background_image`, `container_background_image`, or inside the canonical `image` block. |
+| GS005 | Visible headings are richtext blocks, not section-level `text`/`textarea` settings. |
+| GS006 | `{% render %}` only targets `components/`, never `blocks/`. |
+| GS007 | Every `{% for block in section.blocks %}` body emits `{{ block.fluid_attributes }}` somewhere. |
+| GS008 | Section schema declares a non-empty `presets` array. |
+| GS009 | Schema JSON parses cleanly. (Parse errors silently render the section as "Unknown Section" in the Builder.) |
+| GS010 | `block.settings.X` is only read inside a `{% for block in ... %}` loop body. |
+| GS011 | Unsupported schema types blocked: `number`, `paragraph`, `inline_richtext`, `video`, `video_url`, `color_scheme`, `page`, `liquid`, `metaobject`, `article`, etc. |
+| GS012 | A `visible_if` on a setting is paired with a matching `{% if %}` guard in the template. |
+| GS013 | No whitespace-trimming dashes on `{% for block in section.blocks %}` or `{% case block.type %}`. (Dashes inside `{%- style -%}` are still safe.) |
+| GS014 | No `var(--clr-{{ section.settings.X }})` wrapping — empty settings render `var(--clr-)`, invalid CSS that kills the entire rule block. |
+| GS015 | Section files emit `{{ section.fluid_attributes }}` on the root element. |
+| GS016 | `{{ block.fluid_attributes }}` lives on a `<div>` wrapper — never directly on `<h1>`-`<h6>`, `<p>`, or `<span>`. |
+| GS017 | Canonical breakpoints only — `767px` (mobile) and `991px` (tablet). `749px`, `768px`, and `1023px` are forbidden. |
+| GS018 | `{% layout 'theme' %}` is on the first non-blank line of template files. |
+| GS019 | Template schemas (top-level `sections` + `order`) do NOT include `blocks` data on a section instance — blocks come from the section's own presets. |
+| GS020 | Iterates `menu.menu_items`, not the non-existent `menu.links`. |
+| GS021 | No native `border` schema type — split into `range` (width 0-10) + `select` `options: "background_colors"` (color). |
+| GS022 | Every `range` setting declares `min`, `max`, `step`. |
+| GS023 | Section files contain a `{% schema %}` block. |
+| GS024 | Section schemas declare a non-empty `name` (the Builder picker label). |
+| GS025 | `richtext` defaults are wrapped in HTML tags so the WYSIWYG can initialize them. |
+| GS026 | Typo guard: `fluid_attribute` (singular) renders nothing — the accessor is `fluid_attributes` (plural). |
+
+**Pairing with visual diff.** `theme_audit.py` and the Playwright visual diff are complementary. The audit catches structural / schema / Liquid bugs that screenshots cannot see (an editor that won't let merchants click a block, a `var(--clr-)` that kills padding only when empty, a section that looks fine in your run but fails on a fresh template). The visual diff catches pixel-level deltas the audit cannot see. **A section is gold-star only when both pass.** Treat the audit's exit code as a gate: never push a section with violations, never declare a clone complete with violations across the theme.
 
 ---
 
@@ -683,20 +766,48 @@ After pushing section code via `PUT /api/application_themes/{id}/resources`:
 
 ## Phase 6: Full-Page Visual QA
 
-Phase 4 ensures each section matches. Phase 6 ensures the **assembled page** matches.
+Phase 4 ensures each section matches. Phase 6 ensures the **assembled page** matches end-to-end across breakpoints. This phase is gated by the dev-preview workflow — do not declare a page complete without it.
 
-### 6a: Open source and built pages side by side, scroll both, screenshot-compare each section pair
-### 6b: Responsive comparison at 375px, 768px, 1280px
+### 6a: Run paired Playwright captures of source vs. localhost
+
+With `fluid theme dev` still running on port 9292, capture the full page at desktop / tablet / mobile and walk it section-by-section:
+
+```bash
+node tools/visual-diff.mjs <SOURCE_URL> http://127.0.0.1:9292/<route> --label=<page>
+```
+
+Outputs `diff/<page>/<label>-{desktop,tablet,mobile}-{source,built}-{full,sec01,sec02,...}.png` with matched scroll positions on both sides. See [references/dev-preview-visual-diff.md](references/dev-preview-visual-diff.md#the-diff-script).
+
+### 6b: Read the pairs and classify findings
+
+Walk the desktop pairs in order, then tablet, then mobile. Read each `source` / `built` PNG pair with the Read tool. For each finding, classify:
+
+- **Auto-fix** → background colors, padding/margin/gap, font sizes/line-height, border-radius, box-shadow, missing or wrong text content, icon size. Apply directly to the section file; the watcher uploads on save.
+- **Flag for user** → layout structure changes, image asset swaps, custom-font substitutions, missing third-party widgets, animation differences. Print a list and wait for the user before touching them.
+
+Print the findings table per breakpoint, then loop. After 3 rounds with no convergence on a particular page, log remaining deltas and move on.
+
 ### 6c: Functionality — carousels, accordions, buttons, hover effects, scroll animations, videos
-### 6d: Structural checklist:
-- [ ] Every section has `{{ section.fluid_attributes }}` on root
-- [ ] Every block has `{{ block.fluid_attributes }}`
-- [ ] All images use DAM URLs
-- [ ] Schema has `presets` with default content
-- [ ] Page template has correct `order` array
-- [ ] No unsupported schema types
+
+### 6d: Deterministic structural audit (gate before upload)
+
+Run the gold-star audit across the whole theme. **This is the final gate before Phase 7 — the theme does not ship with violations.**
+
+```bash
+python3 skills/fluid-theme-clone/scripts/theme_audit.py "$THEME_DIR"
+```
+
+Exit code 0 = ready to upload. Exit code 1 = fix every violation, then re-run. The audit covers all 26 GS rules — see the [rule catalogue](#schema--liquid-audit-theme_auditpy) for what each catches and how to fix it.
+
+The script's per-rule rollup at the end (`audit: 12 violation(s) across 18 file(s) [GS014:5, GS002:4, GS016:3]`) tells you which rule to attack first. Knock out one rule across the theme at a time.
+
+**Items the audit checks deterministically (don't repeat manually):** section + block `fluid_attributes` placement, schema parse, presets, Section Shell + Container required settings, theme-token color/font controls, image_picker placement, render targets, block-loop dashes, breakpoints, `var(--clr-{{ ... }})` footgun, `fluid_attribute` typo, range bounds, richtext defaults, template schemas free of blocks, layout-tag-first.
+
+**Items the audit cannot check (verify manually):**
+- [ ] All images use DAM URLs (audit checks placement, not URL host)
 - [ ] All Liquid variable access uses `| default:` fallbacks
 - [ ] All text content matches source exactly
+- [ ] Page template has correct `order` array
 
 ---
 
@@ -963,5 +1074,7 @@ When you update [references/schema-settings-reference.md](references/schema-sett
 ## Related Skills
 
 - [fluid-theme-refine](../fluid-theme-refine/SKILL.md) — Pixel-perfect QA pass after clone. Canonical source of truth for Section Shell + Container patterns, divider-block pattern, canonical block primacy, media_picker fallback, and template-destroy preset refresh workflow.
+- **fluid-theme-cli** (`~/.agents/skills/fluid-theme-cli/SKILL.md`) — Authoritative reference for `fluid login` / `fluid theme dev` / `fluid theme push`. Read before running any CLI command.
+- [references/dev-preview-visual-diff.md](references/dev-preview-visual-diff.md) — Shared dev-preview + Playwright visual-diff protocol used by both clone and refine.
 - [fluid-product-admin-import](../fluid-product-admin-import/SKILL.md) — For importing products, categories, and admin settings (run before theme clone)
 - [fluid-onboarding-prefill](../fluid-onboarding-prefill/SKILL.md) — For pre-filling KYC/onboarding forms

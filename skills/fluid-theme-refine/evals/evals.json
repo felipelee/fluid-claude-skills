@@ -1,0 +1,167 @@
+{
+  "skill_name": "fluid-theme-refine",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Refine my Fluid theme so the homepage matches the source site. Source is https://yellowbirdfoods.com, my Fluid store is https://companyname.fluid.app, theme ID 55697, token PT-xxx. Theme is checked out at /Users/me/themes/yellowbird.",
+      "expected_output": "Should validate inputs (source reachable, Fluid API works, theme ID resolves) AND run the local toolchain preflight (Node ≥ 18, fluid CLI + theme-dev plugin, fluid whoami, Playwright + Chromium). Should confirm company identity before any changes. Should pull the theme, run `fluid theme dev` for localhost preview, run Playwright visual diff at desktop/tablet/mobile, classify findings as auto-fix vs flag, apply auto-fixes by saving section files (watcher uploads), loop until findings = 0 or remaining are flagged.",
+      "assertions": [
+        "Validates source URL reachable",
+        "Validates Fluid API token and theme ID",
+        "Runs the local toolchain preflight: node, fluid CLI, fluid theme --help, fluid whoami, Playwright + Chromium",
+        "If any preflight tool is missing, surfaces the exact install command and asks before installing",
+        "Never installs Playwright or other tooling silently",
+        "Confirms company identity before proceeding",
+        "Does not proceed without explicit user confirmation of the right store + theme",
+        "Pulls the theme to a local directory before refining",
+        "Runs `fluid theme dev --port 9292` from the theme directory",
+        "Waits for the dev server to be ready before running the diff",
+        "Runs Playwright comparing source vs http://127.0.0.1:9292/",
+        "Captures paired screenshots at desktop (1440x900), tablet (768x1024), mobile (390x844)",
+        "Walks each captured page section-by-section",
+        "Reads source/built PNG pairs and classifies findings as auto-fix vs flag",
+        "Applies auto-fixes by editing section files locally — does NOT push via API during the loop",
+        "Relies on the `fluid theme dev` watcher to upload changes and hot-reload",
+        "Loops until findings converge or remaining are all flagged",
+        "Surfaces flagged findings to the user before declaring complete"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to modernize this old legacy Fluid theme to the gold standard. It has Splide everywhere, every section uses raw hex colors, no Section Shell pattern. Theme is at /Users/me/themes/legacy. Token PT-xxx, Fluid URL https://test.fluid.app, theme ID 12345.",
+      "expected_output": "Should recognize this is workflow B (legacy modernization), not workflow A (pixel-perfect). Should run Phase 0 architecture audit FIRST (theme-wide files + grep audits) before any visual work. Should use the rubric to decide refine vs re-clone, apply Recipe Book transformations, then run dev-preview visual verification only after the architectural fixes land.",
+      "assertions": [
+        "Identifies this as legacy modernization (workflow B)",
+        "Runs Phase 0 audit before any visual diff work",
+        "Audits theme-wide files: settings_schema.json, settings_data.json, config.css, reset.css, theme.liquid, pagination component",
+        "Runs the theme-wide greps for Splide, render targeting blocks/, font_picker in sections, raw hex defaults, body overflow:hidden, image_picker on content images, navbar JS hooks",
+        "Tables the findings with file:line:issue",
+        "Applies the Phase 0d migration table to map legacy sections to v4 base-theme equivalents",
+        "Uses the Recipe Book for in-section transformations",
+        "Fixes architectural findings BEFORE visual diff",
+        "Then runs `fluid theme dev` and Playwright visual verification at desktop/tablet/mobile"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The hero section on my homepage doesn't match the source. Just fix that one section. Source https://example.com, theme at /Users/me/themes/example, theme ID 99 on https://demo.fluid.app, token PT-xxx.",
+      "expected_output": "Should skip the full-page sweep and target just the hero. Should run the toolchain preflight, start `fluid theme dev`, run Playwright comparison scoped to the hero section pair (sec01) at all three breakpoints. Auto-fix mechanical mismatches; flag judgement calls.",
+      "assertions": [
+        "Confirms inputs and runs toolchain preflight",
+        "Spins up `fluid theme dev`",
+        "Runs Playwright diff but focuses on the hero section pair (sec01)",
+        "Captures hero at all three breakpoints (desktop, tablet, mobile)",
+        "Classifies findings as auto-fix vs flag",
+        "Applies auto-fixes to sections/.../hero/index.liquid only",
+        "Does not modify other sections",
+        "Loops on the hero until converged or flagged-only"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm in the middle of a refinement and I keep doing `curl -X PUT /api/application_themes/.../resources` to push my fixed sections. The page never updates. What's wrong?",
+      "expected_output": "Should explain that during a refine loop, the agent should be running `fluid theme dev` which has a filesystem watcher that auto-uploads on save. Manual API pushes during the loop are unnecessary and cause the watcher to fight with cache. Should tell the user to start the dev server and edit files locally — the watcher handles the rest.",
+      "assertions": [
+        "Identifies that the user is missing `fluid theme dev`",
+        "Tells the user to start `fluid theme dev` in their theme directory",
+        "Explains that the watcher auto-uploads changed files on save",
+        "Explains that the localhost preview hot-reloads automatically",
+        "Notes that manual API pushes during the loop are not needed",
+        "Lists the rare cases where a manual push IS still needed (binaries, template-destroy preset refresh)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Refinement found these diffs on the homepage hero: 1) bg-color #1B3A4B vs #1C3B4C, 2) heading font-size 56px vs 48px, 3) source uses a 3-column features grid, mine has 2 columns, 4) source has a video, mine has a static image. What do you fix?",
+      "expected_output": "Should classify each finding: bg-color = auto-fix (numeric, theme token), font-size = auto-fix (numeric), 3-col vs 2-col layout = FLAG (structural change), video vs image = FLAG (asset swap + media type change). Should auto-fix #1 and #2 directly, surface #3 and #4 to the user before changing.",
+      "assertions": [
+        "Classifies bg-color mismatch as auto-fix",
+        "Classifies font-size mismatch as auto-fix",
+        "Classifies 2-col vs 3-col layout as FLAG (do not auto-fix)",
+        "Classifies video vs static image as FLAG (do not auto-fix)",
+        "Applies bg-color and font-size fixes directly to section files",
+        "Does NOT change the column count without user confirmation",
+        "Does NOT swap image for video without user confirmation",
+        "Surfaces the two flagged findings to the user with explanation",
+        "Asks the user for direction before continuing"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Make my theme match the source at desktop, tablet, AND mobile. Theme at /Users/me/themes/site, theme ID 42, token PT-xxx, Fluid URL https://my.fluid.app, source https://source.com.",
+      "expected_output": "Should run a single `fluid theme dev` instance and a single Playwright diff that captures all three breakpoints (1440x900, 768x1024, 390x844) in one run. Should walk desktop pairs first, then tablet, then mobile — applying fixes between rounds. Should not require three separate runs.",
+      "assertions": [
+        "Spins up `fluid theme dev` once for the entire run",
+        "Runs Playwright once per round, capturing all three breakpoints in one invocation",
+        "Walks desktop pairs first (catches structural / typographic issues)",
+        "Then walks tablet pairs",
+        "Then walks mobile pairs (often surfaces hamburger / padding-collapse issues)",
+        "Applies auto-fixes between rounds, not at the end",
+        "Each round uses the same `--label` so output overwrites cleanly",
+        "Does not run separate scripts per breakpoint"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm refining my theme but `fluid theme dev` says 'unknown command'. What now?",
+      "expected_output": "Should diagnose this as a missing theme-dev plugin. Should surface the install command (`npm install -g @fluid-app/fluid-cli-theme-dev`) and ask the user before installing. Should also mention `enabledPlugins` in `~/.fluid/config.json` as a possible cause if installed. Should NOT silently install.",
+      "assertions": [
+        "Diagnoses 'unknown command' as missing theme-dev plugin",
+        "Surfaces the install command: npm install -g @fluid-app/fluid-cli-theme-dev",
+        "Asks the user before running the install",
+        "Mentions enabledPlugins in ~/.fluid/config.json as another possible cause",
+        "Does not silently run npm install"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "The Phase 0 audit on my legacy theme found 35 findings: every section has hex defaults, Splide is everywhere, no Section Shell pattern, no canonical blocks. What do I do?",
+      "expected_output": "Should apply the Phase 0c rubric. With 35 findings spanning structural patterns + visual + asset, this is a re-clone candidate, not refine. Should recommend running `/fluid-theme-clone` against the existing site instead. Should explain why (faster than rebuilding section by section).",
+      "assertions": [
+        "Applies the Phase 0c refine-vs-reclone rubric",
+        "Identifies 35 findings + structural breadth as a re-clone candidate",
+        "Recommends running `/fluid-theme-clone` instead",
+        "Explains the reasoning: faster than rebuilding section by section",
+        "Does not start refining when the rubric points to re-clone"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "After refining, the hero matches source but the section below it now has weird padding. Did I break something?",
+      "expected_output": "Should explain that fixes can have side effects on adjacent sections (CSS specificity, container assumptions). Should re-run the Playwright diff and read the section pair below the hero to confirm. Should not silently move on without verifying.",
+      "assertions": [
+        "Acknowledges fixes can affect adjacent sections",
+        "Re-runs the Playwright diff after a fix lands",
+        "Reads section pairs adjacent to the just-edited section, not just the target",
+        "If the side-effect is real, treats it as a new finding (auto-fix vs flag)",
+        "Does not declare the page complete based only on the originally-fixed section"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "After 5 rounds of fixes, the testimonial section still looks slightly off — quote font is some custom serif we don't have. The diff keeps flagging it.",
+      "expected_output": "Should recognize this hits the 'after 5 rounds without convergence' rule. Should freeze the section, document the remaining delta in a code comment in the section's Liquid file, log it in the final report, and move on. Should not loop indefinitely.",
+      "assertions": [
+        "Recognizes the 5-round convergence threshold",
+        "Identifies custom font as a non-fixable / FLAG finding",
+        "Documents the remaining delta in a code comment in the section file",
+        "Logs the unresolved finding in the final report",
+        "Stops looping on this section",
+        "Suggests the closest available font as a substitution",
+        "Does not silently abandon the issue"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Refine my theme but I need to do this offline — I'm on a flight. Theme is at /Users/me/themes/x. Source is https://example.com, token PT-xxx, theme ID 100, Fluid URL https://test.fluid.app.",
+      "expected_output": "Should explain that `fluid theme dev` requires authentication and reaches the live storefront — it doesn't work offline. Should refuse to start the visual-diff loop. Should offer to do structural/Phase 0 audits offline (file-based grep + lint) but defer visual work until network access is restored.",
+      "assertions": [
+        "Explains `fluid theme dev` is not a static local renderer",
+        "Notes that the dev server proxies the live storefront and requires network + auth",
+        "Refuses to start the visual-diff loop offline",
+        "Offers to do Phase 0 architectural audit offline (purely file-based)",
+        "Defers visual diff work until network access is restored"
+      ]
+    }
+  ]
+}
