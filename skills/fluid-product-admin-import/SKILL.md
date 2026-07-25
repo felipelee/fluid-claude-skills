@@ -10,7 +10,7 @@ description: >-
   categories, collections, brand import, menus, pages, agreements, onboarding,
   discounts, redirects, blog posts, customers, inventory, shipping zones.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Fluid Product & Admin Settings Import
@@ -30,14 +30,20 @@ This skill is used by people migrating many different sites into many different 
 - **Never reuse cached tokens, URLs, or company IDs** — the Fluid account, company ID, country IDs, and company_country_ids will all be different per run.
 - **Don't reference or read files from previous import directories** — start clean.
 
-### Step 1: Collect credentials
+### Step 1: Resolve execution environment and credentials
 
-Ask the user for ALL FOUR of these before doing anything else:
+**Inside Fluid Mist:** use the managed `crawl`, `dam_upload`, and `fluid_api`
+tools plus the active company profile. Do not ask a non-developer for a
+Firecrawl key or Fluid bearer token that Mist already manages. Read the active
+company identity with a non-mutating API request and show it before the first
+write. If the company target is ambiguous, stop and ask.
 
-1. **Source site URL** — The ecommerce site to migrate (e.g. `https://yellowbirdfoods.com`)
-2. **Fluid URL** — Their Fluid store URL (e.g. `https://companyname.fluid.app`)
-3. **Fluid API token** — Developer token from their Fluid admin panel (Settings > API Tokens)
-4. **Firecrawl API key** — From [firecrawl.dev](https://firecrawl.dev). Needed for brand extraction, page scraping, and non-Shopify sites.
+**Standalone execution:** ask for:
+
+1. **Source site URL** — The ecommerce site to migrate
+2. **Fluid URL** — The destination Fluid store
+3. **Fluid API token** — A token authorized for that destination
+4. **Firecrawl API key** — Only when no managed crawl tool is available
 
 ### Step 2: Validate ALL credentials before starting the import
 
@@ -55,7 +61,7 @@ requests.get("https://companyname.fluid.app/api/settings/company_countries",
 # Also captures company_country_id and country_id for later use
 
 # 3. Check Firecrawl API key
-requests.post("https://api.firecrawl.dev/v1/scrape",
+requests.post("https://api.firecrawl.dev/v2/scrape",
               headers={"Authorization": f"Bearer {firecrawl_key}"},
               json={"url": "https://example.com", "formats": ["markdown"], "limit": 1},
               timeout=15)
@@ -122,6 +128,75 @@ Beyond crawling, Firecrawl offers specialized extraction formats:
 - **`formats: ["extract"]`** with a schema — Structured data extraction. Use for pulling company info, policies, or any structured data.
 - **`/extract` endpoint** — AI-powered extraction across multiple URLs. Give it URLs + a prompt/schema, it crawls and returns structured results.
 
+### Catalog completion contract
+
+Build `source-catalog.json` before importing anything. The manifest is the
+denominator for coverage and must contain:
+
+```json
+{
+  "source_url": "https://example.com",
+  "observed_at": "2026-07-25T16:20:15Z",
+  "discovery": {
+    "sitemap_urls": 343,
+    "api_urls": 0,
+    "collection_urls": 324,
+    "unique_product_urls": 343
+  },
+  "products": [
+    {
+      "source_id": "https://example.com/products/front-wheel-c4",
+      "source_url": "https://example.com/products/front-wheel-c4",
+      "source_handle": "front-wheel-c4",
+      "fetch_status": "live",
+      "final_url": "https://example.com/products/front-wheel-c4",
+      "title": "Front Wheel",
+      "price": 120,
+      "currency": "EUR",
+      "image_urls": [],
+      "option_axes": {},
+      "variant_count": 1
+    }
+  ],
+  "excluded": [
+    {
+      "source_url": "https://example.com/products/old-item",
+      "reason": "redirects to home; no live PDP",
+      "evidence": "final_url=https://example.com/"
+    }
+  ]
+}
+```
+
+Discovery is a **union**, not a fallback that stops after the first plausible
+list:
+
+1. Read `sitemap.xml` and every referenced child sitemap. Preserve every
+   product URL, last-modified timestamp, and sitemap image.
+2. Exhaust a structured catalog API when available (`products.json` pages
+   until the first empty page, Storefront API, WooCommerce API, etc.).
+3. Exhaust all collection/category pagination and collect product links.
+4. Fetch every unique PDP. Record the final URL, status, content type, and
+   parsing method.
+5. Reconcile the sets. Every discovered URL must be either a live manifest
+   product or an explicit exclusion with evidence.
+
+A `200` is not enough: a stale PDP can redirect to the homepage and return a
+large HTML body. Require `final_url` to remain the intended product route and
+require product evidence (title plus price/offer or Product JSON-LD). Never
+exclude an item merely because parsing failed, an image is missing, or the site
+blocked one extraction method.
+
+For AI-friendly `.md` pages, use Markdown for copy and simple product facts,
+then fill missing gallery images, options, and variant data from JSON-LD,
+rendered HTML, sitemap images, or a structured API. A Markdown page with no
+image does not prove the source product has no image.
+
+For catalogs larger than a single tool/batch cap, process deterministic chunks
+until the entire URL set is accounted for. Persist `source-catalog.json`,
+`id-mapping.json`, and a per-item checkpoint after every successful item so a
+slow connection, app restart, or rate limit resumes instead of starting over.
+
 ### Three crawl modes
 
 **1. Full crawl** (`crawler.crawl(url)`) — Traditional spider crawl.
@@ -134,7 +209,9 @@ Beyond crawling, Firecrawl offers specialized extraction formats:
 - Step 2: Classify URLs into product/collection/other via `classifyPageType()`
 - Step 3: `batchScrapeUrlsAndWatch()` streams pages via WebSocket as they're scraped
 - Calls `onPage()` immediately for each product/collection/homepage — no waiting for full crawl
-- Capped at 100 URLs per batch (products prioritized, max 10 collections, always includes homepage)
+- Processes at most 100 URLs per batch. Repeat deterministic batches until all
+  mapped product URLs are accounted for; 100 is a transport batch size, never
+  a catalog completion limit.
 - Falls back to sequential batch scrape (10 at a time) if WebSocket fails
 - 3-minute safety timeout on WebSocket
 
@@ -196,6 +273,7 @@ interface CrawledPage {
 
 ```
 site-import-{domain}-{timestamp}/
+  source-catalog.json     # Required — discovery evidence + accounted-for denominator
   products.json           # Required — ImportProduct[]
   categories.json         # Required — ImportCategory[]
   brand.json              # Optional — ImportBrand
@@ -268,11 +346,33 @@ class IdMapping {
   assets: Map<string, string>       // sourceUrl -> damUrl
   categories: Map<string, number>   // source_id -> Fluid category ID
   collections: Map<string, number>  // collection title -> Fluid collection ID
-  products: Map<string, number>     // source_id -> Fluid product ID
+  products: Map<string, number>     // immutable source_id/URL -> Fluid product ID
 }
 ```
 
 `serialize()` / `deserialize()` for JSON persistence. On re-run, items already in the mapping are skipped.
+
+The source identity is the normalized source product ID or canonical source
+URL, **never the title**. Duplicate titles are normal for parts catalogs
+(`Front Wheel`, `Pedals`, and `Belt` can each identify several compatibility
+variants). Title fallback can collapse valid products and is prohibited when
+the title is non-unique. After each create/update, persist:
+
+```json
+{
+  "products": {
+    "https://example.com/products/front-wheel-c4": {
+      "fluid_product_id": 123,
+      "fluid_slug": "front-wheel-2f91",
+      "source_handle": "front-wheel-c4"
+    }
+  }
+}
+```
+
+If the Product API accepts and returns `external_id`, set it to a stable,
+namespaced source identity and verify it round-trips. Otherwise, the run-local
+mapping file is authoritative. Do not guess support from a response schema.
 
 ## Step Details
 
@@ -296,11 +396,15 @@ Upload product and brand images to Fluid DAM. 5-10 concurrent workers recommende
 - Content/editorial images embedded in page HTML
 - Theme assets (CSS backgrounds, sprite sheets)
 
-**Direct upload:**
+**Inside Mist:** use `dam_upload` with the downloaded file bytes. Do not ask the
+upload service to fetch a remote URL; it does not accept
+`external_asset_url`.
+
+**Standalone direct upload:**
 ```
-POST /api/dam/assets  (multipart/form-data)
+POST https://upload.fluid.app/upload  (multipart/form-data)
   Authorization: Bearer <FLUID_API_KEY>
-  Fields: asset[file] (binary), asset[name] (string)
+  Fields in order: fileName, file (binary), name, tags
   -> { asset: { id, code, default_variant_url } }
 ```
 
@@ -366,7 +470,92 @@ This ensures the homepage "New Arrivals" section is populated from day one.
 
 ### 4. Products
 
-See the **API Payload Shape** and **Key Implementation Rules** sections below for full product import details.
+Import from the reconciled `source-catalog.json`, not directly from whatever
+page happens to be open.
+
+**Identity and idempotency**
+
+- Use `source_id`/`source_url` as the mapping key.
+- Read `id-mapping.json` before each item. If it contains a Fluid ID, GET that
+  product and update or skip it.
+- Do not use title-only matching. If a recovery path must match an existing
+  record without a mapping, require a unique composite fingerprint such as
+  title + SKU + source handle/external_id; ambiguous matches stop for review.
+- Persist the Fluid ID and returned slug immediately after each successful
+  create, before starting the next item.
+
+**Nested create shape**
+
+```json
+{
+  "product": {
+    "title": "Cruiser",
+    "description": "Source description",
+    "active": true,
+    "status": "active",
+    "images_attributes": [
+      { "image_url": "https://ik.imagekit.io/fluid/...", "position": 1 }
+    ],
+    "option_attrs": ["Color", "Configuration"],
+    "variants_attributes": [
+      {
+        "is_master": true,
+        "option_attrs": ["Black", "A (+ rear rack)"],
+        "variant_countries_attributes": [
+          {
+            "country_id": 20,
+            "active": true,
+            "currency_code": "EUR",
+            "price": 3418
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+- `images_attributes` uses `image_url`, not `url`, and the value must be the
+  Fluid DAM URL.
+- Resolve the integer global `country_id` from
+  `GET /api/settings/company_countries`; do not send `country_iso` in its
+  place.
+- Exactly one variant is `is_master:true`.
+- Product `option_attrs` are option names; variant `option_attrs` are values
+  in the same order.
+- Create every real option axis and variant combination on the first POST.
+  Adding axes to a flat product later is not a reliable repair path.
+- Preserve exact source prices/currencies, copy, and gallery order. Do not
+  fabricate a subscription plan.
+
+**Bounded concurrency and recovery**
+
+Use a small adaptive pool: start with 5 concurrent image downloads/uploads and
+2 concurrent product writes. On 429/5xx, honor `Retry-After`, apply exponential
+backoff with jitter, and temporarily reduce concurrency. Retry each item a
+bounded number of times, record the terminal error beside its source identity,
+and continue. Print progress at least every 20 items and checkpoint every item.
+This keeps the workflow usable on slow Wi-Fi and avoids memory spikes on
+lower-end computers; never hold the entire image catalog in memory.
+
+**Completion gate**
+
+After import, enumerate the destination using API pagination until exhausted
+and reconcile by the source identity mapping:
+
+- every live, non-excluded source product maps to one distinct Fluid product;
+- no two source identities map to the same Fluid ID;
+- every exclusion has objective evidence;
+- coverage is exactly 100%;
+- imported products are active and have exact price/currency;
+- source options and variant counts match;
+- every source image that exists is represented by a resolving Fluid DAM URL;
+- no placeholder images or `$0` shells remain unless the source really has
+  that value.
+
+Report source discovered/live/excluded/imported counts separately. A smaller
+destination count is never accepted merely because collection cards looked
+complete.
 
 ### 5. Brand
 
@@ -1018,7 +1207,9 @@ When the user provides a Shopify admin token, these additional endpoints provide
 ## Error Handling Patterns
 
 - **Per-entity try/catch:** Each item in a step is wrapped individually — one failure doesn't stop others
-- **Duplicate detection:** "already taken" / "already exists" errors are silently skipped (not counted as failures)
+- **Duplicate detection:** "already taken" / "already exists" is only a skip
+  after the existing Fluid record is resolved to the same immutable source
+  identity. Ambiguous duplicates are failures, not silent success.
 - **Best-effort steps:** Brand guidelines, metafields, onboarding sub-steps swallow errors
 - **Progress callbacks:** Every step reports `(current, total, detail)` via `ImportProgressCallback`
 - **Result aggregation:** All errors collected into a single `errors[]` array, returned with counts
