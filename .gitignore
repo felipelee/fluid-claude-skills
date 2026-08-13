@@ -23,6 +23,10 @@ generated-assets/
 # Codex-flavored guidance copy (references client projects)
 AGENTS.md
 
+# Local project notes — client engagements, in-progress state, anything sensitive.
+# CLAUDE.md is public; put that content here instead.
+CLAUDE.local.md
+
 # Secrets
 .env
 .env.*
