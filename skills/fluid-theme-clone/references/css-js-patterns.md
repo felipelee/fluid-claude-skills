@@ -1,8 +1,72 @@
 # CSS & JavaScript Patterns
 
+## Where CSS lives — `assets/` only
+
+**Every stylesheet lives under `assets/`, flat, no sub-folders.** This is the current Fluid contract; getting it wrong is not cosmetic, it breaks pushes.
+
+| Kind | File | Referenced from | How |
+|------|------|-----------------|-----|
+| Theme foundation | `assets/global_styles.css` | `layouts/theme.liquid`, before `</head>` | `{{ 'global_styles.css' \| inline_asset_content }}` |
+| Theme custom overrides | `assets/styles.css` | `layouts/theme.liquid`, before `</head>` | `{{ 'styles.css' \| inline_asset_content }}` |
+| Per-section / per-template | `assets/{section_name}.css` | top of that `index.liquid` | `{{ 'hero_section.css' \| asset_url \| stylesheet_tag }}` |
+
+### The two theme-level files are special
+
+`styles.css` and `global_styles.css` were once DB columns (`custom_stylesheet` / `global_stylesheet`) that the renderer inlined on every request. They are now real assets, and they have two hard rules:
+
+- **Exact filenames.** The backend FileResource lookup keys on `styles.css` and `global_styles.css` literally. Renaming to `global.css` / `theme.css` breaks `inline_asset_content` resolution.
+- **Always inline, never `stylesheet_tag`.** Inlining matches pre-migration output byte-for-byte and avoids a round trip for foundation CSS on every page.
+
+Order in `layouts/theme.liquid` — after the `{% style %}` variable block so custom CSS wins the cascade at equal specificity, foundation before overrides:
+
+```liquid
+    {% style %}
+      :root { /* CSS variables from settings */ }
+    {% endstyle %}
+
+    {{ 'global_styles.css' | inline_asset_content }}
+    {{ 'styles.css'        | inline_asset_content }}
+  </head>
+```
+
+### Per-section CSS: inline vs external
+
+Reference it at the **top** of the section's `index.liquid` — never after `{% endschema %}`, which is dead space.
+
+- **> 2 KB** → `{{ 'name.css' | asset_url | stylesheet_tag }}` — a cacheable `<link>`. The engine dedupes stylesheets across the page, so declaring per-section is safe and beats loading everything in the layout.
+- **≤ 2 KB** → `{{ 'name.css' | inline_asset_content }}` — critical CSS without the extra request.
+
+Check with `wc -c`. The 2 KB threshold is what the backend's own auto-migration used.
+
+### Deprecated: co-located stylesheets
+
+`sections/{name}/styles.css`, `components/{name}/styles.css`, `{page_type}/{variant}/styles.css` — **do not create these.** They're the old convention. A new one is a blocker; an existing one should be migrated to `assets/`.
+
+Once a company has the `STYLESHEET_STRICT_INPUT` flag on, the API **rejects the deprecated shape with a 422** and pushes fail outright. Theme-root `styles.css` / `global_styles.css` count as deprecated too — they belong in `assets/`.
+
+### Inline `<style>` — only for dynamic values
+
+An inline block is right only when the CSS depends on schema settings. Keep the static base in the asset and leave the setting-driven overrides inline:
+
+```liquid
+{{ 'hero_section.css' | asset_url | stylesheet_tag }}
+<style>
+  .hero[data-section-id="{{ section.id }}"] {
+    --section-bg:  {{ section.settings.bg_color }};
+    --section-pad: {{ section.settings.section_pad }};
+  }
+</style>
+```
+
+Over ~10 lines of static inline CSS → extract it to an asset.
+
+Never hardcode a path (`<link href="/assets/x.css">`) or a third-party CDN URL for CSS the theme owns. Go through `asset_url` so you get the fingerprinted, CDN-fronted URL.
+
+---
+
 ## CSS: Scoped Styles with BEM
 
-All CSS lives in a `<style>` block inside the section file. Use BEM naming with a section-specific prefix to avoid conflicts.
+Use BEM naming with a section-specific prefix so section styles can't leak into each other.
 
 ### Naming Convention
 ```
@@ -17,8 +81,9 @@ Base styles are mobile. Scale up with `min-width` breakpoints:
 - `768px` — tablet
 - `1024px` — desktop
 
-```html
-<style>
+`assets/stories.css` — plain CSS, no `<style>` wrapper:
+
+```css
   .eh-stories {
     background-color: #FFFBE0;
     padding: 64px 0;
@@ -49,8 +114,39 @@ Base styles are mobile. Scale up with `min-width` breakpoints:
       grid-template-columns: repeat(4, 1fr);
     }
   }
-</style>
 ```
+
+Referenced from the top of the section:
+
+```liquid
+{{ 'stories.css' | asset_url | stylesheet_tag }}
+```
+
+---
+
+## Where JavaScript lives
+
+Same rule as CSS: **runtime JS belongs in `assets/`, loaded with `defer`.**
+
+```liquid
+<script src="{{ 'featured_slider.js' | asset_url }}" defer></script>
+```
+
+- Inline `<script>` over ~5 lines → extract to an asset. Inline JS bypasses caching and runs render-blocking.
+- `defer` unless the script genuinely must run before DOM (rare in themes) — render-blocking scripts hurt LCP.
+- The one acceptable inline case is a tiny config bridge passing settings into the runtime:
+
+  ```liquid
+  <script>
+    window.fluidFeaturedConfig = {{ section.settings | json }};
+  </script>
+  <script src="{{ 'featured_slider.js' | asset_url }}" defer></script>
+  ```
+
+- Never `<script src="https://unpkg.com/...">` for a library the theme depends on — vendor it into `assets/`. Third-party CDNs go down and you don't control what they serve.
+- Never hoist `asset_url` calls into a loop — resolve once above the `{% for %}` and reuse the variable.
+
+The snippets below show the JS logic itself; in a real theme each one is the body of an `assets/*.js` file, not an inline block.
 
 ---
 
