@@ -39,7 +39,7 @@ Every custom section MUST ship these **15 settings** — no abbreviating, no omi
 
 ---
 
-## 2. CSS wire-up — use the exact pattern from SKILL.md line 1002
+## 2. CSS wire-up — use the exact pattern from [SKILL.md § Section Shell Pattern](../SKILL.md#section-shell-pattern--enforce-on-every-custom-section)
 
 ```liquid
 {%- style -%}

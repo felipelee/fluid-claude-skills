@@ -186,6 +186,7 @@ It covers the full Fluid API — products, collections, orders, fulfillment, ref
 | **Theme Refine** | Takes fresh screenshots and compares your Fluid site against the original, fixing differences until they're identical |
 | **Section Refine** | Cleans up one section at a time against your theme's own built-in style guide, then validates it with Fluid's official linter |
 | **Onboarding Pre-Fill** | Scrapes your website for business info and fills in your payments onboarding form automatically |
+| **Payments Status** | Set or review a merchant's PSP and APM onboarding status from root admin — "Neumi is in onboarding with Stripe," "Affirm is ready for NewULife," "show me LimbicArc's PSP statuses" |
 
 ---
 
