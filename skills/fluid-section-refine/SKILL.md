@@ -9,9 +9,11 @@ description: >-
   match our patterns," "does this section follow our standards," "audit this
   section," "this section is off," or names one section to bring up to standard.
   For whole-theme migration or pixel-parity work use fluid-theme-refine; for
-  building a section from scratch use fluid-theme-clone.
+  building a section from scratch use fluid-theme-clone. Runs either surgically
+  over the API (fetch two files, fix, PUT back — no checkout needed) or against a
+  local theme pulled with the CLI.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Fluid Section Refine
@@ -41,6 +43,65 @@ Refining touches sections in themes people are already using.
 - **Check whether the target theme is live before the first write.** If it is, say so and offer `POST /api/application_themes/{id}/clone_for_development` first.
 - **"Looks good" is not approval to publish.** Only "publish it" / "make it live" / "go live" is.
 - End by handing over a preview URL. See [theme-upload-api.md](../fluid-theme-clone/references/theme-upload-api.md#publishing--explicit-approval-only).
+
+---
+
+## Two ways to run this
+
+The rubric only needs **one file** — the schema-reference page. The audit needs **one more** — the section you're fixing. That means this skill does not require a full theme checkout.
+
+| | **Surgical** (API) | **Local** (checkout) |
+|---|---|---|
+| Setup | `GET` two resources | `fluid theme pull` |
+| Rubric | ✅ full — `rubric.py` runs on the fetched page | ✅ full |
+| Schema validation | manual (see below) | ✅ `fluid theme lint --json` |
+| Live preview | preview URL after `PUT` | ✅ `fluid theme dev` hot reload |
+| Best for | a known fix in one section | exploring, several sections, anything visual |
+
+**Default to surgical when you can name the section and the change.** Pull the theme when you need the real validator, a hot-reload preview, or you'd be iterating.
+
+### Surgical flow
+
+**1. Fetch the two files you need.** List resources, then pull the reference page and your target section:
+
+```bash
+curl -s "${FLUID_URL}/api/application_themes/${THEME_ID}/resources" \
+  -H "Authorization: Bearer ${FLUID_TOKEN}"
+```
+
+Save `sections/schema_reference/index.liquid` and `sections/<target>/index.liquid` to a scratch directory. Note which theme is serving the storefront while you're here — see [Never publish](#-never-publish).
+
+**2. Run Steps 0–3 below against the saved files.** Both scripts take explicit paths, so they work unchanged:
+
+```bash
+python3 scripts/lint_reference_page.py <scratch>/schema_reference.liquid
+python3 scripts/rubric.py --page <scratch>/schema_reference.liquid --for-section <scratch>/target_section.liquid
+```
+
+**3. Validate by hand** — you don't have `fluid theme lint --json`, which needs a whole theme on disk:
+
+- Extract the `{% schema %}` block and confirm it is **valid JSON**
+- Check every `type:` against [schema-settings-reference.md](../fluid-theme-clone/references/schema-settings-reference.md) — `paragraph` is the classic reject
+- Confirm every `{{ section.settings.X }}` / `{{ block.settings.X }}` read has a matching `id` in that file's schema — Liquid renders unknown refs as empty, so typos ship silently
+- Count tag pairs: `if`/`endif`, `for`/`endfor`, `case`/`endcase` must balance
+
+**4. Write the one file back.** `PUT` replaces the whole resource — there is no patch, so send the complete file:
+
+```bash
+curl -s -X PUT "${FLUID_URL}/api/application_themes/${THEME_ID}/resources" \
+  -H "Authorization: Bearer ${FLUID_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{ "key": "sections/<target>/index.liquid", "content": "<full file>" }'
+```
+
+**5. Hand over a preview URL.** Uploaded is not published. See [theme-editing.md](../fluid-admin/references/theme-editing.md) for the URL patterns and the full API loop.
+
+### Escalate to local when
+
+- The section needs more than a known, nameable fix
+- Anything visual is in scope
+- You're touching more than ~3 files
+- You want the real validator rather than eyeball checks
 
 ---
 
@@ -150,7 +211,9 @@ Rules:
 - **Don't restyle.** Pure formatting churn is out of scope.
 - **Don't rewrite a section the user didn't ask you to rewrite.** Propose first.
 
-## Step 4 — Lint until clean
+## Step 4 — Validate until clean
+
+**Local mode:**
 
 ```bash
 fluid theme lint --json
@@ -159,9 +222,14 @@ fluid theme lint --json
 Parse the JSON — don't eyeball it. Fix what it flags, run again, repeat until that
 file is clean. Then re-read the section to confirm the change landed as intended.
 
-A clean lint is necessary, not sufficient: it validates schema JSON only. It says
-nothing about whether blocks are editable, media is responsive, or the section
-follows the documented pattern. That is what Step 2 is for.
+**Surgical mode:** the linter needs a whole theme on disk, so run the four manual
+checks from [Surgical flow step 3](#surgical-flow) instead — schema parses as JSON,
+every `type:` is canonical, every settings read has a declared `id`, tag pairs
+balance. Do them before the `PUT`, not after.
+
+Either way, a clean validation is necessary but **not sufficient**: it covers schema
+JSON only. It says nothing about whether blocks are editable, media is responsive, or
+the section follows the documented pattern. That is what Step 2 is for.
 
 ## Step 5 — Feed what you learned back into the page
 
@@ -192,9 +260,12 @@ For a single section:
 1. rubric.py --for-section <path>  → 10–15 relevant cards
 2. audit against those cards + the baseline checks
 3. fix, highest severity first, one change at a time
-4. fluid theme lint --json         → clean
+4. validate → local: fluid theme lint --json | surgical: the 4 manual checks
 5. note anything worth promoting back to the page
 ```
+
+Surgical mode adds a fetch before step 0 and a `PUT` + preview URL after step 4;
+steps 0–3 are identical, just pointed at the saved files.
 
 For several sections, finish one completely before starting the next, and pause
 between them to ask whether to continue, skip, or stop. Don't sweep a whole theme
