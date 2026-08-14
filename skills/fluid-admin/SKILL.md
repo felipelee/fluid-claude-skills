@@ -4,11 +4,15 @@ description: >-
   Manage a Fluid Commerce store via API. Use when the user wants to create collections,
   activate/deactivate products, update navigation, change brand/checkout/tax/shipping settings,
   manage pages and policies, handle customers and inventory, configure webhooks, or perform
-  any store administration task. Triggers on "update my Fluid store," "create a collection,"
-  "deactivate products," "change the nav," "update settings," "manage products," "Fluid admin,"
-  or any store management task requiring Fluid API access.
+  any store administration task. Also handles surgical theme edits — reading and writing one
+  theme file via the API to fix a known issue, without pulling the whole theme. Triggers on
+  "update my Fluid store," "create a collection," "deactivate products," "change the nav,"
+  "update settings," "manage products," "Fluid admin," "fix this in my theme," "update that
+  section," "change the theme file," or any store management task requiring Fluid API access.
+  For finding what's wrong in a section, or any visual work, use fluid-section-refine or
+  fluid-theme-refine instead — those pull the theme locally and run the real validator.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Fluid Admin
@@ -255,6 +259,21 @@ See [references/assets-upload.md](references/assets-upload.md)
 | Upload theme resource (text) | PUT | `/api/application_themes/:id/resources` |
 | Upload theme resource (image) | PUT | `/api/application_themes/:id/resources` |
 
+### Theme Editing (surgical)
+See [references/theme-editing.md](references/theme-editing.md)
+
+Reading and writing individual theme files is the right tool for a **targeted** change — fix an invalid setting type, swap a hardcoded URL, add a missing `alt` — without pulling the whole theme and spinning up a dev server.
+
+| Operation | Method | Endpoint |
+|-----------|--------|----------|
+| List themes | GET | `/api/application_themes` |
+| List theme resources | GET | `/api/application_themes/:id/resources` |
+| Write one resource | PUT | `/api/application_themes/:id/resources` |
+| Clone for development | POST | `/api/application_themes/:id/clone_for_development` |
+| Publish (⚠️ approval only) | POST | `/api/application_themes/:id/publish` |
+
+**Before editing any theme file, read [references/theme-editing.md](references/theme-editing.md).** Theme files have conventions this catalog doesn't capture — invalid setting types are rejected outright, CSS in the wrong place 422s, and a missing `fluid_attributes` silently kills click-to-edit in the visual editor. The reference covers the read → edit → write loop, what to check by eye without the linter, and when to stop and escalate to `fluid-section-refine` or `fluid-theme-refine`.
+
 ### Orders & Fulfillment (42 endpoints)
 See [references/orders-fulfillment.md](references/orders-fulfillment.md)
 
@@ -389,6 +408,16 @@ Fluid rejects `"field": null` and `"field": []` with 422 errors. **Omit the key 
 
 ### Confirm destructive operations with the user
 Before DELETE operations or bulk deactivations, list what will be affected and ask for confirmation.
+
+### Never publish a theme without being asked
+Writing a theme resource (`PUT /api/application_themes/:id/resources`) is safe and reversible. **Publishing (`POST /api/application_themes/:id/publish`) swaps the live storefront** — never call it on your own.
+
+- Check whether the theme you're editing is the live one **before** the first write. If it is, say so; offer `POST /api/application_themes/:id/clone_for_development` for an isolated unpublished copy.
+- Create new themes as `status: "draft"`, never `"active"`.
+- "Looks good" / "ship it" is approval of the *work*, not permission to publish. Only "publish it" / "make it live" / "go live" is.
+- Finish by handing over a preview URL, not a live site. If you do publish, say plainly that the storefront changed.
+
+See [references/theme-editing.md](references/theme-editing.md).
 
 ### Rate limiting
 Fluid allows ~10 requests/second. For bulk operations, use 5-10 concurrent workers. If you get 429, back off and retry (exponential backoff, 1s-30s).
