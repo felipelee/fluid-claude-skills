@@ -958,6 +958,21 @@
           "type": "schema_entry",
           "settings": {
             "category": "input",
+            "anchor_id": "plaintext",
+            "control_name": "plaintext",
+            "returns_label": "String",
+            "description": "<p>Single-line text with <strong>no formatting allowed</strong>. Use where even inline emphasis would break layout — badges, SKUs, short labels.</p>",
+            "preview_type": "text",
+            "preview_label": "SKU label",
+            "preview_value": "SKU",
+            "schema_snippet": "{ \"type\": \"plaintext\", \"id\": \"sku_label\", \"label\": \"SKU label\", \"default\": \"SKU\" }",
+            "liquid_snippet": "&#123;&#123; section.settings.sku_label &#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "input",
             "anchor_id": "textarea",
             "control_name": "textarea",
             "returns_label": "String",
@@ -1004,6 +1019,21 @@
           "type": "schema_entry",
           "settings": {
             "category": "input",
+            "anchor_id": "html_textarea",
+            "control_name": "html_textarea",
+            "returns_label": "HTML string",
+            "description": "<p>Multi-line raw HTML editor. Same render rule as <code>html</code> — output raw, never through <code>| escape</code>.</p>",
+            "preview_type": "html",
+            "preview_label": "Embed code",
+            "preview_value": "&lt;iframe …&gt;",
+            "schema_snippet": "{ \"type\": \"html_textarea\", \"id\": \"embed\", \"label\": \"Embed code\" }",
+            "liquid_snippet": "&#123;&#123; section.settings.embed &#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "input",
             "anchor_id": "url",
             "control_name": "url",
             "returns_label": "String",
@@ -1028,6 +1058,23 @@
             "preview_value": "3",
             "schema_snippet": "{ \"type\": \"range\", \"id\": \"columns\", \"label\": \"Columns\",\n  \"min\": 1, \"max\": 12, \"step\": 1, \"default\": 3, \"unit\": \"cols\" }",
             "liquid_snippet": "grid-template-columns: repeat(&#123;&#123; section.settings.columns &#125;&#125;, 1fr);"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "number",
+            "anchor_id": "number",
+            "control_name": "number",
+            "returns_label": "Number",
+            "description": "<p>Free numeric input, no slider. Accepted by the validator, but prefer <code>range</code> whenever the value has sensible bounds — a slider is far easier to use than a bare field.</p>",
+            "preview_type": "text",
+            "preview_label": "Delay (ms)",
+            "preview_value": "300",
+            "schema_snippet": "{ \"type\": \"number\", \"id\": \"delay_ms\", \"label\": \"Delay (ms)\", \"default\": 300 }",
+            "liquid_snippet": "data-delay=\"&#123;&#123; section.settings.delay_ms &#125;&#125;\"",
+            "tip_label": "Prefer range",
+            "tip": "Reach for <code>range</code> first. Use <code>number</code> only for genuinely unbounded values."
           }
         },
         {
@@ -1140,6 +1187,21 @@
             "preview_value": "System UI",
             "schema_snippet": "{ \"type\": \"font_picker\", \"id\": \"heading_font\",\n  \"label\": \"Heading Font\", \"default\": \"Inter\" }",
             "liquid_snippet": "font-family: &#123;&#123; section.settings.heading_font | font_family &#125;&#125;;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "visual",
+            "anchor_id": "font",
+            "control_name": "font",
+            "returns_label": "String",
+            "description": "<p>Plain font-family value. <code>font_picker</code> is the richer control (Google Fonts + system stack); <code>font</code> is the bare family field.</p>",
+            "preview_type": "font_picker",
+            "preview_label": "Mono family",
+            "preview_value": "ui-monospace",
+            "schema_snippet": "{ \"type\": \"font\", \"id\": \"mono_family\", \"label\": \"Mono family\" }",
+            "liquid_snippet": "font-family: &#123;&#123; section.settings.mono_family &#125;&#125;;"
           }
         },
         {
@@ -1305,6 +1367,21 @@
           "type": "schema_entry",
           "settings": {
             "category": "resource_single",
+            "anchor_id": "variant",
+            "control_name": "variant",
+            "returns_label": "Variant object",
+            "description": "<p>Single product-variant picker. Returns a variant object — use <code>.id</code> to wire FairShare add-to-cart attributes.</p>",
+            "preview_type": "resource_chip",
+            "preview_label": "Default variant",
+            "preview_value": "Lean · 30ct",
+            "schema_snippet": "{ \"type\": \"variant\", \"id\": \"default_variant\", \"label\": \"Default variant\" }",
+            "liquid_snippet": "data-fluid-add-to-cart=\"&#123;&#123; section.settings.default_variant.id &#125;&#125;\""
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "resource_single",
             "anchor_id": "collection",
             "control_name": "collection \u00b7 collections",
             "returns_label": "Collection object",
@@ -1350,6 +1427,21 @@
           "type": "schema_entry",
           "settings": {
             "category": "resource_single",
+            "anchor_id": "blog",
+            "control_name": "blog",
+            "returns_label": "Blog object",
+            "description": "<p>Single <em>blog</em> picker — the container. Distinct from <code>post</code>, which picks one article inside a blog.</p>",
+            "preview_type": "resource_chip",
+            "preview_label": "Blog",
+            "preview_value": "News",
+            "schema_snippet": "{ \"type\": \"blog\", \"id\": \"featured_blog\", \"label\": \"Blog\" }",
+            "liquid_snippet": "&#123;&#123; section.settings.featured_blog.title &#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "resource_single",
             "anchor_id": "enrollment_pack",
             "control_name": "enrollment_pack \u00b7 enrollment",
             "returns_label": "Enrollment object",
@@ -1374,6 +1466,21 @@
             "preview_value": "Form #0",
             "schema_snippet": "{ \"type\": \"forms\", \"id\": \"contact_form\", \"label\": \"Contact Form\" }",
             "liquid_snippet": "&#123;&#123; section.settings.contact_form.name &#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "resource_single",
+            "anchor_id": "media",
+            "control_name": "media",
+            "returns_label": "Media object",
+            "description": "<p>Single media-library resource — image or video already in the company DAM.</p>",
+            "preview_type": "resource_chip",
+            "preview_label": "Media",
+            "preview_value": "hero-loop.mp4",
+            "schema_snippet": "{ \"type\": \"media\", \"id\": \"hero_media\", \"label\": \"Media\" }",
+            "liquid_snippet": "&#123;&#123; section.settings.hero_media | media_tag: alt: '' &#125;&#125;"
           }
         },
         {
@@ -1455,6 +1562,51 @@
           "type": "schema_entry",
           "settings": {
             "category": "resource_list",
+            "anchor_id": "post_list",
+            "control_name": "post_list",
+            "returns_label": "Array",
+            "description": "<p>Multi-post picker. Same role as <code>posts_list</code> — both valid, pick one and stay consistent.</p>",
+            "preview_type": "resource_chip_list",
+            "preview_label": "Posts",
+            "preview_value": "3 selected",
+            "schema_snippet": "{ \"type\": \"post_list\", \"id\": \"posts\", \"label\": \"Posts\", \"limit\": 6 }",
+            "liquid_snippet": "&#123;&#123;%- for post in section.settings.posts -%&#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "resource_list",
+            "anchor_id": "blog_list",
+            "control_name": "blog_list · blogs_list",
+            "returns_label": "Array",
+            "description": "<p>Multi-blog picker. Prefer <code>blog_list</code> in new code; <code>blogs_list</code> is an accepted duplicate.</p>",
+            "preview_type": "resource_chip_list",
+            "preview_label": "Blogs",
+            "preview_value": "2 selected",
+            "schema_snippet": "{ \"type\": \"blog_list\", \"id\": \"blogs\", \"label\": \"Blogs\", \"limit\": 4 }",
+            "liquid_snippet": "&#123;&#123;%- for blog in section.settings.blogs -%&#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "resource_list",
+            "anchor_id": "enrollment_packs_list",
+            "control_name": "enrollment_packs_list",
+            "returns_label": "Array",
+            "description": "<p>Multi enrollment-pack picker. Note the plural <code>packs</code> — canonical here, unlike most other list types.</p>",
+            "preview_type": "resource_chip_list",
+            "preview_label": "Enrollment packs",
+            "preview_value": "4 selected",
+            "schema_snippet": "{ \"type\": \"enrollment_packs_list\", \"id\": \"packs\", \"label\": \"Enrollment packs\", \"limit\": 6 }",
+            "liquid_snippet": "&#123;&#123;%- for pack in section.settings.packs -%&#125;&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "resource_list",
             "anchor_id": "enrollment_list",
             "control_name": "enrollment_list \u00b7 enrollments_list",
             "returns_label": "Array",
@@ -1478,12 +1630,12 @@
             "preview_type": "custom",
             "preview_custom_html": "<div class=\"sr-collapsible\">Pattern</div><div class=\"sr-field-label\" style=\"padding:8px;color:#94a3b8;\">See snippets below</div>",
             "schema_label": "Schema",
-            "schema_snippet": "&#123;\n  \"blocks\": [\n    &#123; \"type\": \"step\", \"name\": \"+ New Step\", \"settings\": [\n      &#123; \"type\": \"paragraph\", \"content\": \"Divider block. Add image / heading / text blocks AFTER this.\" &#125;\n    ] &#125;,\n    &#123; \"type\": \"image\",   \"name\": \"Image\",   \"settings\": [ /* canonical image */ ] &#125;,\n    &#123; \"type\": \"heading\", \"name\": \"Heading\", \"settings\": [\n      &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Title\" &#125;\n    ] &#125;,\n    &#123; \"type\": \"text\", \"name\": \"Text\", \"settings\": [\n      &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Text\" &#125;\n    ] &#125;\n  ]\n&#125;",
+            "schema_snippet": "&#123;\n  \"blocks\": [\n    &#123; \"type\": \"step\", \"name\": \"+ New Step\", \"settings\": [\n      &#123; \"type\": \"header\", \"content\": \"Divider block. Add image / heading / text blocks AFTER this.\" &#125;\n    ] &#125;,\n    &#123; \"type\": \"image\",   \"name\": \"Image\",   \"settings\": [ /* canonical image */ ] &#125;,\n    &#123; \"type\": \"heading\", \"name\": \"Heading\", \"settings\": [\n      &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Title\" &#125;\n    ] &#125;,\n    &#123; \"type\": \"text\", \"name\": \"Text\", \"settings\": [\n      &#123; \"type\": \"richtext\", \"id\": \"text\", \"label\": \"Text\" &#125;\n    ] &#125;\n  ]\n&#125;",
             "liquid_label": "Liquid",
             "liquid_snippet": "&#123;%- assign in_step = false -%&#125;\n&#123;% for block in section.blocks %&#125;\n  &#123;% case block.type %&#125;\n    &#123;% when 'step' %&#125;\n      &#123;% if in_step %&#125;</div>&#123;% endif %&#125;\n      <div class=\"step-card\" &#123;&#123; block.fluid_attributes &#125;&#125;>\n      &#123;% assign in_step = true %&#125;\n    &#123;% when 'image' %&#125;\n      &#123;% if in_step %&#125;&#123;% comment %&#125;render canonical image&#123;% endcomment %&#125;&#123;% endif %&#125;\n    &#123;% when 'heading' %&#125;\n      &#123;% if in_step %&#125;<h3 &#123;&#123; block.fluid_attributes &#125;&#125;>&#123;&#123; block.settings.text &#125;&#125;</h3>&#123;% endif %&#125;\n    &#123;% when 'text' %&#125;\n      &#123;% if in_step %&#125;<div class=\"rte\" &#123;&#123; block.fluid_attributes &#125;&#125;>&#123;&#123; block.settings.text &#125;&#125;</div>&#123;% endif %&#125;\n  &#123;% endcase %&#125;\n&#123;% endfor %&#125;\n&#123;% if in_step %&#125;</div>&#123;% endif %&#125;",
             "tip_label": "Why a divider block instead of nested blocks",
             "tip_kind": "tip",
-            "tip": "<p>Fluid doesn't support true block nesting. The divider pattern emulates it by walking the flat block list in order. <strong>Editors learn the rule once</strong>: \"+ New Step\" opens a card, blocks after it render inside until the next \"+ New Step\". Cards stay reorderable as a unit by moving the divider.</p>"
+            "tip": "<p>Fluid doesn't support true block nesting. The divider pattern emulates it by walking the flat block list in order. <strong>Editors learn the rule once</strong>: \"+ New Step\" opens a card, blocks after it render inside until the next \"+ New Step\". Cards stay reorderable as a unit by moving the divider.</p><p><strong>The divider label setting must be <code>header</code>, not <code>paragraph</code>.</strong> <code>paragraph</code> is a Shopify type that Fluid rejects outright — <code>fluid theme lint --json</code> errors and the push is blocked. Both take <code>content</code> and carry no <code>id</code>.</p>"
           }
         },
         {
@@ -1961,6 +2113,46 @@
             "schema_snippet": "&#123;# No schema \u2014 syntax rule #&#125;",
             "liquid_label": "Liquid",
             "liquid_snippet": "&#123;# WRONG \u2014 renders as text on the page #&#125;\n&#123;# This is a Jinja-style comment #&#125;\n\n&#123;# RIGHT \u2014 Liquid comment, fully stripped #&#125;\n&#123;% comment %&#125; This is a Liquid comment &#123;% endcomment %&#125;\n\n&#123;# Whitespace-stripping variant #&#125;\n&#123;%- comment -%&#125; Eats surrounding whitespace too &#123;%- endcomment -%&#125;"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-media-tag",
+            "is_featured": true,
+            "control_name": "Media Rendering (media_tag)",
+            "returns_label": "1 filter · replaces hand-rolled &lt;img&gt; / &lt;video&gt;",
+            "description": "<p>Every setting- or resource-backed image and video renders through <code>| media_tag</code>. One filter emits a complete responsive element — <code>srcset</code>, WebP/AVIF negotiation, <code>loading</code>, <code>decoding=\"async\"</code>, and <code>alt</code>. A hand-rolled <code>&lt;img&gt;</code> ships a single fixed-size original with no responsive set, which bloats the download and hurts LCP.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-field-label\">Hand-rolled</div><div class=\"sr-select\" style=\"opacity:.55;\">&lt;img src=\"…\" loading=\"lazy\"&gt; — one size, no format negotiation</div><div class=\"sr-field-label\" style=\"margin-top:10px;\">media_tag</div><div class=\"sr-select\">srcset 400/800/1200/1600 · WebP · lazy · decoding async</div>",
+            "schema_label": "Schema",
+            "schema_snippet": "{ \"type\": \"image_picker\", \"id\": \"banner_image\", \"label\": \"Banner image\" }",
+            "liquid_label": "Liquid",
+            "liquid_snippet": "&#123;&#123; section.settings.banner_image | media_tag: sizes: '(max-width: 768px) 100vw, 1200px', alt: section.settings.heading &#125;&#125;\n\n&#123;%- comment -%&#125; Hero — eager, or lazy delays LCP &#123;%- endcomment -%&#125;\n&#123;&#123; section.settings.hero | media_tag: sizes: '100vw', loading: 'eager', alt: section.settings.heading &#125;&#125;",
+            "tip_label": "Options: sizes · widths · width · height · quality · format · crop · loading · alt",
+            "tip_kind": "tip",
+            "tip": "<p><code>media_tag</code> escapes its own output — never wrap it in <code>| escape</code>. It renders nothing on blank input, so the <code>if image != blank</code> guard is optional; keep it only when surrounding markup must be suppressed too.</p><p><strong>Two things to get right.</strong> Pass <code>loading: eager</code> on the hero — the default <code>lazy</code> on your largest above-the-fold image directly delays LCP. And pass an explicit <code>alt:</code> for <code>*_picker</code> settings, which carry no stored alt (use <code>alt: ''</code> if decorative).</p><p>Static theme assets are the exception — <code>asset_url</code> files are not ImageKit media, so a plain <code>&lt;img&gt;</code> stays correct there.</p>"
+          }
+        },
+        {
+          "type": "schema_entry",
+          "settings": {
+            "category": "patterns",
+            "anchor_id": "pattern-css-assets",
+            "is_featured": true,
+            "control_name": "Where CSS Lives (assets/)",
+            "returns_label": "All stylesheets under assets/ — flat, no sub-folders",
+            "description": "<p>A co-located <code>styles.css</code> next to a section, component, or page variant is the <strong>deprecated shape</strong>. Once a company has <code>STYLESHEET_STRICT_INPUT</code> enabled, the API rejects it with a 422 and the push fails outright. All CSS lives under <code>assets/</code> and is referenced explicitly.</p>",
+            "preview_type": "custom",
+            "preview_custom_html": "<div class=\"sr-field-label\">Deprecated</div><div class=\"sr-select\" style=\"opacity:.55;\">sections/hero/styles.css → 422 on push</div><div class=\"sr-field-label\" style=\"margin-top:10px;\">Correct</div><div class=\"sr-select\">assets/hero.css + reference at top of index.liquid</div>",
+            "schema_label": "Theme-level — in layouts/theme.liquid, before &lt;/head&gt;",
+            "schema_snippet": "&#123;%- comment -%&#125; exact filenames — the FileResource lookup keys on them &#123;%- endcomment -%&#125;\n&#123;&#123; 'global_styles.css' | inline_asset_content &#125;&#125;\n&#123;&#123; 'styles.css'        | inline_asset_content &#125;&#125;",
+            "liquid_label": "Per-section — at the TOP of index.liquid",
+            "liquid_snippet": "&#123;&#123; 'hero_section.css' | asset_url | stylesheet_tag &#125;&#125;   &#123;%- comment -%&#125; &gt; 2 KB &#123;%- endcomment -%&#125;\n&#123;&#123; 'hero_section.css' | inline_asset_content &#125;&#125;         &#123;%- comment -%&#125; &#8804; 2 KB &#123;%- endcomment -%&#125;",
+            "tip_label": "The 2 KB rule",
+            "tip_kind": "warning",
+            "tip": "<p>Emission follows the backend’s own <strong>2 KB threshold</strong>: at or below, inline via <code>inline_asset_content</code> to skip a round trip; above, use <code>asset_url | stylesheet_tag</code> so it is browser- and CDN-cacheable. The engine dedupes stylesheets across the page, so declaring per-section is safe.</p><p><strong>Never rename the two theme-level files.</strong> <code>styles.css</code> and <code>global_styles.css</code> are looked up by literal filename; renaming to <code>global.css</code> breaks <code>inline_asset_content</code> resolution.</p><p>Reference at the <em>top</em> of <code>index.liquid</code>, never after the schema block — that is dead space. Keep inline <code>&lt;style&gt;</code> for setting-driven values only, under ~10 lines.</p>"
           }
         }
       ]
