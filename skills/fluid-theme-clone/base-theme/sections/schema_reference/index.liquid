@@ -1067,14 +1067,15 @@
             "anchor_id": "number",
             "control_name": "number",
             "returns_label": "Number",
-            "description": "<p>Free numeric input, no slider. Accepted by the validator, but prefer <code>range</code> whenever the value has sensible bounds — a slider is far easier to use than a bare field.</p>",
+            "description": "<p>Free numeric input, no slider. <strong>The validator accepts it, but our field experience is that the editor does not render a usable control for it.</strong> Use <code>range</code> instead — it is bounded, has a real slider UI, and is what every section in this theme uses.</p>",
             "preview_type": "text",
             "preview_label": "Delay (ms)",
             "preview_value": "300",
             "schema_snippet": "{ \"type\": \"number\", \"id\": \"delay_ms\", \"label\": \"Delay (ms)\", \"default\": 300 }",
             "liquid_snippet": "data-delay=\"&#123;&#123; section.settings.delay_ms &#125;&#125;\"",
-            "tip_label": "Prefer range",
-            "tip": "Reach for <code>range</code> first. Use <code>number</code> only for genuinely unbounded values."
+            "tip_label": "Use range instead",
+            "tip_kind": "warning",
+            "tip": "<p>This card exists because <code>fluid theme lint --json</code> lists <code>number</code> as a valid type — you will not get a validator error. That is a schema-layer fact, not an editor-layer one.</p><p><strong>Until someone confirms the editor renders it properly, treat <code>number</code> as unsupported and reach for <code>range</code>.</strong> If you verify it works, update this card and the note in fluid-theme-clone/SKILL.md together.</p>"
           }
         },
         {
