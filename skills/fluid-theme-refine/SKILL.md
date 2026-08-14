@@ -16,7 +16,7 @@ description: >-
   "side by side comparison," "it doesn't look right," "make it exact,"
   or "closer to the original."
 metadata:
-  version: 4.1.0
+  version: 4.2.0
 ---
 
 # Fluid Theme Refine
@@ -43,6 +43,18 @@ This skill drives `fluid theme dev` (local preview) and Playwright (paired sourc
 Never install silently — surface the exact install commands and wait for explicit user approval. If the user opts out, do a single full-page screenshot pass and note the missing capability in the final report.
 
 **Which workflow is cheaper than a full clone?** If the existing theme's content + brand tokens are already in place and the goal is structural + visual polish, refining is faster than a full clone. If the existing theme's architecture is fundamentally broken (e.g. every section uses hardcoded hex, every image is an `image_picker` inline, Splide is everywhere), a clone might be cleaner — but Phase 0 below tells you exactly which.
+
+## ⚠️ Never publish — refine, push, preview, stop
+
+Refining almost always means touching a theme that already exists, and often one that is **already live**. Check before you write.
+
+- **Before the first `PUT`, determine whether the target theme is serving the storefront.** If it is, stop and tell the user. Offer to clone it for development first: `POST /api/application_themes/{id}/clone_for_development` — an isolated unpublished copy that preserves content and DAM references. Only edit the live theme directly if the user explicitly tells you to.
+- **Uploading is safe; publishing is not.** `PUT /api/application_themes/{id}/resources` saves. `POST /api/application_themes/{id}/publish` swaps the live storefront. Never call the second one on your own. Same split in the CLI: `fluid theme push` saves, `fluid theme push --publish` goes live.
+- **Approval of the work is not approval to publish.** "Looks good", "that's the one", "ship it" on a section — all mean keep it unpublished. Publish only on "publish it" / "make it live" / "go live". If you are unsure, ask.
+- **The `fluid theme dev` preview is the right way to show work in progress** — it renders against local files and publishes nothing. End every session there, or with a preview URL. See [Publishing](../fluid-theme-clone/references/theme-upload-api.md#publishing--explicit-approval-only).
+- **If you do publish, say so plainly** — state that the live storefront changed.
+
+⚠️ This matters more here than in `fluid-theme-clone`: a clone starts from a fresh draft theme, but a refine run's default target is a theme someone is already using.
 
 ## How This Works
 
@@ -518,7 +530,17 @@ python3 skills/fluid-theme-clone/scripts/theme_audit.py "$THEME_DIR/sections/<se
 
 Exit code 0 = clean. Exit code 1 = fix every violation before moving on. The full rule list lives in [fluid-theme-clone § Schema & Liquid audit](../fluid-theme-clone/SKILL.md#schema--liquid-audit-theme_auditpy).
 
-The checklist below covers items the script can't catch (data shape, runtime contracts, editor draft state) plus visual cross-references for the rules it does. Walk through each one for the section you just edited:
+**Then run the official schema validator.** `theme_audit.py` checks our *conventions*; `fluid theme lint --json` checks *schema validity* — the same check `fluid theme push` runs, so anything it flags will block the upload. They catch different things and you want both:
+
+```bash
+fluid theme lint --json
+```
+
+Parse the JSON (`ok`, `errors`, `warnings`, `files[]`), fix every error, re-run until clean. Do this **per section**, not once at the end. Note that `paragraph` is not a valid setting type in Fluid even though it works in Shopify — use `header`. See [fluid-cli.md](../fluid-theme-clone/references/fluid-cli.md).
+
+The checklist below covers items neither tool can catch (data shape, runtime contracts, editor draft state) plus visual cross-references for the rules they do. Walk through each one for the section you just edited:
+
+> **Deeper field checklist:** [`references/gold-standard-checklist.md`](references/gold-standard-checklist.md) — 20 sections of bugs actually hit while refining cloned themes, each with its fix: canonical block contracts, preset expansion timing, URL-string guards on image settings, CSS-var defense on color dropdowns, and the legacy co-located `styles.css` → `assets/` migration. Run through it on any ported section before marking it done.
 
 **Block editability**
 - [ ] Every block (image, text, trust item, etc.) selectable in the Layers panel AND directly clickable in the visual preview — this requires `{{ block.fluid_attributes }}` on the rendered element
@@ -540,6 +562,16 @@ The checklist below covers items the script can't catch (data shape, runtime con
 **Hero text pattern**
 - [ ] Eyebrow / heading / subhead are richtext BLOCKS (editable in editor), not hard-coded section settings
 - [ ] Richtext defaults include inline `style="color: var(--clr-primary); font-size: …;"` so the first-paint looks intentional
+
+**Assets, CSS, and media**
+- [ ] No co-located `styles.css` / `style.css` next to any section, component, or page variant — all CSS lives in `assets/`, referenced from the top of `index.liquid`. This is the deprecated shape and 422s on push once the company has `STYLESHEET_STRICT_INPUT` enabled
+- [ ] No `styles.css` / `global_styles.css` at the theme root — both belong in `assets/` under those exact filenames, referenced from `layouts/theme.liquid` via `| inline_asset_content`
+- [ ] `assets/` is flat — no sub-folders, and binaries are direct children (`assets/logo.png`, not `assets/img/logo.png`)
+- [ ] Every setting- or resource-backed image and video renders through `| media_tag`, not a hand-rolled `<img>` / `<video>` (see [media-tag.md](../fluid-theme-clone/references/media-tag.md))
+- [ ] Hero / above-the-fold media passes `loading: 'eager'` — the default `lazy` there delays LCP
+- [ ] `*_picker` images pass an explicit `alt:` (or `alt: ''` when decorative) — pickers carry no stored alt
+- [ ] Inline `<style>` blocks are dynamic-only and under ~10 lines; inline `<script>` under ~5 lines; every `<script src>` has `defer`
+- [ ] No external CDN URLs for theme-owned CSS, JS, fonts, or images — vendor into `assets/` and use `| asset_url`
 
 **Forbidden patterns — grep to detect**
 - [ ] `"type": "image_picker"` — only allowed on `background_image` / `container_background_image` / `blocks/image.image` / data-driven fallback wrappers. If it appears on a content image, refactor to a canonical `image` block.
@@ -772,9 +804,22 @@ These are non-obvious behaviors discovered while refining themes. If you hit any
 
 **Root causes (check in order):**
 
-1. **CSS file with h1-h6 rules isn't being loaded.** Fluid does NOT auto-load CSS files at the theme root — only files in `assets/` are served via `| asset_url`. If there's a `global_styles.css` at the theme root, it's dead code.
-   - **Fix:** Move it to `assets/global.css` and add `<link rel="stylesheet" href="{{ 'global.css' | asset_url }}">` in `layouts/theme.liquid` after `reset.css` / `config.css` / `utilities.css`.
+1. **CSS file with h1-h6 rules isn't being loaded.** A `styles.css` or `global_styles.css` sitting at the **theme root** is the legacy shape — those two files used to be DB columns (`custom_stylesheet` / `global_stylesheet`) that the renderer inlined into `<head>` on every request. In the current model nothing auto-loads them, so they render as dead code.
+   - **Fix:** Move both to `assets/` **keeping the exact filenames**, then reference them from `layouts/theme.liquid` immediately before `</head>`:
+     ```liquid
+     {% style %}
+       :root { /* CSS variables from settings */ }
+     {% endstyle %}
+
+     {{ 'global_styles.css' | inline_asset_content }}
+     {{ 'styles.css'        | inline_asset_content }}
+     </head>
+     ```
+   - **Do not rename them** (`global.css`, `theme.css`, …). The backend FileResource lookup keys on the literal names `styles.css` and `global_styles.css`; renaming breaks `inline_asset_content` resolution.
+   - **Do not use `asset_url | stylesheet_tag`** for these two. Theme-level stylesheets are always inlined — that matches the pre-migration output byte-for-byte and avoids an extra round trip for foundation CSS on every page.
+   - Order matters: `global_styles.css` first (foundation), `styles.css` second (overrides), both **after** the `{% style %}` variable block so custom CSS wins the cascade at equal specificity.
    - Verify: the CSS variables `--fs-h1` … `--fs-h6` are defined in theme.liquid's `:root`, and h1-h6 selectors point at them.
+   - See [CSS & JavaScript Patterns](../fluid-theme-clone/references/css-js-patterns.md) for the full asset-CSS contract.
 
 2. **Richtext block defaults use `<p>` instead of `<h1>`–`<h6>`.** A richtext default of `<p>Medium length hero headline</p>` renders as body text because there's no heading tag for h1-h6 CSS to apply to.
    - **Fix:** Update the default in the block's schema:

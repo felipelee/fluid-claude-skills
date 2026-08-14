@@ -102,32 +102,45 @@ Every section with an intro (heading, eyebrow, subhead) exposes them as canonica
 
 ## Controls at a glance
 
+> **These are the only valid `type:` values.** `fluid theme lint --json` rejects anything
+> else outright — an unknown type is a hard error, not a warning, and `fluid theme push`
+> runs the same validation. The list below is the validator's own `validSettingTypes`
+> output. Run `fluid theme lint --json` from the theme root to see it for yourself.
+>
+> Notably **`paragraph` is NOT valid** even though it works in Shopify. For informational
+> help text in a settings panel, use `header` — it takes `content:` and carries no `id`.
+
 ### Input
 
 | Type | Returns | Use for |
 |------|---------|---------|
 | `text` | String | Short single-line text |
+| `plaintext` | String | Single-line, no formatting allowed |
 | `textarea` | String | Multi-line plain text |
-| `richtext` / `rich_text` | HTML string | Formatted rich text (WYSIWYG) |
-| `html` / `html_textarea` | HTML string | Raw custom HTML |
+| `richtext` / `rich_text` | HTML string | Formatted rich text (WYSIWYG) — render with `{{ value }}`, never `\| escape` |
+| `html` / `html_textarea` | HTML string | Raw custom HTML — same render rule |
 | `url` | String | Single URL |
 
 ### Number & Selection
 
 | Type | Returns | Use for |
 |------|---------|---------|
-| `range` | Number | Numeric slider — requires `min`, `max`, `step` |
+| `range` | Number | Numeric slider — requires `min`, `max`, `step`; optional `unit` |
+| `number` | Number | Free numeric input, no slider — prefer `range` when bounded |
 | `select` | String | Dropdown (5+ choices) — requires `options` |
 | `radio` | String | Tab buttons (2–4 choices) — requires `options` |
-| `checkbox` | Boolean | Toggle switch |
+| `checkbox` | Boolean | Toggle switch — **always set `default:`** so the value is never nil |
 
 ### Visual & Media
+
+Render `image` / `image_picker` / `video_picker` / `media_picker` values with `| media_tag`, never a hand-rolled `<img>` / `<video>` — see [media-tag.md](media-tag.md).
 
 | Type | Returns | Use for |
 |------|---------|---------|
 | `color` | Hex string | Solid color picker |
 | `color_background` | Hex or gradient string | Solid color + gradient picker |
-| `font_picker` | String | Font family selector |
+| `font` | String | Font family |
+| `font_picker` | String | Font family selector (Google + system fonts) |
 | `image_picker` / `image` | Image object | Upload/select image — **only for section/container background or inside canonical `blocks/image`** (see rule 1 above) |
 | `video_picker` | Video object | Upload/select video |
 | `media_picker` | Media object | Image or video with embed settings |
@@ -147,16 +160,18 @@ Every section with an intro (heading, eyebrow, subhead) exposes them as canonica
 
 | Type | Returns | Use for |
 |------|---------|---------|
-| `header` | (none) | Visual divider label — uses `content`, not `label` |
+| `header` | (none) | Visual divider label — uses `content`, not `label`; carries **no `id`** |
 
 ### Resource (Single)
 
 | Type | Returns | Use for |
 |------|---------|---------|
 | `product` / `products` | Product object | Single product picker |
+| `variant` | Variant object | Single variant picker |
 | `collection` / `collections` | Collection object | Single collection picker |
 | `category` / `categories` | Category object | Single category picker |
-| `blog` / `posts` | Post object | Single post picker |
+| `blog` | Blog object | Single blog picker |
+| `post` / `posts` | Post object | Single post picker |
 | `enrollment_pack` / `enrollment` / `enrollments` | Enrollment object | Single enrollment picker |
 | `forms` | Form object | Single form picker |
 | `media` | Media object | Single media library resource |
@@ -164,13 +179,52 @@ Every section with an intro (heading, eyebrow, subhead) exposes them as canonica
 
 ### Resource (List — max 24)
 
-| Type | Returns | Use for |
-|------|---------|---------|
-| `product_list` / `products_list` | Array | Multi-product picker |
-| `collection_list` / `collections_list` | Array | Multi-collection picker |
-| `category_list` / `categories_list` | Array | Multi-category picker |
-| `posts_list` | Array | Multi-post picker |
-| `enrollment_list` / `enrollments_list` | Array | Multi-enrollment picker |
+Always set `limit:`.
+
+| Type | Returns | Prefer |
+|------|---------|--------|
+| `product_list` / `products_list` | Array | `product_list` |
+| `collection_list` / `collections_list` | Array | `collection_list` |
+| `category_list` / `categories_list` | Array | `category_list` |
+| `post_list` / `posts_list` | Array | `posts_list` |
+| `blog_list` / `blogs_list` | Array | `blog_list` |
+| `enrollment_list` / `enrollments_list` | Array | `enrollment_list` |
+| `enrollment_packs_list` | Array | `enrollment_packs_list` |
+
+The `*s_list` duplicates are all accepted by the validator, but pick the canonical form in the **Prefer** column for new code.
+
+### Common type mistakes
+
+| You wrote | What happens | Fix |
+|-----------|--------------|-----|
+| `"paragraph"` | Hard validator error | `header` with `content:` |
+| `"text_area"` | Hard validator error | `textarea` (one word) |
+| `"checkBox"` / `"image_pick"` | Hard validator error | Exact value from the tables above |
+| `range` without `min`/`max`/`step` | Slider UI breaks | Add all three |
+| `select` / `radio` without `options` | Empty dropdown | Add `options` |
+| `*_list` without `limit` | Saves, but uncapped | Add `limit:` |
+| `checkbox` without `default` | Ambiguous truthiness on first render | `"default": false` (or `true`) |
+| `richtext` rendered `{{ value \| escape }}` | Users see `&lt;p&gt;` | Render raw: `{{ value }}` |
+| Setting missing `id`, or duplicate `id` | Hard validator error | Unique non-empty `id` (except `header`) |
+| Block `settings` as `{}` not `[]` | Hard validator error | Must be an array |
+
+### Two or more pickers in the same role → use a list
+
+Six `product` settings named `product_1` … `product_6` is the most common schema smell. If a merchant could reasonably want N+1 items in the same role, it's a `*_list`:
+
+```json
+{ "type": "product_list", "id": "products", "label": "Products", "limit": 6 }
+```
+
+```liquid
+{%- for product in section.settings.products -%}
+  {% render 'product_card', product: product %}
+{%- endfor -%}
+```
+
+A list lets the merchant add and remove items without a code change. It does **not** give drag-to-reorder — that's a blocks feature. If ordering matters, model them as blocks instead.
+
+Genuinely different roles stay singular: one hero product *and* one upsell product are two roles, not a list.
 
 ---
 

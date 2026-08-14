@@ -184,6 +184,7 @@ It covers the full Fluid API — products, collections, orders, fulfillment, ref
 | **Product & Settings Import** | Moves your products, images, categories, collections, brand, menus, pages, policies, checkout settings, tax, shipping, customers, inventory, discounts, redirects, and blog posts |
 | **Theme Clone** | Rebuilds your current website's design inside Fluid — every section, every color, every font |
 | **Theme Refine** | Takes fresh screenshots and compares your Fluid site against the original, fixing differences until they're identical |
+| **Section Refine** | Cleans up one section at a time against your theme's own built-in style guide, then validates it with Fluid's official linter |
 | **Onboarding Pre-Fill** | Scrapes your website for business info and fills in your payments onboarding form automatically |
 | **Payments Status** | Set or review a merchant's PSP and APM onboarding status from root admin — "Neumi is in onboarding with Stripe," "Affirm is ready for NewULife," "show me LimbicArc's PSP statuses" |
 
@@ -196,6 +197,8 @@ It covers the full Fluid API — products, collections, orders, fulfillment, ref
 **Then run Theme Clone** to match your current site's look and feel inside Fluid.
 
 **Use Theme Refine** to polish the details. It compares screenshots side-by-side and fixes anything that's off.
+
+**Use Section Refine when one section needs attention.** It checks that section against your theme's own style guide — the reference page built into the theme — and fixes what's drifted, without touching anything else.
 
 **Run Onboarding Pre-Fill** before your payments setup meeting. It saves time by pulling your business info from your existing site.
 

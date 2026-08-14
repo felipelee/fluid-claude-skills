@@ -8,7 +8,7 @@ description: >-
   page," "build this page in Fluid," "recreate this page," "clone into Fluid,"
   "copy this site," "theme clone," "site clone," or "rebuild in Fluid."
 metadata:
-  version: 5.1.0
+  version: 5.2.0
 ---
 
 # Fluid Theme Clone
@@ -35,6 +35,28 @@ This skill requires local tooling so the agent can spin up the theme on `localho
 | Authenticated `fluid` profile | `fluid login` then `fluid switch` to the correct company |
 
 Never install silently — surface the install commands and wait for explicit user approval. If the user opts out, fall back to a single full-page screenshot pass and note the missing capability in the final report.
+
+The same CLI gives you `fluid theme lint --json`, the official schema validator — the same check `fluid theme push` runs before upload. See [references/fluid-cli.md](references/fluid-cli.md).
+
+---
+
+## ⚠️ Never publish — build, push, preview, stop
+
+Saving code and going live are two different actions. This skill does the first and **never** the second on its own.
+
+| Do | Don't |
+|----|-------|
+| Create themes with `status: "draft"` | Create with `status: "active"` |
+| Clone a live theme via `POST /api/application_themes/{id}/clone_for_development` before editing it | `PUT` resources straight into the published theme |
+| `PUT /api/application_themes/{id}/resources` — uploads only, safe, reversible | `POST /api/application_themes/{id}/publish` |
+| `fluid theme push` | `fluid theme push --publish` |
+| Finish by handing over a preview URL | Finish by making it live |
+
+**Publishing requires an unambiguous instruction** — "publish it", "make it live", "go live". Approval of the *work* is not approval to publish: "looks good", "nice", "ship that section", and "done?" all mean keep it unpublished. If you think the user probably wants it live, ask; don't infer.
+
+If the user asks you to work on a theme that is currently serving the storefront, say so before you touch it and offer to clone it for development first.
+
+The `fluid theme dev` preview in the Prerequisites above is the right way to show work in progress — it renders against local files and publishes nothing. See [Publishing](references/theme-upload-api.md#publishing--explicit-approval-only) for the API-side rules and preview URL patterns.
 
 ---
 
@@ -493,7 +515,16 @@ The browser sees `&#123;%` and renders `{%` for the user. Liquid never sees the 
 
 Read [references/section-template.md](references/section-template.md) for the full section boilerplate.
 Read [references/schema-settings-reference.md](references/schema-settings-reference.md) for all setting types.
-Read [references/css-js-patterns.md](references/css-js-patterns.md) for CSS/JS patterns.
+Read [references/css-js-patterns.md](references/css-js-patterns.md) for CSS/JS patterns — **all CSS lives in `assets/`**, never co-located next to a section. A co-located `styles.css` is the deprecated shape and 422s on push once the company has `STYLESHEET_STRICT_INPUT` enabled.
+Read [references/media-tag.md](references/media-tag.md) before rendering any image or video — setting- and resource-backed media goes through `| media_tag`, not a hand-rolled `<img>`.
+
+**Validate each section before moving to the next.** `fluid theme lint --json` is the same validator `push` runs, so anything it flags will block the upload:
+
+```bash
+fluid theme lint --json
+```
+
+Parse the JSON, fix what it flags, re-run until clean. Don't batch this to the end — a schema error found after 30 sections is 30 sections of rework. Note that `paragraph` is **not** a valid setting type in Fluid (use `header`), even though it works in Shopify.
 
 ### Canonical blocks
 

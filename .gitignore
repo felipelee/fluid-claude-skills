@@ -17,6 +17,21 @@ id-mapping.json
 # Source base theme (already copied into skills/fluid-theme-clone/base-theme/)
 base theme */
 
+# Client project files — NEVER commit. This repo is public and these carry
+# live API tokens, client theme IDs, and per-engagement detail.
+MAKE_WELLNESS_*.md
+generated-assets/
+
+# Stale duplicate skill copies — skills are distributed from skills/ only
+.agents/
+
+# Codex-flavored guidance copy (references client projects)
+AGENTS.md
+
+# Local project notes — client engagements, in-progress state, anything sensitive.
+# CLAUDE.md is public; put that content here instead.
+CLAUDE.local.md
+
 # Secrets
 .env
 .env.*
@@ -25,3 +40,7 @@ base theme */
 *.swp
 *.swo
 *~
+
+# Python bytecode
+__pycache__/
+*.pyc
