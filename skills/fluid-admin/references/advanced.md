@@ -181,7 +181,7 @@ GET /api/compliance
 
 ## Sitemap Routes, Country Routes and Redirects
 
-Theme region rules are the routes on the admin's Sitemap page. The API reference calls them "sitemap routes and redirects". One rule sets what visitors from one country see at a storefront path: a theme template, a redirect, or nothing (404).
+Theme region rules are the routes on the admin's Sitemap page. The API reference calls them "sitemap routes". One rule sets what visitors from one country see at a storefront path: a theme template, a redirect, or nothing (404).
 
 ### Create Region Rule
 ```
