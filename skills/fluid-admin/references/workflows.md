@@ -173,7 +173,7 @@ These are the most powerful use cases for the fluid-admin skill — the agent ch
 2. PUT `/api/company/v1/products/:id` with `"active": false` for each
 3. DELETE `/api/company/v1/products/:id/remove_from_collection` to clean up collection
 4. GET + PUT `/api/menus/:id` to remove seasonal nav items
-5. POST `/api/redirects` from old collection URL to new destination
+5. POST `/api/theme_region_rules` to redirect the old URL to its new destination with a 301 (see URL Redirects in `advanced.md`). A redirect for every country needs a custom path, so it can't use one under `collections/`.
 
 **"Audit and clean up unused collections"**
 1. GET `/api/company/v1/collections` to list all collections
