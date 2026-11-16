@@ -179,34 +179,40 @@ GET /api/compliance
 
 ---
 
-## Regional Rules
+## Sitemap Routes, Country Routes and Redirects
 
-Control which regions can access the store and redirect blocked regions.
+Theme region rules are the routes on the admin's Sitemap page. The API reference calls them "sitemap routes". One rule sets what visitors from one country see at a storefront path: a theme template, a redirect, or nothing (404).
 
 ### Create Region Rule
 ```
 POST /api/theme_region_rules
 ```
 
+This example sends Canadian visitors to another page:
+
 ```json
 {
   "theme_region_rule": {
-    "application_theme_template_id": 123,
-    "region_code": "US-MT",
-    "active": true,
-    "redirect_type": "302",
-    "redirect_url": "/not-available-in-your-state",
-    "description": "Montana - not approved for operations",
-    "priority": 1
+    "route_path": "products/starter-kit",
+    "region_code": "CA",
+    "redirect_type": "redirect",
+    "redirect_url": "/home/pages/not-available-in-canada",
+    "redirect_status_code": 302,
+    "description": "Starter kit not sold in Canada"
   }
 }
 ```
 
 **Key fields:**
-- `region_code` — ISO 3166-2 format (e.g., `US-CA` for California, `CA-ON` for Ontario)
-- `redirect_type` — `"301"` (permanent) or `"302"` (temporary)
-- `redirect_url` — Where blocked visitors go
-- `application_theme_template_id` — Get from `GET /api/application_themes`
+- `route_path`: the storefront path without its leading slash or credit segment (required).
+- `region_code`: a two-letter country code such as `CA`, or `default` for every country. Rules match countries only. State codes such as `US-MT` never match.
+- `redirect_type`: `template`, `redirect` or `disabled`. It isn't an HTTP status.
+- `redirect_status_code`: `301` (permanent) or `302` (temporary, the default).
+- `redirect_url`: where redirected visitors go.
+- `application_theme_template_id`: required for `template` rules. Get it from `GET /api/application_themes`.
+- `route_kind`: `non_credit` for a path that answers without a `/<credit>/` prefix, such as `/old-page`. Only custom paths can use it.
+
+A `default` rule works only on custom paths. Paths under `products/`, `pages/`, `collections/`, `categories/`, `media/`, `enrollments/` or `libraries/`, and `shop` and `join`, can take country rules only.
 
 ### List Region Rules
 ```
@@ -245,19 +251,27 @@ POST /api/v2025-06/discounts
 ```
 
 ## URL Redirects
+
+Create a redirect as a sitemap route. It then appears on the admin's Sitemap page. Never use `/api/redirects`: that endpoint is deprecated, and the Sitemap page doesn't show its redirects.
+
 ```
-POST /api/redirects
+POST /api/theme_region_rules
 ```
 
 ```json
 {
-  "redirect": {
-    "path": "/old-page",
-    "target": "/new-page",
-    "type": "301"
+  "theme_region_rule": {
+    "route_path": "old-page",
+    "region_code": "default",
+    "route_kind": "non_credit",
+    "redirect_type": "redirect",
+    "redirect_url": "/home/pages/new-page",
+    "redirect_status_code": 301
   }
 }
 ```
+
+This redirects `/old-page` to `/home/pages/new-page` with a 301 for visitors from every country. Send one request per URL. The call is an upsert on `route_path` and `region_code`, so it's safe to re-run.
 
 ## Blog Posts
 ```

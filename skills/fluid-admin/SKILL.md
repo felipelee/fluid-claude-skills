@@ -12,7 +12,7 @@ description: >-
   For finding what's wrong in a section, or any visual work, use fluid-section-refine or
   fluid-theme-refine instead — those pull the theme locally and run the real validator.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # Fluid Admin

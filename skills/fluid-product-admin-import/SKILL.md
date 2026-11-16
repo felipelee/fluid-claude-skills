@@ -10,7 +10,7 @@ description: >-
   categories, collections, brand import, menus, pages, agreements, onboarding,
   discounts, redirects, blog posts, customers, inventory, shipping zones.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # Fluid Product & Admin Settings Import
@@ -244,7 +244,7 @@ Steps run sequentially. Each depends on earlier steps completing first.
 | 19 | **Region Rules** | `importRegionRules` | region-rules.json | — | `POST /api/theme_region_rules` |
 | 20 | **Domains** | `importDomains` | site-metadata.json | — | `POST /api/domains` |
 | 21 | **Discounts** | `importDiscounts` | shopify-admin.json | — | `POST /api/v2025-06/discounts` |
-| 22 | **Redirects** | `importRedirects` | shopify-admin.json | — | `POST /api/redirects` |
+| 22 | **Redirects** | `importRedirects` | shopify-admin.json | — | `POST /api/theme_region_rules` (301) |
 | 23 | **Blog Posts** | `importBlogPosts` | shopify-admin.json | — | `POST /api/posts` |
 | 24 | **Webhooks** | `importWebhooks` | webhooks.json | — | `POST /api/webhooks` |
 | 25 | **Compliance Scan** | `runComplianceScan` | — (post-import) | — | `POST /api/compliance` |
@@ -764,21 +764,20 @@ Source: `region-rules.json` or inferred from shipping zones / "where we operate"
 - State-specific legal disclaimers in footer
 - For MLM: compliance pages listing approved states
 
-For states where the company does NOT operate, create redirect rules:
+For countries where the company does NOT operate, create a redirect rule on each route that must be blocked:
 
 ```json
 { "theme_region_rule": {
-    "application_theme_template_id": 123,
-    "region_code": "US-MT",
-    "active": true,
-    "redirect_type": "302",
-    "redirect_url": "/not-available-in-your-state",
-    "description": "Montana - not approved for operations",
-    "priority": 1
+    "route_path": "products/starter-kit",
+    "region_code": "MX",
+    "redirect_type": "redirect",
+    "redirect_url": "/home/pages/not-available-in-your-country",
+    "redirect_status_code": 302,
+    "description": "Mexico - not approved for operations"
 }}
 ```
 
-Region codes follow ISO 3166-2 format (e.g., `US-CA` for California, `US-TX` for Texas, `CA-ON` for Ontario).
+Region codes are two-letter country codes such as `US`, `CA` or `MX`. Rules match countries only, so state codes such as `US-MT` never match. Report state-level restrictions to the user instead of creating rules for them.
 
 `POST /api/theme_region_rules` — CRUD available. Supports filtering by `company_id`, `region_code`, `active`.
 
@@ -807,7 +806,22 @@ Only present when Shopify admin token was used during extraction. Read from `sho
 
 **Discounts** -> `POST /api/v2025-06/discounts` with `{ discount: { title, code, discount_type, value, starts_at, ends_at, ... } }`
 
-**Redirects** -> `POST /api/redirects` with `{ redirect: { path, target } }`
+**Redirects** -> `POST /api/theme_region_rules`, one request per Shopify redirect, so it shows on the admin's Sitemap page. Never use `/api/redirects`: it is deprecated and the Sitemap page doesn't show its redirects. Strip the leading slash from the Shopify `path`:
+
+```json
+{
+  "theme_region_rule": {
+    "route_path": "<shopify path without leading slash>",
+    "region_code": "default",
+    "route_kind": "non_credit",
+    "redirect_type": "redirect",
+    "redirect_url": "<shopify target>",
+    "redirect_status_code": 301
+  }
+}
+```
+
+A `default` redirect works only on a custom path. When a Shopify path starts with `products/`, `pages/`, `collections/`, `categories/` or `media/`, or is `shop` or `join`, the API rejects it. List those paths for the user instead of retrying.
 
 **Blog Posts** -> `POST /api/posts` with `{ post: { title, slug, body, author_name, tags, published_at, status } }`
 
@@ -950,7 +964,7 @@ This step should:
 | Method | HTTP | Endpoint |
 |--------|------|----------|
 | `createDiscount(params)` | POST | `/api/v2025-06/discounts` |
-| `createRedirect(params)` | POST | `/api/redirects` |
+| `createRedirect(params)` | POST | `/api/theme_region_rules` |
 | `createPost(params)` | POST | `/api/posts` |
 
 ### DAM & media
